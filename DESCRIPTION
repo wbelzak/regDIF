@@ -1,11 +1,13 @@
 Package: regDIF
-Type: Package
-Title: What the Package Does (Title Case)
-Version: 0.1.0
-Author: Who wrote it
-Maintainer: The package maintainer <yourself@somewhere.net>
-Description: More about what it does (maybe more than one line)
-    Use four spaces when indenting paragraphs within the Description.
-License: What license is it under?
+Title: Regularized Differential Item Functioning
+Version: 0.0.1
+Author: William Belzak
+Maintainer: Will Belzak <wbelzak@live.unc.edu>
+Description: Tests for differential item functioning (DIF) among multiple covariates using a penalized EM algorithm.
+License: GPL-2
 Encoding: UTF-8
 LazyData: true
+RoxygenNote: 6.1.1
+Imports: stats (> 3.0.0)
+Suggests:
+    testthat (>= 2.1.0)

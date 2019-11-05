@@ -1,24 +1,24 @@
 #' Regularized Differential Item Functioning
 #'
-#' Regularization of DIF parameters in item response theory (IRT) and nonlinear factor analysis (NLFA) models
+#' Regularization of DIF parameters in item response theory (IRT) and moderated nonlinear factor analysis (MNLFA) models.
 #'
-#' @param data an \code{N * P} \code{matrix} or \code{data.frame} of \code{P} dichotomously (0-1) scored items for \code{N} individuals
-#' @param covariates an \code{N * V} \code{matrix} or \code{data.frame} of \code{V} DIF covariates for \code{N} individuals
-#' @param tau a vector of tuning parameter values
-#' @param anchor number indicating which anchor item to use
-#' @param quadpts number of quadrature points to approximate latent variable
-#' @param standardize number indicating which covariate to standardize
+#' @param data A matrix or data frame. Currently supports dichotomously (0-1) scored items only.
+#' @param covariates A matrix or data frame of DIF covariates. Supports both categorical and continuous covariates.
+#' @param tau A numeric vector of tuning parameters.
+#' @param anchor A number or numeric vector indicating which items are anchors. Currently at least one item must be specified as an anchor, although more anchors may be specified. Default is item \code{1}.
+#' @param quadpts The number of quadrature points to approximate the latent variable. More points lead to more precise estimates but slower run time. Default is \code{15} quadrature points.
+#' @param standardize A number indicating which covariate to standardize. It is recommended that all covariates are on the same scale or standardized (i.e., Normal(0,1)). Default is \code{0} (no covariates are standardized).
 #'
-#' @return Obtain DIF estimates under penalized marginal maximum likelihood estimation
+#' @return Function returns an object of class \code{SingleGroupClass}
 #'
 #' @examples
 #' \dontrun{
 #'
-#' library(regdif)
+#' library(regDIF)
 #' data <- ida[,1:6]
 #' dif.covariates <- ida[,7:9]
 #' tau <- seq(1:100)
-#' model <- regdif(data, dif.covariates, tau)
+#' model <- regDIF(data, dif.covariates, tau)
 #' model
 #'
 #' }
@@ -27,7 +27,7 @@
 #'
 #' @export
 
-regdif <- function(data, covariates, tau, anchor = 1, quadpts = 15, standardize = 0){
+regDIF <- function(data, covariates, tau, anchor = 1, quadpts = 15, standardize = 0){
 
   #stop to prevent improper data
   if(any(!(data == 0 | data == 1), na.rm = TRUE)) stop("Some data are not dichotomously scored as 0 or 1.")

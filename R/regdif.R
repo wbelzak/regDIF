@@ -7,6 +7,7 @@
 #' @param tau a vector of tuning parameter values
 #' @param anchor number indicating which anchor item to use
 #' @param quadpts number of quadrature points to approximate latent variable
+#' @param standardize number indicating which covariate to standardize
 #'
 #' @return Obtain DIF estimates under penalized marginal maximum likelihood estimation
 #'

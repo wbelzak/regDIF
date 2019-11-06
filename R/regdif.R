@@ -188,8 +188,8 @@ for(t in 1:length(tau)){
   #lastp is the previous parameter estimates, in addition to maximization/minimization settings
   lastp <- p
   eps <- Inf
-  tol = 10^-3
-  maxit = 100
+  tol = 10^-4
+  maxit = 500
   iter = 0
 
   #loop until convergence or maximum number of iterations

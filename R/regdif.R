@@ -29,6 +29,11 @@
 
 regDIF <- function(data, covariates, tau, anchor = 1, quadpts = 15, standardize = 0){
 
+
+  ##############
+  # Preprocess #
+  ##############
+
   #stop to prevent improper data
   if(any(!(data == 0 | data == 1), na.rm = TRUE)) stop("Some data are not dichotomously scored as 0 or 1.")
 
@@ -52,110 +57,101 @@ regDIF <- function(data, covariates, tau, anchor = 1, quadpts = 15, standardize 
   }
 
 
-#intial parameter values: baseline intercepts, baseline slopes, dif intercepts, dif slopes, impact
-p <- c(rep(0, num_items), rep(1, num_items), rep(0, num_items*num_covariates*2), rep(0, num_covariates*2))
-names(p) <- c(paste0('c0_itm',1:num_items),
-              paste0('a0_itm',1:num_items),
-              paste0(rep(paste0('c1_itm',1:num_items,'_cov'), each = num_covariates),rep(1:num_covariates, num_items)),
-              paste0(rep(paste0('a1_itm',1:num_items,'_cov'), each = num_covariates),rep(1:num_covariates, num_items)),
-              paste0(rep(paste0('g0_cov',1:num_covariates))),
-              paste0(rep(paste0('b0_cov',1:num_covariates))))
-final <- rep(list(rep(list(NA),2)),length(tau))
+  ###################
+  # Starting Values #
+  ###################
 
-#Start Reg-DIF, loop through tuning parameters
-for(t in 1:length(tau)){
+  p <- c(rep(0, num_items), rep(1, num_items), rep(0, num_items*num_covariates*2), rep(0, num_covariates*2))
+  names(p) <- c(paste0('c0_itm',1:num_items),
+                paste0('a0_itm',1:num_items),
+                paste0(rep(paste0('c1_itm',1:num_items,'_cov'), each = num_covariates),rep(1:num_covariates, num_items)),
+                paste0(rep(paste0('a1_itm',1:num_items,'_cov'), each = num_covariates),rep(1:num_covariates, num_items)),
+                paste0(rep(paste0('g0_cov',1:num_covariates))),
+                paste0(rep(paste0('b0_cov',1:num_covariates))))
+  final <- rep(list(rep(list(NA),2)),length(tau))
 
-  #Maximization/minimization routine: initialize the item parameters (starting values)
-  if(t > 1){
-    p_dif <- p[-grep(c('0'),names(p))]
-    p_dif[p_dif < .001 & p_dif > -.001] <- 0
-    p <- replace(p,names(p_dif),p_dif)
-  }
 
-  #lastp is the previous parameter estimates, in addition to maximization/minimization settings
-  lastp <- p
-  eps <- Inf
-  tol = 10^-4
-  maxit = 500
-  iter = 0
+  ##############################
+  # Reg-DIF - Loop through tau #
+  ##############################
 
-  #loop until convergence or maximum number of iterations
-  while(eps > tol & iter < maxit){
+  for(t in 1:length(tau)){
 
-    #E-step:
-    #evaluate E-step with current parameter estimates p
-    rlist <- Estep.2pl(p,data,covariates,theta)
-
-    #M-step 1: (impact)
-    p_impact <- c(p[grep("g0",names(p))],p[grep("b0",names(p))])
-    nr <- rlist[[3]]
-    fit_impact = optim(par=p_impact,fn=ll.2pl.impact,nr=nr,theta=theta,covariates=covariates,method="BFGS",control=list(maxit = maxit))
-
-    p <- replace(p,names(fit_impact$par),fit_impact$par)
-
-    #M-step 2: (DIF)
-    #for each item (loop); maximizing i independent logistic regression log-likelihoods (Q functions), with the quadrature points serving as the predictor values
-    for (item in 1:num_items) {
-
-      r1 <- rlist[[1]][[item]]
-      r0 <- rlist[[2]][[item]]
-
-      p_fit <- c(p[paste0("c0_itm",item)],p[grep(paste0("c1_itm",item),names(p))],p[paste0("a0_itm",item)],p[grep(paste0("a1_itm",item),names(p))])
-
-      if(any(item == anchor)){
-        p_fit <- p_fit[-c(grep(paste0("c1_itm",anchor[grep(item,anchor)]),names(p_fit)), grep(paste0("a1_itm",anchor[grep(item,anchor)]),names(p_fit)))]
-      }
-
-      if(t == 1){
-        p_active <- p_fit
-      } else if(t > 1){
-        p_active <- p_fit[p_fit != 0]
-      }
-
-      fit_dif = optim(par=p_active,fn=ll.2pl.dif,r1=r1,r0=r0,theta=theta,covariates=covariates,tau=tau[t],method="BFGS",control=list(maxit = maxit))
-
-      p <- replace(p,names(fit_dif$par),fit_dif$par)
-
+    #Threshold parameters to zero if they fall in the range of (-.001, .001)
+    if(t > 1){
+      p_dif <- p[-grep(c('0'),names(p))]
+      p_dif[p_dif < .001 & p_dif > -.001] <- 0
+      p <- replace(p,names(p_dif),p_dif)
     }
 
-    #Update and check for convergence:
-    #calculate the difference in parameter estimates
-    eps = sqrt(sum((p - lastp)^2))
-
-    #update parameter list
+    #Maximization settings
     lastp <- p
-
-    #update the iteration number
-    iter = iter + 1
-    if(iter == maxit) warning("Iteration limit reached without convergence")
-    cat(sprintf("Iteration: %d  Change: %f\n", iter, eps)) #print information about optimization
-
-
-  } #end EM once converged or reached iteration limit
-
-  #organize parameters into presentable form
-  parms_impact <- t(matrix(c(p[grep("g0",names(p))],p[grep("b0",names(p))])))
-  colnames(parms_impact) <- c(paste0('g0_cov',1:num_covariates),paste0('b0_cov',1:num_covariates))
-  rownames(parms_impact) <- 'impact'
-
-  parms_dif <- cbind(p[grep("c0_itm",names(p))],
-                     do.call(rbind, split(p[grep("c1_itm",names(p))],rep(1:num_items,each=num_covariates))),
-                     p[grep("a0_itm",names(p))],
-                     do.call(rbind, split(p[grep("a1_itm",names(p))],rep(1:num_items,each=num_covariates))))
-  colnames(parms_dif) <- c('c0',paste0('c',1:num_covariates),'a0',paste0('a',1:num_covariates))
-  rownames(parms_dif) <- colnames(data)
+    eps <- Inf
+    tol = 10^-3
+    maxit = 50
+    iter = 0
 
 
-  final[[t]][[1]] <- round(parms_impact,3)
-  final[[t]][[2]] <- round(parms_dif,3)
+    ################
+    # EM Algorithm #
+    ################
 
-  if(t > 1){
-  if(sum(final[[t]][[2]][,-c(grep("c0",colnames(final[[t]][[2]])),grep("a0",colnames(final[[t]][[2]])))], na.rm = TRUE) == 0) break
-  }
+    #loop until convergence or maximum number of iterations
+    while(eps > tol & iter < maxit){
 
-} #end Reg-DIF
+      #E-step: Evaluate Q function with current parameter estimates p
+      rlist <- Estep.2pl(p,data,covariates,theta,t,num_items,samp_size,num_quadpts)
+
+      #M-step 1: Optimize impact parameters
+      p <- Mstep.2pl.impact(p,rlist,theta,covariates,maxit,samp_size,num_quadpts)
+
+      #M-step 2: Optimize DIF parameters
+      p <- Mstep.2pl.dif(p,rlist,theta,covariates,tau,t,maxit,num_items,samp_size,num_quadpts,anchor)
+
+      #Update and check for convergence: Calculate the difference in parameter estimates from current to previous
+      eps = sqrt(sum((p - lastp)^2))
+
+      #Update parameter list
+      lastp <- p
+
+      #update the iteration number
+      iter = iter + 1
+      if(iter == maxit) warning("Iteration limit reached without convergence")
+      cat(sprintf("Iteration: %d  Change: %f\n", iter, eps)) #print information about optimization
+
+    } #End EM once converged or reached iteration limit
 
 
+    ###############
+    # Postprocess #
+    ###############
+
+    #organize parameters into presentable form
+    parms_impact <- t(matrix(c(p[grep("g0",names(p))],p[grep("b0",names(p))])))
+    colnames(parms_impact) <- c(paste0('g0_cov',1:num_covariates),paste0('b0_cov',1:num_covariates))
+    rownames(parms_impact) <- 'impact'
+
+    parms_dif <- cbind(p[grep("c0_itm",names(p))],
+                       do.call(rbind, split(p[grep("c1_itm",names(p))],rep(1:num_items,each=num_covariates))),
+                       p[grep("a0_itm",names(p))],
+                       do.call(rbind, split(p[grep("a1_itm",names(p))],rep(1:num_items,each=num_covariates))))
+    colnames(parms_dif) <- c('c0',paste0('c',1:num_covariates),'a0',paste0('a',1:num_covariates))
+    rownames(parms_dif) <- colnames(data)
+
+
+    final[[t]][[1]] <- round(parms_impact,3)
+    final[[t]][[2]] <- round(parms_dif,3)
+
+    #Stop Reg-DIF if all DIF parameters are equal to 0
+    if(t > 1){
+    if(sum(final[[t]][[2]][,-c(grep("c0",colnames(final[[t]][[2]])),grep("a0",colnames(final[[t]][[2]])))], na.rm = TRUE) == 0) break
+    }
+
+  } #Terminate Reg-DIF
+
+
+#Obtain final results
 return(final)
+
 }
 

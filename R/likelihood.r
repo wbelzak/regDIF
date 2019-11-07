@@ -1,6 +1,9 @@
-#log-likelihood function for impact
+###########################
+# Log-likelihood - Impact #
+###########################
+
 ll.2pl.impact <-
-  function(p_impact,nr,theta,covariates) {
+  function(p_impact,nr,theta,covariates,samp_size,num_quadpts) {
     alpha <- covariates %*% p_impact[grep("g0",names(p_impact))]
     phi <- exp(covariates %*% p_impact[grep("b0",names(p_impact))])
 
@@ -12,9 +15,13 @@ ll.2pl.impact <-
     ll_impact <- (-1)*(sum(nr*log(theta_scores)))
   }
 
-#log-likelihood function for dif (conditional expected complete data log-likelihood)
+
+########################
+# Log-likelihood - DIF #
+########################
+
 ll.2pl.dif <-
-  function(p_active,r1,r0,theta,covariates,tau) { #p2 is current estimate of parameters, r1 is the conditional expected proportion of individuals that endorse item i, r0 is the conditional expected proportion of individuals that do not endorse item i
+  function(p_active,r1,r0,theta,covariates,tau,samp_size,num_quadpts) { #p2 is current estimate of parameters, r1 is the conditional expected proportion of individuals that endorse item i, r0 is the conditional expected proportion of individuals that do not endorse item i
 
     itemtrace <- matrix(0,nrow=samp_size,ncol=num_quadpts)
     for(i in 1:num_quadpts){

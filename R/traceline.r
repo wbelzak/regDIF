@@ -1,4 +1,7 @@
-#trace lines for item response functions
+#################
+# 2PL Traceline #
+#################
+
 trace.line.pts <-
   function(p_active,theta,covariates) {
     active_cov_c <- as.matrix(covariates[,as.numeric(gsub(".*([0-9]+)", "\\1", names(p_active[grep("c1",names(p_active))])))])

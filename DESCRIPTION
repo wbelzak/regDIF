@@ -2,7 +2,7 @@ Package: regDIF
 Title: Regularized Differential Item Functioning
 Version: 0.0.1
 Author: William Belzak
-Maintainer: Will Belzak <wbelzak@live.unc.edu>
+Maintainer: William Belzak <wbelzak@live.unc.edu>
 Description: Tests for differential item functioning (DIF) among multiple covariates using a penalized EM algorithm.
 License: GPL-2
 Encoding: UTF-8

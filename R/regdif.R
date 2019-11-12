@@ -27,7 +27,7 @@
 #'
 #' @export
 
-regDIF <- function(data, covariates, tau, anchor = 1, quadpts = 15, standardize = 0){
+regDIF <- function(data, covariates, tau, anchor = 1, quadpts = 15, standardize = TRUE){
 
 
   ##############
@@ -35,7 +35,7 @@ regDIF <- function(data, covariates, tau, anchor = 1, quadpts = 15, standardize 
   ##############
 
   #stop to prevent improper data
-  if(any(!(data == 0 | data == 1), na.rm = TRUE)) stop("Some data are not dichotomously scored as 0 or 1.")
+  if(any(!(data == 0 | data == 1), na.rm = TRUE)) stop("data must be scored 0 for no/incorrect and 1 for yes/correct.", call. = TRUE)
 
   #get latent variable values (i.e., predictor values) for quadrature and tracelines
   theta <- seq(-4, 4, length.out = quadpts)
@@ -47,15 +47,11 @@ regDIF <- function(data, covariates, tau, anchor = 1, quadpts = 15, standardize 
   samp_size <- dim(data)[1]
   num_quadpts <- length(theta)
   num_covariates <- dim(covariates)[2]
-  num_parms <- num_items*num_covariates
 
   #standardize data
-  if(standardize > 0 & length(standardize) == 1){
-    covariates[,standardize] <- scale(covariates[,standardize])
-  } else if(length(standardize) > 1){
-    covariates[,standardize] <- sapply(covariates[,standardize], function(x) scale(x))
+  if(standardize == TRUE){
+    covariates <- scale(covariates)
   }
-
 
   ###################
   # Starting Values #
@@ -144,7 +140,8 @@ regDIF <- function(data, covariates, tau, anchor = 1, quadpts = 15, standardize 
 
     #Stop Reg-DIF if all DIF parameters are equal to 0
     if(t > 1){
-    if(sum(final[[t]][[2]][,-c(grep("c0",colnames(final[[t]][[2]])),grep("a0",colnames(final[[t]][[2]])))], na.rm = TRUE) == 0) break
+    if(sum(final[[t]][[2]][,-c(grep("c0",colnames(final[[t]][[2]])),grep("a0",colnames(final[[t]][[2]])))], na.rm = TRUE) == 0) {
+      message(paste0("All DIF covariates have been removed from the model. Reg-DIF has terminated with current tau value = ",tau[t])) & break}
     }
 
   } #Terminate Reg-DIF

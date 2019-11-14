@@ -35,7 +35,7 @@ regDIF <- function(data, covariates, tau, anchor = 1, quadpts = 15, standardize 
   ##############
 
   #stop to prevent improper data
-  if(any(!(data == 0 | data == 1), na.rm = TRUE)) stop("data must be scored 0 for no/incorrect and 1 for yes/correct.", call. = TRUE)
+  if(any(!(data == 0 | data == 1), na.rm = TRUE)) stop("Data must be scored 0 for no/incorrect and 1 for yes/correct.", call. = TRUE)
 
   #get latent variable values (i.e., predictor values) for quadrature and tracelines
   theta <- seq(-4, 4, length.out = quadpts)

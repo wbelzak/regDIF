@@ -5,7 +5,7 @@
 \title{Regularized Differential Item Functioning}
 \usage{
 regDIF(data, covariates, tau, anchor = 1, quadpts = 15,
-  standardize = 0)
+  standardize = TRUE)
 }
 \arguments{
 \item{data}{A matrix or data frame. Currently supports dichotomously (0-1) scored items only.}

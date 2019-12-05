@@ -88,7 +88,8 @@ Mstep.2pl.impact <-
     fit_impact = optim(par=p_impact,fn=ll.2pl.impact,nr=nr,theta=theta,covariates=covariates,samp_size=samp_size,num_quadpts=num_quadpts,method="BFGS",control=list(maxit = maxit))
 
     p <- replace(p,names(fit_impact$par),fit_impact$par)
-
+    ll <- fit_impact$value
+    return(list(p,ll))
 
   }
 
@@ -99,7 +100,7 @@ Mstep.2pl.impact <-
 
 Mstep.2pl.dif <-
   function(p,rlist,theta,covariates,tau,t,maxit,num_items,samp_size,num_quadpts,anchor){
-
+  ll <- 0
     #for each item (loop); maximizing i independent logistic regression log-likelihoods (Q functions), with the quadrature points serving as the predictor values
     for (item in 1:num_items) {
 
@@ -121,7 +122,8 @@ Mstep.2pl.dif <-
       fit_dif = optim(par=p_active,fn=ll.2pl.dif,r1=r1,r0=r0,theta=theta,covariates=covariates,tau=tau[t],samp_size=samp_size,num_quadpts=num_quadpts,method="BFGS",control=list(maxit = maxit))
 
       p <- replace(p,names(fit_dif$par),fit_dif$par)
+      ll <- sum(ll,fit_dif$value) - tau[t]*sum(fit_dif$par)
 
     }
-  return(p)
+  return(list(p,ll))
   }

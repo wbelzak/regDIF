@@ -64,7 +64,7 @@ regDIF <- function(data, covariates, tau, anchor = 1, quadpts = 15, standardize 
                 paste0(rep(paste0('a1_itm',1:num_items,'_cov'), each = num_covariates),rep(1:num_covariates, num_items)),
                 paste0(rep(paste0('g0_cov',1:num_covariates))),
                 paste0(rep(paste0('b0_cov',1:num_covariates))))
-  final <- rep(list(rep(list(NA),2)),length(tau))
+  final <- rep(list(rep(list(NA),3)),length(tau))
 
 
   ##############################
@@ -99,10 +99,12 @@ regDIF <- function(data, covariates, tau, anchor = 1, quadpts = 15, standardize 
       rlist <- Estep.2pl(p,data,covariates,theta,t,num_items,samp_size,num_quadpts)
 
       #M-step 1: Optimize impact parameters
-      p <- Mstep.2pl.impact(p,rlist,theta,covariates,maxit,samp_size,num_quadpts)
+      lv <- Mstep.2pl.impact(p,rlist,theta,covariates,maxit,samp_size,num_quadpts)
 
       #M-step 2: Optimize DIF parameters
-      p <- Mstep.2pl.dif(p,rlist,theta,covariates,tau,t,maxit,num_items,samp_size,num_quadpts,anchor)
+      item <- Mstep.2pl.dif(lv[[1]],rlist,theta,covariates,tau,t,maxit,num_items,samp_size,num_quadpts,anchor)
+
+      p <- item[[1]]
 
       #Update and check for convergence: Calculate the difference in parameter estimates from current to previous
       eps = sqrt(sum((p - lastp)^2))
@@ -117,6 +119,8 @@ regDIF <- function(data, covariates, tau, anchor = 1, quadpts = 15, standardize 
 
     } #End EM once converged or reached iteration limit
 
+    ll <- lv[[2]] + item[[2]]
+    bic <- length(p[!p==0])*log(nrow(data)) + 2*ll
 
     ###############
     # Postprocess #
@@ -137,6 +141,7 @@ regDIF <- function(data, covariates, tau, anchor = 1, quadpts = 15, standardize 
 
     final[[t]][[1]] <- round(parms_impact,3)
     final[[t]][[2]] <- round(parms_dif,3)
+    final[[t]][[3]] <- round(bic,3)
 
     #Stop Reg-DIF if all DIF parameters are equal to 0
     if(t > 1){

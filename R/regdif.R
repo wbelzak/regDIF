@@ -75,7 +75,7 @@ regDIF <- function(data, covariates, tau, anchor = 1, quadpts = 15, standardize 
     #Maximization settings
     lastp <- p
     eps <- Inf
-    tol = 10^-4
+    tol = 10^-5
     maxit = 500
     iter = 0
 

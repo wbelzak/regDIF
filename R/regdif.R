@@ -2,12 +2,12 @@
 #'
 #' Regularization of DIF parameters in item response theory (IRT) and moderated nonlinear factor analysis (MNLFA) models.
 #'
-#' @param data A matrix or data frame. Currently supports dichotomously (0-1) scored items only.
+#' @param data A matrix or data frame of item responses. Currently supports dichotomously (0-1) scored items only.
 #' @param covariates A matrix or data frame of DIF covariates. Supports both categorical and continuous covariates.
-#' @param tau A numeric vector of tuning parameters.
+#' @param tau A numeric vector of tuning parameter values.
 #' @param anchor A number or numeric vector indicating which items are anchors. Currently at least one item must be specified as an anchor, although more anchors may be specified. Default is item \code{1}.
 #' @param quadpts The number of quadrature points to approximate the latent variable. More points lead to more precise estimates but slower run time. Default is \code{15} quadrature points.
-#' @param standardize A number indicating which covariate to standardize. It is recommended that all covariates are on the same scale or standardized (i.e., Normal(0,1)). Default is \code{0} (no covariates are standardized).
+#' @param standardize Logical (\code{TRUE}/\code{FALSE}) indicating whether to normalize the covariates. Default is \code{TRUE}.
 #'
 #' @return Function returns an object of class \code{SingleGroupClass}
 #'
@@ -17,7 +17,7 @@
 #' library(regDIF)
 #' data <- ida[,1:6]
 #' dif.covariates <- ida[,7:9]
-#' tau <- seq(1:100)
+#' tau <- seq(2,0,-.05)
 #' model <- regDIF(data, dif.covariates, tau)
 #' model
 #'
@@ -58,14 +58,13 @@ regDIF <- function(data, covariates, tau, anchor = 1, quadpts = 15, standardize 
   ###################
 
   p <- c(rep(0, num_items), rep(1, num_items), rep(0, num_items*num_covariates*2), rep(0, num_covariates*2))
-  names(p) <- c(paste0('c0_itm',1:num_items),
-                paste0('a0_itm',1:num_items),
+  names(p) <- c(paste0('c0_itm',1:num_items,"_"),
+                paste0('a0_itm',1:num_items,"_"),
                 paste0(rep(paste0('c1_itm',1:num_items,'_cov'), each = num_covariates),rep(1:num_covariates, num_items)),
                 paste0(rep(paste0('a1_itm',1:num_items,'_cov'), each = num_covariates),rep(1:num_covariates, num_items)),
                 paste0(rep(paste0('g0_cov',1:num_covariates))),
                 paste0(rep(paste0('b0_cov',1:num_covariates))))
   final <- rep(list(rep(list(NA),3)),length(tau))
-
 
   ##############################
   # Reg-DIF - Loop through tau #
@@ -73,20 +72,12 @@ regDIF <- function(data, covariates, tau, anchor = 1, quadpts = 15, standardize 
 
   for(t in 1:length(tau)){
 
-    #Threshold parameters to zero if they fall in the range of (-.001, .001)
-    if(t > 1){
-      p_dif <- p[-grep(c('0'),names(p))]
-      p_dif[p_dif < .001 & p_dif > -.001] <- 0
-      p <- replace(p,names(p_dif),p_dif)
-    }
-
     #Maximization settings
     lastp <- p
     eps <- Inf
     tol = 10^-4
     maxit = 500
     iter = 0
-
 
     ################
     # EM Algorithm #
@@ -100,11 +91,11 @@ regDIF <- function(data, covariates, tau, anchor = 1, quadpts = 15, standardize 
 
       #M-step 1: Optimize impact parameters
       lv <- Mstep.2pl.impact(p,rlist,theta,covariates,maxit,samp_size,num_quadpts)
+      p <- replace(p,names(lv[[1]]),lv[[1]])
 
       #M-step 2: Optimize DIF parameters
       item <- Mstep.2pl.dif(lv[[1]],rlist,theta,covariates,tau,t,maxit,num_items,samp_size,num_quadpts,anchor)
-
-      p <- item[[1]]
+      p <- item
 
       #Update and check for convergence: Calculate the difference in parameter estimates from current to previous
       eps = sqrt(sum((p - lastp)^2))
@@ -115,12 +106,12 @@ regDIF <- function(data, covariates, tau, anchor = 1, quadpts = 15, standardize 
       #update the iteration number
       iter = iter + 1
       if(iter == maxit) warning("Iteration limit reached without convergence")
-      cat(sprintf("Iteration: %d  Change: %f\n", iter, eps)) #print information about optimization
+      cat(sprintf("****EM Iteration: %d  Change: %f\n", iter, eps)) #print information about optimization
 
     } #End EM once converged or reached iteration limit
-
-    ll <- lv[[2]] + item[[2]]
-    bic <- length(p[!p==0])*log(nrow(data)) + 2*ll
+#
+#     ll <- lv[[2]] + item[[2]]
+#     bic <- length(p[!p==0])*log(nrow(data)) + 2*ll
 
     ###############
     # Postprocess #
@@ -141,13 +132,13 @@ regDIF <- function(data, covariates, tau, anchor = 1, quadpts = 15, standardize 
 
     final[[t]][[1]] <- round(parms_impact,3)
     final[[t]][[2]] <- round(parms_dif,3)
-    final[[t]][[3]] <- round(bic,3)
+    # final[[t]][[3]] <- round(bic,3)
 
     #Stop Reg-DIF if all DIF parameters are equal to 0
-    if(t > 1){
-    if(sum(final[[t]][[2]][,-c(grep("c0",colnames(final[[t]][[2]])),grep("a0",colnames(final[[t]][[2]])))], na.rm = TRUE) == 0) {
-      message(paste0("All DIF covariates have been removed from the model. Reg-DIF has terminated with current tau value = ",tau[t])) & break}
-    }
+    # if(t > 1){
+    # if(sum(final[[t]][[2]][,-c(grep("c0",colnames(final[[t]][[2]])),grep("a0",colnames(final[[t]][[2]])))], na.rm = TRUE) == 0) {
+    #   message(paste0("All DIF covariates have been removed from the model. Reg-DIF has terminated with current tau value = ",tau[t])) & break}
+    # }
 
   } #Terminate Reg-DIF
 

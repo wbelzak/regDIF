@@ -105,7 +105,7 @@ regDIF <- function(data, covariates, tau, anchor = 1, quadpts = 15, standardize 
 
       #update the iteration number
       iter = iter + 1
-      if(iter == maxit) warning("Iteration limit reached without convergence")
+      if(iter == maxit) warning("EM iteration limit reached without convergence")
       cat(sprintf("****EM Iteration: %d  Change: %f\n", iter, eps)) #print information about optimization
 
     } #End EM once converged or reached iteration limit

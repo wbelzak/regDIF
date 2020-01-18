@@ -6,11 +6,6 @@
 Estep.2pl <-
   function(p,data,covariates,theta,t,num_items,samp_size,num_quadpts) { #p is parameters, data is response data, theta is values of latent variable
 
-    #remove non-active parameters from E-step
-    # if(t > 1){
-    #   p <- p[p != 0]
-    # }
-
     #make space for the trace lines and the E-tables
     itemtrace <- replicate(n=num_items, matrix(0,nrow=samp_size,ncol=num_quadpts), simplify = F) #nrows = # of items, ncols = # of theta values
     r1 <- replicate(n=num_items, matrix(0,nrow=samp_size,ncol=num_quadpts), simplify = F)
@@ -19,9 +14,7 @@ Estep.2pl <-
     #compute the trace lines
     for (item in 1:num_items) { #loop through items
       p_active <- c(p[paste0("c0_itm",item,"_")],p[grep(paste0("c1_itm",item,"_"),names(p))],p[paste0("a0_itm",item,"_")],p[grep(paste0("a1_itm",item,"_"),names(p))])
-      for(q in 1:num_quadpts){
-        itemtrace[[item]][,q] <- trace.line.pts(p_active,theta[q],covariates) #computing probability of endorsement for theta value using current estimate of a and b
-      }
+      itemtrace[[item]] <- trace.line.pts(p_active,theta,covariates) #computing probability of endorsement for theta value using current estimate of a and b
     }
 
     #impact

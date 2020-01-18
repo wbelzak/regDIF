@@ -7,10 +7,7 @@ ll.2pl.impact <-
     alpha <- covariates %*% p_impact[grep("g0",names(p_impact))]
     phi <- exp(covariates %*% p_impact[grep("b0",names(p_impact))])
 
-    theta_scores <- matrix(0,nrow=samp_size,ncol=num_quadpts)
-    for(case in 1:samp_size){
-      theta_scores[case,] <- dnorm(theta, mean = alpha[case], sd = sqrt(phi[case]))
-    }
+    theta_scores2 <- t(sapply(1:samp_size, function(x){dnorm(theta, mean = alpha[x], sd = sqrt(phi[x]))}))
 
     ll_impact <- (-1)*(sum(nr*log(theta_scores)))
   }

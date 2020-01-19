@@ -76,7 +76,7 @@ regDIF <- function(data, covariates, tau, anchor = 1, quadpts = 15, standardize 
     lastp <- p
     eps <- Inf
     tol = 10^-5
-    maxit = 500
+    maxit = 1000
     iter = 0
 
     ################
@@ -94,8 +94,9 @@ regDIF <- function(data, covariates, tau, anchor = 1, quadpts = 15, standardize 
       p <- replace(p,names(lv[[1]]),lv[[1]])
 
       #M-step 2: Optimize DIF parameters
-      item <- Mstep.2pl.dif(lv[[1]],rlist,theta,covariates,tau,t,maxit,num_items,samp_size,num_quadpts,anchor)
+      item <- Mstep.2pl.dif(lv[[1]],rlist,theta,covariates,tau,t,maxit,num_items,samp_size,num_quadpts,num_covariates,anchor)
       p <- item
+
 
       #Update and check for convergence: Calculate the difference in parameter estimates from current to previous
       eps = sqrt(sum((p - lastp)^2))
@@ -109,30 +110,39 @@ regDIF <- function(data, covariates, tau, anchor = 1, quadpts = 15, standardize 
       cat(sprintf("****EM Iteration: %d  Change: %f\n", iter, eps)) #print information about optimization
 
     } #End EM once converged or reached iteration limit
-#
-#     ll <- lv[[2]] + item[[2]]
-#     bic <- length(p[!p==0])*log(nrow(data)) + 2*ll
+
+    itemtrace <- replicate(n=num_items, matrix(0,nrow=samp_size,ncol=num_quadpts), simplify = F)
+    ll_dif <- ll_dif_pen <- replicate(n=num_items, 0, simplify = F)
+    for (item in 1:num_items) { #loop through items
+      p_active <- c(p[paste0("c0_itm",item,"_")],p[grep(paste0("c1_itm",item,"_"),names(p),fixed=T)],p[paste0("a0_itm",item,"_")],p[grep(paste0("a1_itm",item,"_"),names(p),fixed=T)])
+      itemtrace[[item]] <- trace.line.pts(p_active,theta,covariates) #computing probability of endorsement for theta value using current estimate of a and b
+      ll_dif[[item]] <- (-1)*(sum(rlist[[1]][[item]]*(log(itemtrace[[item]])), na.rm = TRUE) + sum(rlist[[2]][[item]]*(log(1.0-itemtrace[[item]])), na.rm = TRUE))
+      ll_dif_pen[[item]] <- ll_dif[[item]] - (tau[t]*sum(c(abs(p_active[grep("c1_itm",names(p_active))]), abs(p_active[grep("a1_itm",names(p_active))])), na.rm = TRUE)) #Q function we want to minimize
+    }
+
+    ll <- lv[[2]] + sum(unlist(ll_dif_pen))
+    bic <- length(p[p!=0])*log(nrow(data)) + 2*ll
 
     ###############
     # Postprocess #
     ###############
 
     #organize parameters into presentable form
-    parms_impact <- t(matrix(c(p[grep("g0",names(p))],p[grep("b0",names(p))])))
+    parms_impact <- t(matrix(c(p[grep("g0",names(p),fixed=T)],p[grep("b0",names(p),fixed=T)])))
     colnames(parms_impact) <- c(paste0('g0_cov',1:num_covariates),paste0('b0_cov',1:num_covariates))
     rownames(parms_impact) <- 'impact'
 
     parms_dif <- cbind(p[grep("c0_itm",names(p))],
-                       do.call(rbind, split(p[grep("c1_itm",names(p))],rep(1:num_items,each=num_covariates))),
+                       do.call(rbind, split(p[grep("c1_itm",names(p),fixed=T)],rep(1:num_items,each=num_covariates))),
                        p[grep("a0_itm",names(p))],
-                       do.call(rbind, split(p[grep("a1_itm",names(p))],rep(1:num_items,each=num_covariates))))
+                       do.call(rbind, split(p[grep("a1_itm",names(p),fixed=T)],rep(1:num_items,each=num_covariates))))
     colnames(parms_dif) <- c('c0',paste0('c',1:num_covariates),'a0',paste0('a',1:num_covariates))
     rownames(parms_dif) <- colnames(data)
 
 
     final[[t]][[1]] <- round(parms_impact,3)
     final[[t]][[2]] <- round(parms_dif,3)
-    # final[[t]][[3]] <- round(bic,3)
+    final[[t]][[3]] <- round(bic,3)
 
     #Stop Reg-DIF if all DIF parameters are equal to 0
     # if(t > 1){

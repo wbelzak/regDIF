@@ -13,7 +13,7 @@ Estep.2pl <-
 
     #compute the trace lines
     for (item in 1:num_items) { #loop through items
-      p_active <- c(p[paste0("c0_itm",item,"_")],p[grep(paste0("c1_itm",item,"_"),names(p))],p[paste0("a0_itm",item,"_")],p[grep(paste0("a1_itm",item,"_"),names(p))])
+      p_active <- c(p[paste0("c0_itm",item,"_")],p[grep(paste0("c1_itm",item,"_"),names(p),fixed=T)],p[paste0("a0_itm",item,"_")],p[grep(paste0("a1_itm",item,"_"),names(p),fixed=T)])
       itemtrace[[item]] <- trace.line.pts(p_active,theta,covariates) #computing probability of endorsement for theta value using current estimate of a and b
     }
 
@@ -29,7 +29,7 @@ Estep.2pl <-
 
       #within each response pattern, loop over items and compute posterior probability of response pattern
       for(item in 1:num_items) {
-        x <- I(data[case,item]) #get one cell within data, **x will either be TRUE or FALSE** (endorse or not endorse)
+        x <- data[case,item] #get one cell within data, **x will either be TRUE or FALSE** (endorse or not endorse)
         if (is.na(x)) {
           posterior <- posterior #if missing (NA), posterior probability remains the same as guassian points
         } else if (x == 1) {
@@ -45,7 +45,7 @@ Estep.2pl <-
 
       #for individual i, add posterior to the r1 and r0 tables depending on response
       for(item in 1:num_items) { #within a person, loop over items
-        x <- I(data[case,item]) #get one cell within data, **x will either be TRUE or FALSE** (endorse or not endorse)
+        x <- data[case,item] #get one cell within data, **x will either be TRUE or FALSE** (endorse or not endorse)
         if (is.na(x)) {
           r1[[item]][case,] <- r1[[item]][case,] #if missing (NA), conditional expected proportion of endorsing item j and not endorsing item j remains the same
           r0[[item]][case,] <- r0[[item]][case,]

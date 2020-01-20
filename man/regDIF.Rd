@@ -4,7 +4,7 @@
 \alias{regDIF}
 \title{Regularized Differential Item Functioning}
 \usage{
-regDIF(data, covariates, tau, anchor = 1, quadpts = 15,
+regDIF(data, covariates, tau, anchor = NULL, quadpts = 15,
   standardize = TRUE)
 }
 \arguments{
@@ -12,9 +12,9 @@ regDIF(data, covariates, tau, anchor = 1, quadpts = 15,
 
 \item{covariates}{A matrix or data frame of DIF covariates. Supports both categorical and continuous covariates.}
 
-\item{tau}{A numeric vector of tuning parameter values.}
+\item{tau}{A numeric vector of tuning parameter values. Default is \code{0} or no penalty.}
 
-\item{anchor}{A number or numeric vector indicating which items are anchors. Currently at least one item must be specified as an anchor, although more anchors may be specified. Default is item \code{1}.}
+\item{anchor}{Optional. A numeric vector indicating which items are anchors. Default is \code{NULL}, which means that at least one DIF parameter per covariate across all items will be fixed to zero to identify the model.}
 
 \item{quadpts}{The number of quadrature points to approximate the latent variable. More points lead to more precise estimates but slower run time. Default is \code{15} quadrature points.}
 

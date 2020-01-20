@@ -21,7 +21,7 @@ Mstep.2pl.impact <-
 # M-step 2: (DIF) #
 ###################
 Mstep.2pl.dif <-
-  function(p,rlist,theta,covariates,penalty,t,maxit,num_items,samp_size,num_quadpts,num_covariates,anchor){
+  function(p,data,rlist,theta,covariates,penalty,t,maxit,num_items,samp_size,num_quadpts,num_covariates,anchor){
 
     #for each item (loop); maximizing i independent logistic regression log-likelihoods (Q functions), with the quadrature points serving as the predictor values
     for (item in 1:num_items) {

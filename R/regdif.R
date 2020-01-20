@@ -2,12 +2,12 @@
 #'
 #' Regularization of DIF parameters in item response theory (IRT) and moderated nonlinear factor analysis (MNLFA) models.
 #'
-#' @param data A matrix or data frame of item responses. Currently supports dichotomously (0-1) scored items only.
-#' @param covariates A matrix or data frame of DIF covariates. Supports both categorical and continuous covariates.
-#' @param tau A numeric vector of tuning parameter values. Default is \code{0} or no penalty.
-#' @param standardize Logical (\code{TRUE}/\code{FALSE}) indicating whether to normalize the covariates. Default is \code{TRUE}.
-#' @param anchor Optional. A numeric vector indicating which items are anchors. Default is \code{NULL}, which means that at least one DIF parameter per covariate across all items will be fixed to zero to identify the model.
-#' @param quadpts The number of quadrature points to approximate the latent variable. More points lead to more precise estimates but slower run time. Default is \code{15} quadrature points.
+#' @param data Matrix or data frame of item responses. Currently supports dichotomously (0-1) scored items only.
+#' @param covariates Matrix or data frame of DIF covariates. Supports both categorical and continuous covariates.
+#' @param penalty Numeric vector of non-zero tuning parameter values.
+#' @param standardize Logical value indicating whether to normalize the covariates. Default is \code{TRUE}.
+#' @param anchor Optional numeric vector indicating which items are anchors (e.g., \code{anchor = 1}). Default is \code{NULL}, which means that at least one DIF parameter per covariate across all items will be fixed to zero to identify the model.
+#' @param quadpts Number of quadrature points to approximate the latent variable. More points lead to more precise estimates but slower run time. Default is \code{15} quadrature points.
 #'
 #' @return Function returns an object of class \code{SingleGroupClass}
 #'
@@ -16,9 +16,9 @@
 #'
 #' library(regDIF)
 #' data <- ida[,1:6]
-#' dif.covariates <- ida[,7:9]
-#' tau <- seq(2,0,-.05)
-#' model <- regDIF(data, dif.covariates, tau)
+#' covariates <- ida[,7:9]
+#' penalty <- seq(1,0,-.05)
+#' model <- regDIF(data, covariates, penalty)
 #' model
 #'
 #' }
@@ -27,7 +27,7 @@
 #'
 #' @export
 
-regDIF <- function(data, covariates, tau, anchor = NULL, quadpts = 15, standardize = TRUE){
+regDIF <- function(data, covariates, penalty, standardize = TRUE, anchor = NULL, quadpts = 15){
 
 
   ##############
@@ -36,7 +36,8 @@ regDIF <- function(data, covariates, tau, anchor = NULL, quadpts = 15, standardi
 
   #warnings
   if(any(!(data == 0 | data == 1), na.rm = TRUE)) stop("Data must be scored 1 for yes/correct and 0 for no/incorrect.", call. = TRUE)
-  if(length(tau) == 0){if(tau == 0) stop("Anchor item must be specified without penalty.", call. = TRUE)}
+  if(length(penalty) == 0){if(penalty == 0) stop("Anchor item must be specified without penalty.", call. = TRUE)}
+  if(any(penalty < 0)) stop("Penalty values must be non-negative.")
 
   #get latent variable values (i.e., predictor values) for quadrature and tracelines
   theta <- seq(-4, 4, length.out = quadpts)
@@ -65,13 +66,13 @@ regDIF <- function(data, covariates, tau, anchor = NULL, quadpts = 15, standardi
                 paste0(rep(paste0('a1_itm',1:num_items,'_cov'), each = num_covariates),rep(1:num_covariates, num_items)),
                 paste0(rep(paste0('g0_cov',1:num_covariates))),
                 paste0(rep(paste0('b0_cov',1:num_covariates))))
-  final <- rep(list(list(impact = NA,dif = NA,bic = NA,tau = NA)),length(tau))
+  final <- rep(list(list(impact = NA,dif = NA,bic = NA,penalty = NA)),length(penalty))
 
-  ##############################
-  # Reg-DIF - Loop through tau #
-  ##############################
+  ##################################
+  # Reg-DIF - Loop through penalty #
+  ##################################
 
-  for(t in 1:length(tau)){
+  for(t in 1:length(penalty)){
 
     #Maximization settings
     lastp <- p
@@ -95,7 +96,7 @@ regDIF <- function(data, covariates, tau, anchor = NULL, quadpts = 15, standardi
       p <- replace(p,names(lv[[1]]),lv[[1]])
 
       #M-step 2: Optimize DIF parameters
-      p <- Mstep.2pl.dif(lv[[1]],rlist,theta,covariates,tau,t,maxit,num_items,samp_size,num_quadpts,num_covariates,anchor)
+      p <- Mstep.2pl.dif(lv[[1]],rlist,theta,covariates,penalty,t,maxit,num_items,samp_size,num_quadpts,num_covariates,anchor)
 
 
       #Update and check for convergence: Calculate the difference in parameter estimates from current to previous
@@ -117,7 +118,7 @@ regDIF <- function(data, covariates, tau, anchor = NULL, quadpts = 15, standardi
       p_active <- c(p[paste0("c0_itm",item,"_")],p[grep(paste0("c1_itm",item,"_"),names(p),fixed=T)],p[paste0("a0_itm",item,"_")],p[grep(paste0("a1_itm",item,"_"),names(p),fixed=T)])
       itemtrace[[item]] <- trace.line.pts(p_active,theta,covariates) #computing probability of endorsement for theta value using current estimate of a and b
       ll_dif[[item]] <- (-1)*(sum(rlist[[1]][[item]]*(log(itemtrace[[item]])), na.rm = TRUE) + sum(rlist[[2]][[item]]*(log(1.0-itemtrace[[item]])), na.rm = TRUE))
-      ll_dif_pen[[item]] <- ll_dif[[item]] - (tau[t]*sum(c(abs(p_active[grep("c1_itm",names(p_active))]), abs(p_active[grep("a1_itm",names(p_active))])), na.rm = TRUE)) #Q function we want to minimize
+      ll_dif_pen[[item]] <- ll_dif[[item]] - (penalty[t]*sum(c(abs(p_active[grep("c1_itm",names(p_active))]), abs(p_active[grep("a1_itm",names(p_active))])), na.rm = TRUE)) #Q function we want to minimize
     }
 
     ll <- lv[[2]] + sum(unlist(ll_dif_pen))
@@ -143,12 +144,12 @@ regDIF <- function(data, covariates, tau, anchor = NULL, quadpts = 15, standardi
     final[[t]][[1]] <- round(parms_impact,2)
     final[[t]][[2]] <- round(parms_dif,2)
     final[[t]][[3]] <- round(bic,2)
-    final[[t]][[4]] <- tau[t]
+    final[[t]][[4]] <- penalty[t]
 
-    #stop if tau is too small on first run (this leads to different results b/c of identification constraints of DIF parameters)
+    #stop if penalty is too small on first run (this leads to different results b/c of identification constraints of DIF parameters)
     if(is.null(anchor) & t == 1 & sum(abs(p[-grep(paste0("0"),names(p))])) > 0){
       print(final[[t]])
-      stop("First tau value is too small.\n  Increase first tau value large enough to ensure all DIF parameters are removed from the model.\n  Or make at least one item an anchor item.", call. = TRUE)
+      stop("First penalty value is too small.\n  Increase first penalty value large enough to ensure all DIF parameters are removed from the model.\n  Or make at least one item an anchor item.", call. = TRUE)
     }
 
   } #Terminate Reg-DIF

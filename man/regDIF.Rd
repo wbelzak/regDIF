@@ -14,7 +14,7 @@ regDIF(data, covariates, penalty, standardize = TRUE, anchor = NULL,
 
 \item{penalty}{Numeric vector of non-zero tuning parameter values.}
 
-\item{standardize}{Logical indicating whether to normalize the covariates. Default is \code{TRUE}.}
+\item{standardize}{Logical value indicating whether to normalize the covariates. Default is \code{TRUE}.}
 
 \item{anchor}{Optional numeric vector indicating which items are anchors (e.g., \code{anchor = 1}). Default is \code{NULL}, which means that at least one DIF parameter per covariate across all items will be fixed to zero to identify the model.}
 

@@ -4,21 +4,21 @@
 \alias{regDIF}
 \title{Regularized Differential Item Functioning}
 \usage{
-regDIF(data, covariates, tau, anchor = NULL, quadpts = 15,
-  standardize = TRUE)
+regDIF(data, covariates, penalty, standardize = TRUE, anchor = NULL,
+  quadpts = 15)
 }
 \arguments{
-\item{data}{A matrix or data frame of item responses. Currently supports dichotomously (0-1) scored items only.}
+\item{data}{Matrix or data frame of item responses. Currently supports dichotomously (0-1) scored items only.}
 
-\item{covariates}{A matrix or data frame of DIF covariates. Supports both categorical and continuous covariates.}
+\item{covariates}{Matrix or data frame of DIF covariates. Supports both categorical and continuous covariates.}
 
-\item{tau}{A numeric vector of tuning parameter values. Default is \code{0} or no penalty.}
+\item{penalty}{Numeric vector of non-zero tuning parameter values.}
 
-\item{anchor}{Optional. A numeric vector indicating which items are anchors. Default is \code{NULL}, which means that at least one DIF parameter per covariate across all items will be fixed to zero to identify the model.}
+\item{standardize}{Logical indicating whether to normalize the covariates. Default is \code{TRUE}.}
 
-\item{quadpts}{The number of quadrature points to approximate the latent variable. More points lead to more precise estimates but slower run time. Default is \code{15} quadrature points.}
+\item{anchor}{Optional numeric vector indicating which items are anchors (e.g., \code{anchor = 1}). Default is \code{NULL}, which means that at least one DIF parameter per covariate across all items will be fixed to zero to identify the model.}
 
-\item{standardize}{Logical (\code{TRUE}/\code{FALSE}) indicating whether to normalize the covariates. Default is \code{TRUE}.}
+\item{quadpts}{Number of quadrature points to approximate the latent variable. More points lead to more precise estimates but slower run time. Default is \code{15} quadrature points.}
 }
 \value{
 Function returns an object of class \code{SingleGroupClass}
@@ -31,9 +31,9 @@ Regularization of DIF parameters in item response theory (IRT) and moderated non
 
 library(regDIF)
 data <- ida[,1:6]
-dif.covariates <- ida[,7:9]
-tau <- seq(2,0,-.05)
-model <- regDIF(data, dif.covariates, tau)
+covariates <- ida[,7:9]
+penalty <- seq(1,0,-.05)
+model <- regDIF(data, covariates, penalty)
 model
 
 }

@@ -4,10 +4,10 @@
 #'
 #' @param data A matrix or data frame of item responses. Currently supports dichotomously (0-1) scored items only.
 #' @param covariates A matrix or data frame of DIF covariates. Supports both categorical and continuous covariates.
-#' @param tau A numeric vector of tuning parameter values.
-#' @param anchor A number or numeric vector indicating which items are anchors. Currently at least one item must be specified as an anchor, although more anchors may be specified. Default is item \code{1}.
-#' @param quadpts The number of quadrature points to approximate the latent variable. More points lead to more precise estimates but slower run time. Default is \code{15} quadrature points.
+#' @param tau A numeric vector of tuning parameter values. Default is \code{0} or no penalty.
 #' @param standardize Logical (\code{TRUE}/\code{FALSE}) indicating whether to normalize the covariates. Default is \code{TRUE}.
+#' @param anchor Optional. A numeric vector indicating which items are anchors. Default is \code{NULL}, which means that at least one DIF parameter per covariate across all items will be fixed to zero to identify the model.
+#' @param quadpts The number of quadrature points to approximate the latent variable. More points lead to more precise estimates but slower run time. Default is \code{15} quadrature points.
 #'
 #' @return Function returns an object of class \code{SingleGroupClass}
 #'
@@ -27,15 +27,16 @@
 #'
 #' @export
 
-regDIF <- function(data, covariates, tau, anchor = 1, quadpts = 15, standardize = TRUE){
+regDIF <- function(data, covariates, tau, anchor = NULL, quadpts = 15, standardize = TRUE){
 
 
   ##############
   # Preprocess #
   ##############
 
-  #stop to prevent improper data
-  if(any(!(data == 0 | data == 1), na.rm = TRUE)) stop("Data must be scored 0 for no/incorrect and 1 for yes/correct.", call. = TRUE)
+  #warnings
+  if(any(!(data == 0 | data == 1), na.rm = TRUE)) stop("Data must be scored 1 for yes/correct and 0 for no/incorrect.", call. = TRUE)
+  if(length(tau) == 0){if(tau == 0) stop("Anchor item must be specified without penalty.", call. = TRUE)}
 
   #get latent variable values (i.e., predictor values) for quadrature and tracelines
   theta <- seq(-4, 4, length.out = quadpts)
@@ -64,7 +65,7 @@ regDIF <- function(data, covariates, tau, anchor = 1, quadpts = 15, standardize 
                 paste0(rep(paste0('a1_itm',1:num_items,'_cov'), each = num_covariates),rep(1:num_covariates, num_items)),
                 paste0(rep(paste0('g0_cov',1:num_covariates))),
                 paste0(rep(paste0('b0_cov',1:num_covariates))))
-  final <- rep(list(rep(list(NA),3)),length(tau))
+  final <- rep(list(list(impact = NA,dif = NA,bic = NA,tau = NA)),length(tau))
 
   ##############################
   # Reg-DIF - Loop through tau #
@@ -94,8 +95,7 @@ regDIF <- function(data, covariates, tau, anchor = 1, quadpts = 15, standardize 
       p <- replace(p,names(lv[[1]]),lv[[1]])
 
       #M-step 2: Optimize DIF parameters
-      item <- Mstep.2pl.dif(lv[[1]],rlist,theta,covariates,tau,t,maxit,num_items,samp_size,num_quadpts,num_covariates,anchor)
-      p <- item
+      p <- Mstep.2pl.dif(lv[[1]],rlist,theta,covariates,tau,t,maxit,num_items,samp_size,num_quadpts,num_covariates,anchor)
 
 
       #Update and check for convergence: Calculate the difference in parameter estimates from current to previous
@@ -140,15 +140,16 @@ regDIF <- function(data, covariates, tau, anchor = 1, quadpts = 15, standardize 
     rownames(parms_dif) <- colnames(data)
 
 
-    final[[t]][[1]] <- round(parms_impact,3)
-    final[[t]][[2]] <- round(parms_dif,3)
-    final[[t]][[3]] <- round(bic,3)
+    final[[t]][[1]] <- round(parms_impact,2)
+    final[[t]][[2]] <- round(parms_dif,2)
+    final[[t]][[3]] <- round(bic,2)
+    final[[t]][[4]] <- tau[t]
 
-    #Stop Reg-DIF if all DIF parameters are equal to 0
-    # if(t > 1){
-    # if(sum(final[[t]][[2]][,-c(grep("c0",colnames(final[[t]][[2]])),grep("a0",colnames(final[[t]][[2]])))], na.rm = TRUE) == 0) {
-    #   message(paste0("All DIF covariates have been removed from the model. Reg-DIF has terminated with current tau value = ",tau[t])) & break}
-    # }
+    #stop if tau is too small on first run (this leads to different results b/c of identification constraints of DIF parameters)
+    if(is.null(anchor) & t == 1 & sum(abs(p[-grep(paste0("0"),names(p))])) > 0){
+      print(final[[t]])
+      stop("First tau value is too small.\n  Increase first tau value large enough to ensure all DIF parameters are removed from the model.\n  Or make at least one item an anchor item.", call. = TRUE)
+    }
 
   } #Terminate Reg-DIF
 

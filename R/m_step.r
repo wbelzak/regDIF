@@ -21,7 +21,7 @@ Mstep.2pl.impact <-
 # M-step 2: (DIF) #
 ###################
 Mstep.2pl.dif <-
-  function(p,rlist,theta,covariates,tau,t,maxit,num_items,samp_size,num_quadpts,num_covariates,anchor){
+  function(p,rlist,theta,covariates,penalty,t,maxit,num_items,samp_size,num_quadpts,num_covariates,anchor){
 
     #for each item (loop); maximizing i independent logistic regression log-likelihoods (Q functions), with the quadrature points serving as the predictor values
     for (item in 1:num_items) {
@@ -49,7 +49,7 @@ Mstep.2pl.dif <-
 
         anl_deriv <- d("c1",p,r1,r0,data,item.focus=item,theta,covariates,cov,num_items,samp_size,num_quadpts)
         z <- (anl_deriv[[2]]*p[grep(paste0("c1_itm",item,"_cov",cov),names(p),fixed=T)] - anl_deriv[[1]])/anl_deriv[[2]]
-        p_new <- sign(z)*max(abs(z) - tau[t], 0)
+        p_new <- sign(z)*max(abs(z) - penalty[t], 0)
         p <- replace(p,names(p_new),p_new)
       }
 
@@ -61,7 +61,7 @@ Mstep.2pl.dif <-
 
         anl_deriv <- d("a1",p,r1,r0,data,item.focus=item,theta,covariates,cov,num_items,samp_size,num_quadpts)
         z <- (anl_deriv[[2]]*p[grep(paste0("a1_itm",item,"_cov",cov),names(p),fixed=T)] - anl_deriv[[1]])/anl_deriv[[2]]
-        p_new <- sign(z)*max(abs(z) - tau[t], 0)
+        p_new <- sign(z)*max(abs(z) - penalty[t], 0)
         p <- replace(p,names(p_new),p_new)
       }
 

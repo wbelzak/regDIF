@@ -42,6 +42,11 @@ Mstep.2pl.dif <-
       }
 
       for(cov in 1:num_covariates){
+
+        if(sum(p[grep(paste0("c1(.*?)cov",cov),names(p))] != 0) > (num_items - 2)){
+          next
+        }
+
         anl_deriv <- d("c1",p,r1,r0,data,item.focus=item,theta,covariates,cov,num_items,samp_size,num_quadpts)
         z <- (anl_deriv[[2]]*p[grep(paste0("c1_itm",item,"_cov",cov),names(p),fixed=T)] - anl_deriv[[1]])/anl_deriv[[2]]
         p_new <- sign(z)*max(abs(z) - tau[t], 0)
@@ -49,6 +54,11 @@ Mstep.2pl.dif <-
       }
 
       for(cov in 1:num_covariates){
+
+        if(sum(p[grep(paste0("a1(.*?)cov",cov),names(p))] != 0) > (num_items - 2)){
+          next
+        }
+
         anl_deriv <- d("a1",p,r1,r0,data,item.focus=item,theta,covariates,cov,num_items,samp_size,num_quadpts)
         z <- (anl_deriv[[2]]*p[grep(paste0("a1_itm",item,"_cov",cov),names(p),fixed=T)] - anl_deriv[[1]])/anl_deriv[[2]]
         p_new <- sign(z)*max(abs(z) - tau[t], 0)

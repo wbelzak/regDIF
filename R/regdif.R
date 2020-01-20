@@ -96,7 +96,7 @@ regDIF <- function(data, covariates, penalty, standardize = TRUE, anchor = NULL,
       p <- replace(p,names(lv[[1]]),lv[[1]])
 
       #M-step 2: Optimize DIF parameters
-      p <- Mstep.2pl.dif(lv[[1]],rlist,theta,covariates,penalty,t,maxit,num_items,samp_size,num_quadpts,num_covariates,anchor)
+      p <- Mstep.2pl.dif(lv[[1]],data,rlist,theta,covariates,penalty,t,maxit,num_items,samp_size,num_quadpts,num_covariates,anchor)
 
 
       #Update and check for convergence: Calculate the difference in parameter estimates from current to previous
@@ -113,12 +113,13 @@ regDIF <- function(data, covariates, penalty, standardize = TRUE, anchor = NULL,
     } #End EM once converged or reached iteration limit
 
     itemtrace <- replicate(n=num_items, matrix(0,nrow=samp_size,ncol=num_quadpts), simplify = F)
-    ll_dif <- ll_dif_pen <- replicate(n=num_items, 0, simplify = F)
+    ll_dif <- ll_dif_pen <- pen <- replicate(n=num_items, 0, simplify = F)
     for (item in 1:num_items) { #loop through items
       p_active <- c(p[paste0("c0_itm",item,"_")],p[grep(paste0("c1_itm",item,"_"),names(p),fixed=T)],p[paste0("a0_itm",item,"_")],p[grep(paste0("a1_itm",item,"_"),names(p),fixed=T)])
       itemtrace[[item]] <- trace.line.pts(p_active,theta,covariates) #computing probability of endorsement for theta value using current estimate of a and b
       ll_dif[[item]] <- (-1)*(sum(rlist[[1]][[item]]*(log(itemtrace[[item]])), na.rm = TRUE) + sum(rlist[[2]][[item]]*(log(1.0-itemtrace[[item]])), na.rm = TRUE))
-      ll_dif_pen[[item]] <- ll_dif[[item]] - (penalty[t]*sum(c(abs(p_active[grep("c1_itm",names(p_active))]), abs(p_active[grep("a1_itm",names(p_active))])), na.rm = TRUE)) #Q function we want to minimize
+      pen <- (penalty[t]*sum(c(abs(p_active[grep("c1_itm",names(p_active))]), abs(p_active[grep("a1_itm",names(p_active))])), na.rm = TRUE))
+      ll_dif_pen[[item]] <- ll_dif[[item]] - pen #Q function we want to minimize
     }
 
     ll <- lv[[2]] + sum(unlist(ll_dif_pen))

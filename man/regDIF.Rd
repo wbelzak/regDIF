@@ -12,7 +12,7 @@ regDIF(data, covariates, penalty, standardize = TRUE, anchor = NULL,
 
 \item{covariates}{Matrix or data frame of DIF covariates. Supports both categorical and continuous covariates.}
 
-\item{penalty}{Numeric vector of non-zero tuning parameter values.}
+\item{penalty}{Numeric vector of non-zero tuning parameter values. Must be in descending order, from largest to smallest values.}
 
 \item{standardize}{Logical value indicating whether to normalize the covariates. Default is \code{TRUE}.}
 

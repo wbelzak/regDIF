@@ -57,7 +57,6 @@ regDIF <- function(data, covariates, penalty, standardize = TRUE, anchor = NULL,
   num_quadpts <- length(theta)
   num_covariates <- dim(covariates)[2]
 
-
   #standardize data
   if(standardize == TRUE){
     covariates <- scale(covariates)
@@ -66,7 +65,6 @@ regDIF <- function(data, covariates, penalty, standardize = TRUE, anchor = NULL,
   ###################
   # Starting Values #
   ###################
-
   p <- c(rep(0, num_items), rep(1, num_items), rep(0, num_items*num_covariates*2), rep(0, num_covariates*2))
   names(p) <- c(paste0('c0_itm',1:num_items,"_"),
                 paste0('a0_itm',1:num_items,"_"),
@@ -75,12 +73,13 @@ regDIF <- function(data, covariates, penalty, standardize = TRUE, anchor = NULL,
                 paste0(rep(paste0('g0_cov',1:num_covariates))),
                 paste0(rep(paste0('b0_cov',1:num_covariates))))
   final <- rep(list(list(impact = NA,dif = NA,bic = NA,penalty = NA)),length(penalty))
-  pb = txtProgressBar(min = 0, max = length(penalty), initial = 0)
 
   ##################################
   # Reg-DIF - Loop through penalty #
   ##################################
-  message(paste0('Running ',length(penalty),' models.'))
+  message(paste0('Running ',length(penalty),if(length(penalty) == 1){' model.'}else{' models.'}))
+  pb = txtProgressBar(min = 0, max = length(penalty), initial = 0)
+
   for(t in 1:length(penalty)){
 
     #Maximization settings
@@ -120,6 +119,10 @@ regDIF <- function(data, covariates, penalty, standardize = TRUE, anchor = NULL,
 
     } #End EM once converged or reached iteration limit
 
+    ###############
+    # Postprocess #
+    ###############
+
     #obtain likelihood values for all items
     itemtrace <- replicate(n=num_items, matrix(0,nrow=samp_size,ncol=num_quadpts), simplify = F)
     ll_dif <- ll_dif_pen <- pen <- replicate(n=num_items, 0, simplify = F)
@@ -134,10 +137,6 @@ regDIF <- function(data, covariates, penalty, standardize = TRUE, anchor = NULL,
     ll <- lv[[2]] + sum(unlist(ll_dif_pen))
     bic <- length(p[p!=0])*log(nrow(data)) + 2*ll
 
-    ###############
-    # Postprocess #
-    ###############
-
     #organize parameters into presentable form
     parms_impact <- t(matrix(c(p[grep("g0",names(p),fixed=T)],p[grep("b0",names(p),fixed=T)])))
     colnames(parms_impact) <- c(paste0('g0_cov',1:num_covariates),paste0('b0_cov',1:num_covariates))
@@ -150,7 +149,6 @@ regDIF <- function(data, covariates, penalty, standardize = TRUE, anchor = NULL,
     colnames(parms_dif) <- c('c0',paste0('c',1:num_covariates),'a0',paste0('a',1:num_covariates))
     rownames(parms_dif) <- colnames(data)
 
-
     final[[t]][[1]] <- round(parms_impact,2)
     final[[t]][[2]] <- round(parms_dif,2)
     final[[t]][[3]] <- round(bic,2)
@@ -162,6 +160,7 @@ regDIF <- function(data, covariates, penalty, standardize = TRUE, anchor = NULL,
       stop("First penalty value is too small.\n  Increase first penalty value large enough to ensure all DIF parameters are removed from the model.\n  Or provide anchor item(s).", call. = TRUE)
     }
 
+    #stop if there is a large change in DIF parameters
     if(t > 1){
       second_last <- sum(final[[t-1]]$dif[,-grep("0",colnames(final[[t-1]]$dif))] == 0)
       last <- sum(final[[t]]$dif[,-grep("0",colnames(final[[t]]$dif))] == 0)
@@ -176,6 +175,7 @@ regDIF <- function(data, covariates, penalty, standardize = TRUE, anchor = NULL,
 
 
 #Obtain final results
+message(paste0('\nFinished.'))
 return(final)
 
 }

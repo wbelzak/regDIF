@@ -4,7 +4,7 @@
 #'
 #' @param data Matrix or data frame of item responses. Currently supports dichotomously (0-1) scored items only.
 #' @param covariates Matrix or data frame of DIF covariates. Supports both categorical and continuous covariates.
-#' @param penalty Numeric vector of non-zero tuning parameter values.
+#' @param penalty Numeric vector of non-zero tuning parameter values. Must be in descending order, from largest to smallest values.
 #' @param standardize Logical value indicating whether to normalize the covariates. Default is \code{TRUE}.
 #' @param anchor Optional numeric vector indicating which items are anchors (e.g., \code{anchor = 1}). Default is \code{NULL}, which means that at least one DIF parameter per covariate across all items will be fixed to zero to identify the model.
 #' @param quadpts Number of quadrature points to approximate the latent variable. More points lead to more precise estimates but slower run time. Default is \code{15} quadrature points.
@@ -34,10 +34,17 @@ regDIF <- function(data, covariates, penalty, standardize = TRUE, anchor = NULL,
   # Preprocess #
   ##############
 
-  #warnings
+  #data warnings
   if(any(!(data == 0 | data == 1), na.rm = TRUE)) stop("Data must be scored 1 for yes/correct and 0 for no/incorrect.", call. = TRUE)
-  if(length(penalty) == 0){if(penalty == 0) stop("Anchor item must be specified without penalty.", call. = TRUE)}
-  if(any(penalty < 0)) stop("Penalty values must be non-negative.")
+  #penalty warnings
+  if(any(penalty < 0)) stop("Penalty values must be non-negative.", call. = TRUE)
+  if(length(penalty) > 1 & all(diff(penalty) >= 0)) stop("Penalty values must be in descending order (e.g., penalty = c(-2,-1,0)).")
+  #anchor warnings
+  if(is.null(anchor) & length(penalty) == 1){if(penalty == 0) stop("Anchor item must be specified without penalty.", call. = TRUE)}
+  if(!is.null(anchor) & !is.numeric(anchor)) stop("Anchor items must be numeric (e.g., anchor = 1).", call. = TRUE)
+  #quadrature warnings
+  if(quadpts < 1) stop("The number of quadrature points must be greater than 1.\n  15 or more points may be required to get accurate estimates.")
+  if(!is.numeric(quadpts)) stop("Quadrature points must be numeric (e.g., quadpts = 15).")
 
   #get latent variable values (i.e., predictor values) for quadrature and tracelines
   theta <- seq(-4, 4, length.out = quadpts)
@@ -49,6 +56,7 @@ regDIF <- function(data, covariates, penalty, standardize = TRUE, anchor = NULL,
   samp_size <- dim(data)[1]
   num_quadpts <- length(theta)
   num_covariates <- dim(covariates)[2]
+
 
   #standardize data
   if(standardize == TRUE){
@@ -67,11 +75,12 @@ regDIF <- function(data, covariates, penalty, standardize = TRUE, anchor = NULL,
                 paste0(rep(paste0('g0_cov',1:num_covariates))),
                 paste0(rep(paste0('b0_cov',1:num_covariates))))
   final <- rep(list(list(impact = NA,dif = NA,bic = NA,penalty = NA)),length(penalty))
+  pb = txtProgressBar(min = 0, max = length(penalty), initial = 0)
 
   ##################################
   # Reg-DIF - Loop through penalty #
   ##################################
-
+  message(paste0('Running ',length(penalty),' models.'))
   for(t in 1:length(penalty)){
 
     #Maximization settings
@@ -98,7 +107,6 @@ regDIF <- function(data, covariates, penalty, standardize = TRUE, anchor = NULL,
       #M-step 2: Optimize DIF parameters
       p <- Mstep.2pl.dif(lv[[1]],data,rlist,theta,covariates,penalty,t,maxit,num_items,samp_size,num_quadpts,num_covariates,anchor)
 
-
       #Update and check for convergence: Calculate the difference in parameter estimates from current to previous
       eps = sqrt(sum((p - lastp)^2))
 
@@ -108,10 +116,11 @@ regDIF <- function(data, covariates, penalty, standardize = TRUE, anchor = NULL,
       #update the iteration number
       iter = iter + 1
       if(iter == maxit) warning("EM iteration limit reached without convergence")
-      cat(sprintf("****EM Iteration: %d  Change: %f\n", iter, eps)) #print information about optimization
+      # cat(sprintf("EM Iteration: %d  Change: %f\n", iter, eps)) #print information about optimization
 
     } #End EM once converged or reached iteration limit
 
+    #obtain likelihood values for all items
     itemtrace <- replicate(n=num_items, matrix(0,nrow=samp_size,ncol=num_quadpts), simplify = F)
     ll_dif <- ll_dif_pen <- pen <- replicate(n=num_items, 0, simplify = F)
     for (item in 1:num_items) { #loop through items
@@ -147,12 +156,22 @@ regDIF <- function(data, covariates, penalty, standardize = TRUE, anchor = NULL,
     final[[t]][[3]] <- round(bic,2)
     final[[t]][[4]] <- penalty[t]
 
-    #stop if penalty is too small on first run (this leads to different results b/c of identification constraints of DIF parameters)
+    #stop if penalty is too small on first run (this leads to different results b/c of identification constraints on DIF parameters)
     if(is.null(anchor) & t == 1 & sum(abs(p[-grep(paste0("0"),names(p))])) > 0){
       print(final[[t]])
-      stop("First penalty value is too small.\n  Increase first penalty value large enough to ensure all DIF parameters are removed from the model.\n  Or make at least one item an anchor item.", call. = TRUE)
+      stop("First penalty value is too small.\n  Increase first penalty value large enough to ensure all DIF parameters are removed from the model.\n  Or provide anchor item(s).", call. = TRUE)
     }
 
+    if(t > 1){
+      second_last <- sum(final[[t-1]]$dif[,-grep("0",colnames(final[[t-1]]$dif))] == 0)
+      last <- sum(final[[t]]$dif[,-grep("0",colnames(final[[t]]$dif))] == 0)
+      if((second_last - last) > (num_covariates*num_items)){
+        print(final)
+        stop(paste0("Large increase in the number of DIF parameters from iteration ",t-1," to ",t,".\n  Provide smaller differences between penalty values.\n  Or provide anchor item(s)."), call. = TRUE)
+      }
+    }
+
+  setTxtProgressBar(pb,t)
   } #Terminate Reg-DIF
 
 

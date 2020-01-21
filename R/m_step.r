@@ -43,7 +43,7 @@ Mstep.2pl.dif <-
 
       for(cov in 1:num_covariates){
 
-        if(sum(p[grep(paste0("c1(.*?)cov",cov),names(p))] != 0) > (num_items - 2)){
+        if(is.null(anchor) & sum(p[grep(paste0("c1(.*?)cov",cov),names(p))] != 0) > (num_items - 2)){
           next
         }
 
@@ -55,7 +55,7 @@ Mstep.2pl.dif <-
 
       for(cov in 1:num_covariates){
 
-        if(sum(p[grep(paste0("a1(.*?)cov",cov),names(p))] != 0) > (num_items - 2)){
+        if(is.null(anchor) & sum(p[grep(paste0("a1(.*?)cov",cov),names(p))] != 0) > (num_items - 2)){
           next
         }
 

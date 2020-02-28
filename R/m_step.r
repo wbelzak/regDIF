@@ -103,10 +103,12 @@ Mstep_2pl_dif <-
           next
         }
 
-        anl_deriv <- d("a1",p_item,etable,theta,predictors,thr=NULL,cov,samp_size,num_responses[[item]],num_items,num_quadpts)
-        z <- (anl_deriv[[2]]*p_item[grep(paste0("a1_itm",item,"_cov",cov),names(p_item),fixed=T)] - anl_deriv[[1]])/anl_deriv[[2]]
-        p_new <- sign(z)*max(abs(z) - penalty[pen], 0)
-        p_item <- replace(p_item,names(p_new),p_new)
+        if(rasch == FALSE){
+          anl_deriv <- d("a1",p_item,etable,theta,predictors,thr=NULL,cov,samp_size,num_responses[[item]],num_items,num_quadpts)
+          z <- (anl_deriv[[2]]*p_item[grep(paste0("a1_itm",item,"_cov",cov),names(p_item),fixed=T)] - anl_deriv[[1]])/anl_deriv[[2]]
+          p_new <- sign(z)*max(abs(z) - penalty[pen], 0)
+          p_item <- replace(p_item,names(p_new),p_new)
+        }
       }
 
       p[[item]] <- replace(p[[item]],names(p_item),p_item)

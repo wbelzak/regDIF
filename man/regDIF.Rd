@@ -5,22 +5,22 @@
 \title{Regularized Differential Item Functioning}
 \usage{
 regDIF(y, x, penalty, rasch = FALSE, standardize = TRUE,
-  anchor = NULL, quadpts = 15)
+  anchor = NULL, quadpts = 50)
 }
 \arguments{
-\item{y}{Matrix or dataframe of item responses. Currently supports dichotomous (e.g., 0,1) and ordinal (e.g., 0,1,...,m) responses.}
+\item{y}{Matrix or dataframe of item responses. Currently supports dichotomous (e.g., 0,1) and ordinal (e.g., 0,1,2,...,m) responses.}
 
 \item{x}{Matrix or dataframe of explanatory predictors (i.e., DIF covariates). Supports categorical and continuous predictors.}
 
-\item{penalty}{Numeric vector of tuning parameter values \eqn{\ge 0}. Must be in descending order, from largest to smallest values (e.g., \code{seq(1,0,-.01)}.}
+\item{penalty}{Numeric vector of tuning parameter values \eqn{\ge} 0. Must be in descending order, from largest to smallest values (e.g., \code{seq(1,0,-.01)}.}
 
-\item{rasch}{Logical value indicating whether to constrain item slopes to 1 (i.e., equality), implying no slope DIF will be evaluated. Default is \code{FALSE}. This option is currently unsupported.}
+\item{rasch}{Logical value indicating whether to constrain item slopes to 1 (i.e., equal slopes). If \code{TRUE}, no slope DIF will be evaluated. Default is \code{FALSE}.}
 
 \item{standardize}{Logical value indicating whether to normalize the predictors. Default is \code{TRUE}.}
 
 \item{anchor}{Optional numeric vector indicating which items are anchors (e.g., \code{anchor = 1}). Default is \code{NULL}, meaning at least one DIF parameter (per covariate) will be fixed to zero as the penalty values approach 0. This is required to identify the model.}
 
-\item{quadpts}{Number of quadrature points to approximate the latent variable. More points lead to more precise estimates but slower run time. Default is \code{15}.}
+\item{quadpts}{Number of quadrature points to approximate the latent variable. More points lead to more precise estimates but slower run time. Default is \code{50}.}
 }
 \value{
 Function returns an object of class \code{SingleGroupClass}

@@ -3,7 +3,7 @@
 \docType{data}
 \name{ida}
 \alias{ida}
-\title{Simulated data with multiple DIF covariates}
+\title{Simulated data example with multiple DIF covariates}
 \format{A data frame with 500 rows and 9 variables:
 \describe{
   \item{item1}{}

@@ -2,10 +2,10 @@
 #'
 #' Regularization of DIF parameters in item response theory (IRT) and moderated nonlinear factor analysis (MNLFA) models.
 #'
-#' @param y Matrix or dataframe of item responses. Currently supports dichotomous (e.g., 0,1). Soon to support ordinal (e.g., 0,1,...,m) responses.
+#' @param y Matrix or dataframe of item responses. Currently supports dichotomous (e.g., 0,1) and ordinal (e.g., 0,1,2,...,m) responses.
 #' @param x Matrix or dataframe of explanatory predictors (i.e., DIF covariates). Supports categorical and continuous predictors.
 #' @param penalty Numeric vector of tuning parameter values \eqn{\ge} 0. Must be in descending order, from largest to smallest values (e.g., \code{seq(1,0,-.01)}.
-#' @param rasch Logical value indicating whether to constrain item slopes to 1 (i.e., equality), implying no slope DIF will be evaluated. Default is \code{FALSE}. This option is currently unsupported.
+#' @param rasch Logical value indicating whether to constrain item slopes to 1 (i.e., equal slopes). If \code{TRUE}, no slope DIF will be evaluated. Default is \code{FALSE}.
 #' @param standardize Logical value indicating whether to normalize the predictors. Default is \code{TRUE}.
 #' @param anchor Optional numeric vector indicating which items are anchors (e.g., \code{anchor = 1}). Default is \code{NULL}, meaning at least one DIF parameter (per covariate) will be fixed to zero as the penalty values approach 0. This is required to identify the model.
 #' @param quadpts Number of quadrature points to approximate the latent variable. More points lead to more precise estimates but slower run time. Default is \code{50}.
@@ -143,9 +143,8 @@ regDIF <- function(y,
       iter = iter + 1
       if(iter == maxit) warning("EM iteration limit reached without convergence")
 
-      cat(sprintf("Iteration: %d  Change: %f\n", iter, eps)) #print information about optimization
-      print(p[[2]])
-      print(p[[7]])
+      # cat(sprintf("Iteration: %d  Change: %f\n", iter, eps)) #print information about optimization
+
     } #End EM once converged or reached iteration limit
 
     ###############

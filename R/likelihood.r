@@ -3,12 +3,20 @@
 ###########################
 
 ll.2pl.impact <-
-  function(p_impact,nr,theta,covariates,samp_size,num_quadpts) {
-    alpha <- covariates %*% p_impact[grep("g0",names(p_impact),fixed=T)]
-    phi <- exp(covariates %*% p_impact[grep("b0",names(p_impact),fixed=T)])
+  function(p_impact,
+           etable_all,
+           theta,
+           predictors,
+           samp_size) {
 
-    theta_scores <- t(sapply(1:samp_size, function(x){dnorm(theta, mean = alpha[x], sd = sqrt(phi[x]))}))
+    #get latent mean and variance vectors
+    alpha <- predictors %*% p_impact[grep("g",names(p_impact),fixed=T)]
+    phi <- exp(predictors %*% p_impact[grep("b",names(p_impact),fixed=T)])
 
-    ll_impact <- (-1)*(sum(nr*log(theta_scores)))
+    #get prior latent variable scores
+    prior_scores <- t(sapply(1:samp_size, function(x){dnorm(theta, mean = alpha[x], sd = sqrt(phi[x]))/sum(dnorm(theta, mean = alpha[x], sd = sqrt(phi[x])))}))
+
+    #log-likelihood for impact model
+    ll_impact <- (-1)*(sum(etable_all*log(prior_scores)))
   }
 

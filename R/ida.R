@@ -1,4 +1,4 @@
-#' Simulated data with multiple DIF covariates
+#' Simulated data example with multiple DIF covariates
 #'
 #' A simulated dataset containing six binary items and three DIF covariates
 #'

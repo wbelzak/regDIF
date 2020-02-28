@@ -4,21 +4,23 @@
 \alias{regDIF}
 \title{Regularized Differential Item Functioning}
 \usage{
-regDIF(data, covariates, penalty, standardize = TRUE, anchor = NULL,
-  quadpts = 15)
+regDIF(y, x, penalty, rasch = FALSE, standardize = TRUE,
+  anchor = NULL, quadpts = 15)
 }
 \arguments{
-\item{data}{Matrix or data frame of item responses. Currently supports dichotomously (0-1) scored items only.}
+\item{y}{Matrix or dataframe of item responses. Currently supports dichotomous (e.g., 0,1) and ordinal (e.g., 0,1,...,m) responses.}
 
-\item{covariates}{Matrix or data frame of DIF covariates. Supports both categorical and continuous covariates.}
+\item{x}{Matrix or dataframe of explanatory predictors (i.e., DIF covariates). Supports categorical and continuous predictors.}
 
-\item{penalty}{Numeric vector of non-zero tuning parameter values. Must be in descending order, from largest to smallest values.}
+\item{penalty}{Numeric vector of tuning parameter values \eqn{\ge 0}. Must be in descending order, from largest to smallest values (e.g., \code{seq(1,0,-.01)}.}
 
-\item{standardize}{Logical value indicating whether to normalize the covariates. Default is \code{TRUE}.}
+\item{rasch}{Logical value indicating whether to constrain item slopes to 1 (i.e., equality), implying no slope DIF will be evaluated. Default is \code{FALSE}. This option is currently unsupported.}
 
-\item{anchor}{Optional numeric vector indicating which items are anchors (e.g., \code{anchor = 1}). Default is \code{NULL}, which means that at least one DIF parameter per covariate across all items will be fixed to zero to identify the model.}
+\item{standardize}{Logical value indicating whether to normalize the predictors. Default is \code{TRUE}.}
 
-\item{quadpts}{Number of quadrature points to approximate the latent variable. More points lead to more precise estimates but slower run time. Default is \code{15} quadrature points.}
+\item{anchor}{Optional numeric vector indicating which items are anchors (e.g., \code{anchor = 1}). Default is \code{NULL}, meaning at least one DIF parameter (per covariate) will be fixed to zero as the penalty values approach 0. This is required to identify the model.}
+
+\item{quadpts}{Number of quadrature points to approximate the latent variable. More points lead to more precise estimates but slower run time. Default is \code{15}.}
 }
 \value{
 Function returns an object of class \code{SingleGroupClass}
@@ -30,11 +32,12 @@ Regularization of DIF parameters in item response theory (IRT) and moderated non
 \dontrun{
 
 library(regDIF)
-data <- ida[,1:6]
-covariates <- ida[,7:9]
+head(ida)
+y <- ida[,1:6]
+x <- ida[,7:9]
 penalty <- seq(1,0,-.05)
-model <- regDIF(data, covariates, penalty)
-model
+fit <- regDIF(y, x, penalty)
+fit
 
 }
 

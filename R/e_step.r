@@ -7,6 +7,7 @@ Estep_2pl <-
            responses,
            predictors,
            theta,
+           itemtypes,
            samp_size,
            num_items,
            num_responses,
@@ -18,12 +19,16 @@ Estep_2pl <-
     etable_all <- matrix(0,nrow=samp_size,ncol=num_quadpts)
 
     #impact
-    alpha <- predictors %*% p[[7]]
-    phi <- exp(predictors %*% p[[8]])
+    alpha <- predictors %*% p[[num_items+1]]
+    phi <- exp(predictors %*% p[[num_items+2]])
 
     #compute the trace lines
     for (item in 1:num_items) { #loop through items
-      itemtrace[[item]] <- categorical_traceline_pts(p[[item]],theta,predictors,samp_size,num_responses[item],num_quadpts)
+      if(itemtypes == "categorical"){
+        itemtrace[[item]] <- categorical_traceline_pts(p[[item]],theta,predictors,samp_size,num_responses[item],num_quadpts)
+      } else if(itemtypes == "continuous"){
+        itemtrace[[item]] <- continuous_traceline_pts(p[[item]],theta,responses[,item],predictors,samp_size,num_quadpts)
+      }
     }
 
     #obtain E tables
@@ -37,8 +42,10 @@ Estep_2pl <-
         x <- responses[case,item] #get response
         if (is.na(x)) {
           posterior <- posterior #if missing (NA), posterior probability remains the same as guassian points
-        } else {
-          posterior <- posterior*itemtrace[[item]][[x]][case,] #prior probability weight times probability of endorsement
+        } else if (num_responses[item] == 1){
+          posterior <- posterior*itemtrace[[item]][case,] #prior probability weight times probability of endorsement
+        } else if (num_responses[item] > 1){
+          posterior <- posterior*itemtrace[[item]][[x]][case,]
         }
       }
 

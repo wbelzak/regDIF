@@ -94,7 +94,7 @@ d_sigma <-
     if(parm == "s0"){
       eta_d1 <- matrix(1, nrow = samp_size, ncol = num_quadpts)
     } else if(parm == "s1"){
-      eta_d <- matrix(rep(matrix(theta, nrow = 1, ncol = length(theta)), samp_size), nrow = samp_size, ncol = length(theta), byrow = TRUE)
+      eta_d2 <- matrix(rep(matrix(theta, nrow = 1, ncol = length(theta)), samp_size), nrow = samp_size, ncol = length(theta), byrow = TRUE)
     }
 
 

@@ -8,9 +8,11 @@ regDIF(y, x, itemtypes = c("categorical", "continuous"), penalty,
   rasch = FALSE, standardize = TRUE, anchor = NULL, quadpts = 50)
 }
 \arguments{
-\item{y}{Matrix or dataframe of item responses. Currently supports dichotomous (e.g., 0,1) and ordinal (e.g., 0,1,2,...,m) responses.}
+\item{y}{Matrix or dataframe of item responses. Currently supports dichotomous (e.g., 0,1) and ordinal (e.g., 0,1,2,...,m) responses. Continuous responses are in development.}
 
 \item{x}{Matrix or dataframe of explanatory predictors (i.e., DIF covariates). Supports categorical and continuous predictors.}
+
+\item{itemtypes}{Character value indicating the item response distributions. Currently supports categorical responses, including Bernoulli with logistic link and categorical with ordered logistic link (i.e., graded response model). Continuous responses are in development.}
 
 \item{penalty}{Numeric vector of tuning parameter values \eqn{\ge} 0. Must be in descending order, from largest to smallest values (e.g., \code{seq(1,0,-.01)}.}
 

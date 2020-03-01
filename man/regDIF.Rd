@@ -4,8 +4,8 @@
 \alias{regDIF}
 \title{Regularized Differential Item Functioning}
 \usage{
-regDIF(y, x, penalty, rasch = FALSE, standardize = TRUE,
-  anchor = NULL, quadpts = 50)
+regDIF(y, x, itemtypes = c("categorical", "continuous"), penalty,
+  rasch = FALSE, standardize = TRUE, anchor = NULL, quadpts = 50)
 }
 \arguments{
 \item{y}{Matrix or dataframe of item responses. Currently supports dichotomous (e.g., 0,1) and ordinal (e.g., 0,1,2,...,m) responses.}

@@ -2,8 +2,9 @@
 #'
 #' Regularization of DIF parameters in item response theory (IRT) and moderated nonlinear factor analysis (MNLFA) models.
 #'
-#' @param y Matrix or dataframe of item responses. Currently supports dichotomous (e.g., 0,1) and ordinal (e.g., 0,1,2,...,m) responses.
+#' @param y Matrix or dataframe of item responses. Currently supports dichotomous (e.g., 0,1) and ordinal (e.g., 0,1,2,...,m) responses. Continuous responses are in development.
 #' @param x Matrix or dataframe of explanatory predictors (i.e., DIF covariates). Supports categorical and continuous predictors.
+#' @param itemtypes Character value indicating the item response distributions. Currently supports categorical responses, including Bernoulli with logistic link and categorical with ordered logistic link (i.e., graded response model). Continuous responses are in development.
 #' @param penalty Numeric vector of tuning parameter values \eqn{\ge} 0. Must be in descending order, from largest to smallest values (e.g., \code{seq(1,0,-.01)}.
 #' @param rasch Logical value indicating whether to constrain item slopes to 1 (i.e., equal slopes). If \code{TRUE}, no slope DIF will be evaluated. Default is \code{FALSE}.
 #' @param standardize Logical value indicating whether to normalize the predictors. Default is \code{TRUE}.

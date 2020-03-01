@@ -8,19 +8,21 @@ Mstep_2pl_impact <-
            theta,
            predictors,
            maxit,
-           samp_size){
+           samp_size,
+           num_items){
 
     #obtain parameter estimates and posterior probabilities
-    p_impact <- c(p[[7]],p[[8]])
+    p_impact <- c(p[[num_items+1]],p[[num_items+2]])
     etable_all <- elist[[2]]
 
-    #M-step 1: (Impact)
+    #update impact parameters
     fit_impact = optim(par=p_impact,fn=ll.2pl.impact,etable_all=etable_all,theta=theta,predictors=predictors,samp_size=samp_size,method="BFGS",control=list(maxit = maxit))
     g <- fit_impact$par[grep("g",names(fit_impact$par),fixed=T)]
     b <- fit_impact$par[grep("b",names(fit_impact$par),fixed=T)]
 
-    p[[7]] <- replace(p[[7]],names(g),g)
-    p[[8]] <- replace(p[[8]],names(b),b)
+    #collect impact parameter estimates
+    p[[num_items+1]] <- replace(p[[num_items+1]],names(g),g)
+    p[[num_items+2]] <- replace(p[[num_items+2]],names(b),b)
 
     ll <- fit_impact$value
 
@@ -38,6 +40,7 @@ Mstep_2pl_dif <-
            elist,
            theta,
            penalty,
+           itemtypes,
            pen,
            anchor,
            rasch,
@@ -51,38 +54,58 @@ Mstep_2pl_dif <-
     #for each item (loop); maximizing i independent logistic regression log-likelihoods (Q functions), with the quadrature points serving as the predictor values
     for (item in 1:num_items) {
 
-      #get etable information
+      ###################
+      # Obtain E-tables #
+      ###################
+
+      #get posterior probabilities
       etable <- replicate(n=num_responses[item], elist[[1]][[item]], simplify = F)
-      for(resp in 1:num_responses[item]){
-        etable[[resp]][which(!(etable[[resp]][,ncol(etable[[resp]])] == resp)),] <- 0
+
+      #obtain etables for each response category
+      if(itemtypes == "categorical"){
+        for(resp in 1:num_responses[item]){
+          etable[[resp]][which(!(etable[[resp]][,ncol(etable[[resp]])] == resp)),] <- 0
+        }
       }
+
+      #get item parameters
       p_item <- p[[item]]
       etable <- lapply(etable, function(x) x[,1:num_quadpts])
 
-      anl_deriv <- d("c0",p_item,etable,theta,predictors,thr=NULL,cov=NULL,samp_size,num_responses[[item]],num_items,num_quadpts)
+      ########################
+      # Mu (mean) parameters #
+      ########################
+
+      #intercept updates
+      anl_deriv <- d_mu("c0",p_item,etable,theta,responses[,item],predictors,itemtypes,thr=NULL,cov=NULL,samp_size,num_responses[[item]],num_items,num_quadpts)
       p_new <- p_item[grep(paste0("c0_itm",item,"_"),names(p_item),fixed=T)][1] - anl_deriv[[1]]/anl_deriv[[2]]
       p_item <- replace(p_item,names(p_new),p_new)
 
+      #threshold updates for graded response model
       if(num_responses[item] > 2){
         for(thr in 2:(num_responses[item]-1)){
-          anl_deriv <- d("c0",p_item,etable,theta,predictors,thr,cov=NULL,samp_size,num_responses[[item]],num_items,num_quadpts)
+          anl_deriv <- d_mu("c0",p_item,etable,theta,predictors,itemtypes,thr,cov=NULL,samp_size,num_responses[[item]],num_items,num_quadpts)
           p_new <- p_item[grep(paste0("c0_itm",item,"_"),names(p_item),fixed=T)][thr] - anl_deriv[[1]]/anl_deriv[[2]]
           p_item <- replace(p_item,names(p_new),p_new)
         }
       }
 
-      if(rasch == FALSE){
-        anl_deriv <- d("a0",p_item,etable,theta,predictors,thr=NULL,cov=NULL,samp_size,num_responses[[item]],num_items,num_quadpts)
+      #slope updates
+      if(rasch == FALSE){ #skip slope estimate updates if rasch is TRUE
+        anl_deriv <- d_mu("a0",p_item,etable,theta,predictors,itemtypes,thr=NULL,cov=NULL,samp_size,num_responses[[item]],num_items,num_quadpts)
         p_new <- p_item[grep(paste0("a0_itm",item,"_"),names(p_item),fixed=T)] - anl_deriv[[1]]/anl_deriv[[2]]
         p_item <- replace(p_item,names(p_new),p_new)
       }
 
+      #skip DIF estimate updates if anchor item
       if(any(item == anchor)){
         p[[item]] <- replace(p[[item]],names(p_item),p_item)
         next
       }
 
-      p2 <- unlist(p)
+      p2 <- unlist(p) #unlist to check for anchor identification
+
+      #intercept DIF updates
       for(cov in 1:num_predictors){
 
         #end routine if only one anchor item is left on each covariate for each item parameter
@@ -90,12 +113,13 @@ Mstep_2pl_dif <-
           next
         }
 
-        anl_deriv <- d("c1",p_item,etable,theta,predictors,thr=NULL,cov,samp_size,num_responses[[item]],num_items,num_quadpts)
+        anl_deriv <- d_mu("c1",p_item,etable,theta,predictors,itemtypes,thr=NULL,cov,samp_size,num_responses[[item]],num_items,num_quadpts)
         z <- (anl_deriv[[2]]*p_item[grep(paste0("c1_itm",item,"_cov",cov),names(p_item),fixed=T)] - anl_deriv[[1]])/anl_deriv[[2]]
         p_new <- sign(z)*max(abs(z) - penalty[pen], 0)
         p_item <- replace(p_item,names(p_new),p_new)
       }
 
+      #slope DIF updates
       for(cov in 1:num_predictors){
 
         #end routine if only one anchor item is left on each covariate for each item parameter
@@ -104,14 +128,37 @@ Mstep_2pl_dif <-
         }
 
         if(rasch == FALSE){
-          anl_deriv <- d("a1",p_item,etable,theta,predictors,thr=NULL,cov,samp_size,num_responses[[item]],num_items,num_quadpts)
+          anl_deriv <- d_mu("a1",p_item,etable,theta,predictors,itemtypes,thr=NULL,cov,samp_size,num_responses[[item]],num_items,num_quadpts)
           z <- (anl_deriv[[2]]*p_item[grep(paste0("a1_itm",item,"_cov",cov),names(p_item),fixed=T)] - anl_deriv[[1]])/anl_deriv[[2]]
           p_new <- sign(z)*max(abs(z) - penalty[pen], 0)
           p_item <- replace(p_item,names(p_new),p_new)
         }
       }
 
+      ################################
+      # Residual variance parameters #
+      ################################
+
+
+      if(itemtypes == "continuous"){
+
+        #residual variance updates
+        anl_deriv <- d_sigma("s0",p_item,etable,theta,predictors,itemtypes,cov=NULL,samp_size,num_responses[[item]],num_items,num_quadpts)
+        p_new <- p_item[grep(paste0("c0_itm",item,"_"),names(p_item),fixed=T)][1] - anl_deriv[[1]]/anl_deriv[[2]]
+        p_item <- replace(p_item,names(p_new),p_new)
+
+        #residual variance DIF updates
+        for(cov in 1:num_predictors){
+          anl_deriv <- d_sigma("s1",p_item,etable,theta,predictors,itemtypes,cov=NULL,samp_size,num_responses[[item]],num_items,num_quadpts)
+          p_new <- p_item[grep(paste0("c0_itm",item,"_"),names(p_item),fixed=T)][1] - anl_deriv[[1]]/anl_deriv[[2]]
+          p_item <- replace(p_item,names(p_new),p_new)
+        }
+      }
+
+
+      #collect all updated parameters
       p[[item]] <- replace(p[[item]],names(p_item),p_item)
+
  } #end looping through items
 
   return(p)

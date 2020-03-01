@@ -31,6 +31,7 @@
 
 regDIF <- function(y,
                    x,
+                   itemtypes = c("categorical","continuous"),
                    penalty,
                    rasch = FALSE,
                    standardize = TRUE,
@@ -40,9 +41,14 @@ regDIF <- function(y,
   ##############
   # Preprocess #
   ##############
+  # library(lavaan)
+  # y <- HolzingerSwineford1939[,7:15]
+  # x <- HolzingerSwineford1939[,2]
+  # write.table(cbind(1:nrow(y),y,x),"C:\\Users\\wbelz\\Dropbox\\Will\\Research\\Regularized IRT\\continuous_data.dat",col.names = F,row.names = F)
 
   #item response warnings
   # if(responsetype == "binary" | any(responsetype == "binary")) {if(any(!(responses == 0 | responses == 1), na.rm = TRUE)) stop("Item responses must be scored 1 for yes/correct and 0 for no/incorrect.", call. = TRUE)}
+  if(!(itemtypes == "categorical" | itemtypes == "continuous")) stop("Item types must be either 'categorical' or 'continuous'.")
   #penalty warnings
   if(any(penalty < 0)) stop("Penalty values must be non-negative.", call. = TRUE)
   if(length(penalty) > 1 & all(diff(penalty) >= 0)) stop("Penalty values must be in descending order (e.g., penalty = c(-2,-1,0)).")
@@ -64,7 +70,9 @@ regDIF <- function(y,
   if(any(!sapply(responses,function(x)is.numeric(x)))){responses <- sapply(responses,function(x)as.numeric(x))}
   if(any(!sapply(predictors,function(x)is.numeric(x)))){predictors <- sapply(predictors,function(x)as.numeric(x))}
 
-  responses <- sapply(responses, function(x) as.numeric(as.factor(x)))
+  if(itemtypes == "categorical"){
+    responses <- sapply(responses, function(x) as.numeric(as.factor(x)))
+  }
 
   #speeds up computation
   responses <- as.matrix(responses)
@@ -76,7 +84,11 @@ regDIF <- function(y,
 
   #get item response types
   # if(length(responsetype) == 1){responsetype <- rep(responsetype, num_items)}
-  num_responses <- apply(responses, 2, function(x) length(unique(x)))
+  if(itemtypes == "categorical"){
+    num_responses <- apply(responses, 2, function(x) length(unique(x)))
+  } else{
+    num_responses <- rep(1,num_items)
+  }
 
   #standardize predictors
   if(standardize == TRUE){
@@ -88,12 +100,15 @@ regDIF <- function(y,
   ###################
   p <- replicate(n=num_items+2,list(NA),simplify=F)
   for(item in 1:num_items){
-    if(num_responses[item] > 2){
+    if(num_responses[item] > 2){ #categorical item responses
       p[[item]] <- c(0, seq(.25,1,length.out = num_responses[item]-2), 1, rep(0, num_predictors), rep(0, num_predictors))
       names(p[[item]]) <- c(paste0('c0_itm',item,"_int"),paste0('c0_itm',item,"_thr",1:(num_responses[item]-2),"_"),paste0('a0_itm',item,"_"),paste0('c1_itm',item,"_cov",1:num_predictors),paste0('a1_itm',item,"_cov",1:num_predictors))
-    } else if(num_responses[item] == 2){
+    } else if(num_responses[item] == 2){ #bernoulli item responses
       p[[item]] <- c(0, 1, rep(0, num_predictors), rep(0, num_predictors))
       names(p[[item]]) <- c(paste0('c0_itm',item,"_int"),paste0('a0_itm',item,"_"),paste0('c1_itm',item,"_cov",1:num_predictors),paste0('a1_itm',item,"_cov",1:num_predictors))
+    } else if(num_responses[item] == 1){ #normal item responses
+      p[[item]] <- c(0, 1, rep(0, num_predictors), rep(0, num_predictors), 1, rep(0, num_predictors))
+      names(p[[item]]) <- c(paste0('c0_itm',item,"_int"),paste0('a0_itm',item,"_"),paste0('c1_itm',item,"_cov",1:num_predictors),paste0('a1_itm',item,"_cov",1:num_predictors),paste0('s2_itm',item,"_"),paste0('s2_itm',item,"_cov",1:num_predictors))
     }
   }
   p[[(num_items+1)]] <- p[[(num_items+2)]] <- rep(0,num_predictors)
@@ -125,13 +140,13 @@ regDIF <- function(y,
     while(eps > tol & iter < maxit){
 
       #E-step: Evaluate Q function with current parameter estimates p
-      elist <- Estep_2pl(p,responses,predictors,theta,samp_size,num_items,num_responses,num_quadpts)
+      elist <- Estep_2pl(p,responses,predictors,theta,itemtypes,samp_size,num_items,num_responses,num_quadpts)
 
       #M-step 1: Optimize impact parameters
-      lv <- Mstep_2pl_impact(p,elist,theta,predictors,maxit,samp_size)
+      lv <- Mstep_2pl_impact(p,elist,theta,predictors,maxit,samp_size,num_items)
 
       #M-step 2: Optimize DIF parameters
-      p <- Mstep_2pl_dif(lv[[1]],responses,predictors,elist,theta,penalty,pen,anchor,rasch,maxit,samp_size,num_responses,num_items,num_quadpts,num_predictors)
+      p <- Mstep_2pl_dif(lv[[1]],responses,predictors,elist,theta,penalty,itemtypes,pen,anchor,rasch,maxit,samp_size,num_responses,num_items,num_quadpts,num_predictors)
 
       #Update and check for convergence: Calculate the difference in parameter estimates from current to previous
       eps = sqrt(sum((unlist(p)-unlist(lastp))^2))

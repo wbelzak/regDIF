@@ -59,15 +59,23 @@ cumulative_traceline_pts <-
     return(traceline)
   }
 
-continuous_tracline_pts <-
+continuous_traceline_pts <-
   function(p_active,
            theta,
+           responses_item,
            predictors,
            samp_size,
-           num_responses_item,
            num_quadpts) {
 
-    traceline <- sapply(theta,function(x){(p_active[grep("c0",names(p_active),fixed=T)] + predictors %*% p_active[grep("c1",names(p_active),fixed=T)]) + (p_active[grep("a0",names(p_active),fixed=T)] + predictors %*% p_active[grep("a1",names(p_active),fixed=T)])*x})
+    responses_item <- scale(responses_item)
+    mu <- sapply(theta,function(x){(p_active[grep("c0",names(p_active),fixed=T)] + predictors %*% p_active[grep("c1",names(p_active),fixed=T)]) + (p_active[grep("a0",names(p_active),fixed=T)] + predictors %*% p_active[grep("a1",names(p_active),fixed=T)])*x})
+    sigma <- p_active[grep("s2_",names(p_active))][1]*exp(predictors %*% p_active[grep("s2(.*?)cov",names(p_active))])
+
+    traceline <- t(sapply(1:samp_size,function(x) dnorm(responses_item[x],mu[x,],sqrt(sigma[x]))/sum(dnorm(responses_item[x],mu[x,],sqrt(sigma[x])))))
+
     return(traceline)
 
   }
+
+
+

@@ -24,9 +24,9 @@ Estep_2pl <-
 
     #compute the trace lines
     for (item in 1:num_items) { #loop through items
-      if(itemtypes == "categorical"){
+      if(num_responses[item] > 1){
         itemtrace[[item]] <- categorical_traceline_pts(p[[item]],theta,predictors,samp_size,num_responses[item],num_quadpts)
-      } else if(itemtypes == "continuous"){
+      } else{
         itemtrace[[item]] <- continuous_traceline_pts(p[[item]],theta,responses[,item],predictors,samp_size,num_quadpts)
       }
     }
@@ -58,7 +58,7 @@ Estep_2pl <-
       for(item in 1:num_items) { #within a person, loop over items
         x <- responses[case,item] #get one cell within responses, **x will either be TRUE or FALSE** (endorse or not endorse)
         if (is.na(x)) {
-          etable[[item]][case,] <- c(etable[[item]][case,],NA) #if missing (NA), conditional expected proportion of endorsing item j and not endorsing item j remains the same
+          etable[[item]][case,] <- c(etable[[item]][case,][1:num_quadpts],NA) #if missing (NA), conditional expected proportion of endorsing item j and not endorsing item j remains the same
         } else{
           etable[[item]][case,] <- c(etable[[item]][case,][1:num_quadpts] + posterior, x)
         }

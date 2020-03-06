@@ -5,27 +5,25 @@
 \title{Regularized Differential Item Functioning}
 \usage{
 regDIF(y, x, itemtypes = c("categorical", "continuous"), penalty,
-  rasch = FALSE, standardize = TRUE, anchor = NULL, quadpts = 50)
+  anchor = NULL, standardize = TRUE, rasch = FALSE)
 }
 \arguments{
-\item{y}{Matrix or dataframe of item responses. Currently supports dichotomous (e.g., 0,1) and ordinal (e.g., 0,1,2,...,m) responses. Continuous responses are in development.}
+\item{y}{Matrix or dataframe of item responses. Supports dichotomous (e.g., 0,1), ordinal (e.g., 0,1,2,...,m), and continuous item responses. See more information in \code{itemtypes} description.}
 
 \item{x}{Matrix or dataframe of explanatory predictors (i.e., DIF covariates). Supports categorical and continuous predictors.}
 
-\item{itemtypes}{Character value indicating the item response distributions. Currently supports categorical responses, including Bernoulli with logistic link and categorical with ordered logistic link (i.e., graded response model). Continuous responses are in development.}
+\item{itemtypes}{Character value or vector indicating the item response distributions. For scales where item responses are of one type only, the user may input one character value indicating the type (e.g., \code{itemtypes = "categorical"}). For mixed item types, the user must specify a vector of characters in the order that corresponds to the response matrix (e.g. \code{itemtypes = c(rep("categorical",3),rep("continuous",3))}). Supports categorical and continuous responses, including Bernoulli with logistic link (i.e., binary outcomes), categorical with ordered logistic link (i.e., graded response model), and Gaussian with identity link (i.e., factor analysis).}
 
 \item{penalty}{Numeric vector of tuning parameter values \eqn{\ge} 0. Must be in descending order, from largest to smallest values (e.g., \code{seq(1,0,-.01)}.}
 
-\item{rasch}{Logical value indicating whether to constrain item slopes to 1 (i.e., equal slopes). If \code{TRUE}, no slope DIF will be evaluated. Default is \code{FALSE}.}
+\item{anchor}{Optional numeric vector indicating which items are anchors (e.g., \code{anchor = 1}). Default is \code{NULL}, meaning at least one DIF parameter (per covariate) will be fixed to zero as the penalty values approach 0. This is required to identify the model.}
 
 \item{standardize}{Logical value indicating whether to normalize the predictors. Default is \code{TRUE}.}
 
-\item{anchor}{Optional numeric vector indicating which items are anchors (e.g., \code{anchor = 1}). Default is \code{NULL}, meaning at least one DIF parameter (per covariate) will be fixed to zero as the penalty values approach 0. This is required to identify the model.}
-
-\item{quadpts}{Number of quadrature points to approximate the latent variable. More points lead to more precise estimates but slower run time. Default is \code{50}.}
+\item{rasch}{Logical value indicating whether to constrain item slopes to 1 (i.e., equal slopes). If \code{TRUE}, no slope DIF will be evaluated. Default is \code{FALSE}.}
 }
 \value{
-Function returns an object of class \code{SingleGroupClass}
+Function returns an object of class \code{regDIF}
 }
 \description{
 Regularization of DIF parameters in item response theory (IRT) and moderated nonlinear factor analysis (MNLFA) models.

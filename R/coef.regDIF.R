@@ -1,19 +1,20 @@
 #' Coefficient function for regDIF function
 #'
-#' @param x regDIF model object to obtain coefficient values.
+#' @param object regDIF model object to obtain coefficient values.
+#' @param ... Additional arguments to be passed through
 #'
 #' @return \code{NULL}
 #' @export
 
 coef.regDIF <-
-  function(x) {
+  function(object, ...) {
     ## print to screen with line break
     cat("Call:\n")
     ## print the model formula we fit
-    print(x$call)
+    print(object$call)
     ## create table to display results
-    table <- list("Impact" = x$Impact,
-                  "DIF" = x$DIF)
+    table <- list("Impact" = object$Impact,
+                  "DIF" = object$DIF)
     cat("\nRegDIF Results:\n")
     ## print the results table
     print(table)

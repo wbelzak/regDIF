@@ -4,10 +4,12 @@
 \alias{coef.regDIF}
 \title{Coefficient function for regDIF function}
 \usage{
-\method{coef}{regDIF}(x)
+\method{coef}{regDIF}(object, ...)
 }
 \arguments{
-\item{x}{regDIF model object to obtain coefficient values.}
+\item{object}{regDIF model object to obtain coefficient values.}
+
+\item{...}{Additional arguments to be passed through}
 }
 \value{
 \code{NULL}

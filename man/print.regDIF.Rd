@@ -4,10 +4,12 @@
 \alias{print.regDIF}
 \title{Print function for regDIF function}
 \usage{
-\method{print}{regDIF}(x)
+\method{print}{regDIF}(x, ...)
 }
 \arguments{
 \item{x}{regDIF model object to obtain basic results}
+
+\item{...}{Additional arguments to be passed through}
 }
 \value{
 \code{NULL}

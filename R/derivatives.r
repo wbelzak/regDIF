@@ -62,13 +62,15 @@ d_mu <-
    ##Continuous item responses##
    } else if(itemtypes == "continuous"){
 
+     # responses_item <- scale(responses_item)
      mu <- sapply(theta,function(x){(p_item[grep("c0",names(p_item),fixed=T)] + predictors %*% p_item[grep("c1",names(p_item),fixed=T)]) + (p_item[grep("a0",names(p_item),fixed=T)] + predictors %*% p_item[grep("a1",names(p_item),fixed=T)])*x})
-     sigma <- p_item[grep("s2_",names(p_item))][1]*exp(predictors %*% p_item[grep("s2(.*?)cov",names(p_item))])
-     d1_trace <- t(sapply(1:samp_size,function(x) (responses_item[x]-mu[x,])/sqrt(sigma[x])))
-     d2_trace <- t(sapply(1:samp_size,function(x) (1/sigma[x])))
+     sigma <- sqrt(p_item[grep("s_",names(p_item))][1]*exp(predictors %*% p_item[grep("s(.*?)cov",names(p_item))]))
+     d1_trace <- t(sapply(1:samp_size, function(x) eta_d[x,]*(responses_item[x]-mu[x,])/sigma[x]**2))
+     d2_trace <- t(sapply(1:samp_size, function(x) -eta_d[x,]**2/sigma[x]**2))
 
-      d1 <- sum(etable[[1]]*eta_d*d1_trace)
-      d2 <- sum(etable[[1]]*eta_d**2*d2_trace)
+     d1 <- sum(etable[[1]]*d1_trace)
+     d2 <- sum(etable[[1]]*d2_trace)
+
     }
     dlist <- list(d1,d2)
   }
@@ -79,27 +81,33 @@ d_sigma <-
            p_item,
            etable,
            theta,
+           responses_item,
            predictors,
            itemtypes,
-           thr,
            cov,
            samp_size,
-           num_responses_item,
            num_items,
            num_quadpts) {
 
-
-    sigma <- sqrt(p_item[grep("s2_",names(p_item))][1]*exp(predictors %*% p_item[grep("s2(.*?)cov",names(p_item))]))
+    sigma <- sqrt(p_item[grep("s_",names(p_item))][1]*exp(predictors %*% p_item[grep("s(.*?)cov",names(p_item))]))
+    # responses_item <- scale(responses_item)
+    mu <- sapply(theta,function(x){(p_item[grep("c0",names(p_item),fixed=T)] + predictors %*% p_item[grep("c1",names(p_item),fixed=T)]) + (p_item[grep("a0",names(p_item),fixed=T)] + predictors %*% p_item[grep("a1",names(p_item),fixed=T)])*x})
 
     if(parm == "s0"){
-      eta_d1 <- matrix(1, nrow = samp_size, ncol = num_quadpts)
+      eta_d1 <- sapply(1:samp_size, function(x) (sigma[x]**2/as.numeric(p_item[grep("s_",names(p_item))][1]))/(2*as.numeric(p_item[grep("s_",names(p_item))][1])/sigma[x]))
+      eta_d2 <- sapply(1:samp_size, function(x) -sigma[x]**2/as.numeric(p_item[grep("s_",names(p_item))][1])/4*as.numeric(p_item[grep("s_",names(p_item))][1])**(3/2))
     } else if(parm == "s1"){
-      eta_d2 <- matrix(rep(matrix(theta, nrow = 1, ncol = length(theta)), samp_size), nrow = samp_size, ncol = length(theta), byrow = TRUE)
+      eta_d1 <- sapply(1:samp_size, function(x) sigma[x]*predictors[x,cov]/2)
+      eta_d2 <- sapply(1:samp_size, function(x) sigma[x]*predictors[x,cov]**2/4)
     }
 
+    d1_trace <- t(sapply(1:samp_size, function(x) eta_d1[x]*((responses_item[x]-mu[x,])**2/sigma[x]**3 - 1/sigma[x])))
+    d2_trace <- t(sapply(1:samp_size, function(x) eta_d1[x]**2*((1/sigma[x]**2) - 3*(responses_item[x]-mu[x,])**2/sigma[x]**4) + eta_d2[x]*((responses_item[x]-mu[x,])**2/sigma[x]**3 - 1/sigma[x])))
 
-    d1 <- sum(etable*eta_d1*(1-sigma**2)/sigma**3)
-    d2 <- sum(etable*eta_d1**2*(sigma**2-3)/sigma**4 + eta_d2*(1-sigma**2)/sigma**3)
+    d1 <- sum(etable[[1]]*d1_trace)
+    d2 <- sum(etable[[1]]*d2_trace)
+
+    dlist <- list(d1,d2)
 
   }
 

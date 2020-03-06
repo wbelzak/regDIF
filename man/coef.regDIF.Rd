@@ -6,6 +6,9 @@
 \usage{
 \method{coef}{regDIF}(x)
 }
+\arguments{
+\item{x}{regDIF model object to obtain coefficient values.}
+}
 \value{
 \code{NULL}
 }

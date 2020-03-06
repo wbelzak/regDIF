@@ -6,6 +6,9 @@
 \usage{
 \method{print}{regDIF}(x)
 }
+\arguments{
+\item{x}{regDIF model object to obtain basic results}
+}
 \value{
 \code{NULL}
 }

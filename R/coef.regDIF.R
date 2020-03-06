@@ -1,5 +1,7 @@
 #' Coefficient function for regDIF function
 #'
+#' @param x regDIF model object to obtain coefficient values.
+#'
 #' @return \code{NULL}
 #' @export
 

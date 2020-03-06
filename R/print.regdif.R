@@ -1,5 +1,7 @@
 #' Print function for regDIF function
 #'
+#' @param x regDIF model object to obtain basic results
+#'
 #' @return \code{NULL}
 #' @export
 

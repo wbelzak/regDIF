@@ -62,7 +62,7 @@ Mstep_2pl_dif <-
       etable <- replicate(n=num_responses[item], elist[[1]][[item]], simplify = F)
 
       #obtain etables for each response category
-      if(itemtypes == "categorical"){
+      if(itemtypes[item] == "categorical"){
         for(resp in 1:num_responses[item]){
           etable[[resp]][which(!(etable[[resp]][,ncol(etable[[resp]])] == resp)),] <- 0
         }
@@ -72,19 +72,19 @@ Mstep_2pl_dif <-
       p_item <- p[[item]]
       etable <- lapply(etable, function(x) x[,1:num_quadpts])
 
-      ########################
-      # Mu (mean) parameters #
-      ########################
+      #################################
+      # Mu (mean) baseline parameters #
+      #################################
 
       #intercept updates
-      anl_deriv <- d_mu("c0",p_item,etable,theta,responses[,item],predictors,itemtypes,thr=NULL,cov=NULL,samp_size,num_responses[[item]],num_items,num_quadpts)
+      anl_deriv <- d_mu("c0",p_item,etable,theta,responses[,item],predictors,itemtypes[item],thr=NULL,cov=NULL,samp_size,num_responses[[item]],num_items,num_quadpts)
       p_new <- p_item[grep(paste0("c0_itm",item,"_"),names(p_item),fixed=T)][1] - anl_deriv[[1]]/anl_deriv[[2]]
       p_item <- replace(p_item,names(p_new),p_new)
 
       #threshold updates for graded response model
       if(num_responses[item] > 2){
         for(thr in 2:(num_responses[item]-1)){
-          anl_deriv <- d_mu("c0",p_item,etable,theta,predictors,itemtypes,thr,cov=NULL,samp_size,num_responses[[item]],num_items,num_quadpts)
+          anl_deriv <- d_mu("c0",p_item,etable,theta,responses[,item],predictors,itemtypes[item],thr,cov=NULL,samp_size,num_responses[[item]],num_items,num_quadpts)
           p_new <- p_item[grep(paste0("c0_itm",item,"_"),names(p_item),fixed=T)][thr] - anl_deriv[[1]]/anl_deriv[[2]]
           p_item <- replace(p_item,names(p_new),p_new)
         }
@@ -92,16 +92,34 @@ Mstep_2pl_dif <-
 
       #slope updates
       if(rasch == FALSE){ #skip slope estimate updates if rasch is TRUE
-        anl_deriv <- d_mu("a0",p_item,etable,theta,predictors,itemtypes,thr=NULL,cov=NULL,samp_size,num_responses[[item]],num_items,num_quadpts)
+        anl_deriv <- d_mu("a0",p_item,etable,theta,responses[,item],predictors,itemtypes[item],thr=NULL,cov=NULL,samp_size,num_responses[[item]],num_items,num_quadpts)
         p_new <- p_item[grep(paste0("a0_itm",item,"_"),names(p_item),fixed=T)] - anl_deriv[[1]]/anl_deriv[[2]]
         p_item <- replace(p_item,names(p_new),p_new)
       }
+
+      #########################################
+      # Residual variance baseline parameters #
+      #########################################
+
+      if(itemtypes[item] == "continuous"){
+
+        anl_deriv <- d_sigma("s0",p_item,etable,theta,responses[,item],predictors,itemtypes[item],cov=NULL,samp_size,num_items,num_quadpts)
+        p_new <- p_item[grep(paste0("s_itm",item,"_"),names(p_item),fixed=T)][1] - anl_deriv[[1]]/anl_deriv[[2]]
+        # p_new <- ifelse(p_new <= 0, 0.01, p_new)
+        p_item <- replace(p_item,names(p_new),p_new)
+
+      }
+
 
       #skip DIF estimate updates if anchor item
       if(any(item == anchor)){
         p[[item]] <- replace(p[[item]],names(p_item),p_item)
         next
       }
+
+      ############################
+      # Mu (mean) DIF parameters #
+      ############################
 
       p2 <- unlist(p) #unlist to check for anchor identification
 
@@ -113,7 +131,7 @@ Mstep_2pl_dif <-
           next
         }
 
-        anl_deriv <- d_mu("c1",p_item,etable,theta,predictors,itemtypes,thr=NULL,cov,samp_size,num_responses[[item]],num_items,num_quadpts)
+        anl_deriv <- d_mu("c1",p_item,etable,theta,responses[,item],predictors,itemtypes[item],thr=NULL,cov,samp_size,num_responses[[item]],num_items,num_quadpts)
         z <- (anl_deriv[[2]]*p_item[grep(paste0("c1_itm",item,"_cov",cov),names(p_item),fixed=T)] - anl_deriv[[1]])/anl_deriv[[2]]
         p_new <- sign(z)*max(abs(z) - penalty[pen], 0)
         p_item <- replace(p_item,names(p_new),p_new)
@@ -128,31 +146,30 @@ Mstep_2pl_dif <-
         }
 
         if(rasch == FALSE){
-          anl_deriv <- d_mu("a1",p_item,etable,theta,predictors,itemtypes,thr=NULL,cov,samp_size,num_responses[[item]],num_items,num_quadpts)
+          anl_deriv <- d_mu("a1",p_item,etable,theta,responses[,item],predictors,itemtypes[item],thr=NULL,cov,samp_size,num_responses[[item]],num_items,num_quadpts)
           z <- (anl_deriv[[2]]*p_item[grep(paste0("a1_itm",item,"_cov",cov),names(p_item),fixed=T)] - anl_deriv[[1]])/anl_deriv[[2]]
           p_new <- sign(z)*max(abs(z) - penalty[pen], 0)
           p_item <- replace(p_item,names(p_new),p_new)
         }
       }
 
-      ################################
-      # Residual variance parameters #
-      ################################
+      ####################################
+      # Residual variance DIF parameters #
+      ####################################
 
+      if(itemtypes[item] == "continuous"){
 
-      if(itemtypes == "continuous"){
-
-        #residual variance updates
-        anl_deriv <- d_sigma("s0",p_item,etable,theta,predictors,itemtypes,cov=NULL,samp_size,num_responses[[item]],num_items,num_quadpts)
-        p_new <- p_item[grep(paste0("c0_itm",item,"_"),names(p_item),fixed=T)][1] - anl_deriv[[1]]/anl_deriv[[2]]
-        p_item <- replace(p_item,names(p_new),p_new)
-
-        #residual variance DIF updates
         for(cov in 1:num_predictors){
-          anl_deriv <- d_sigma("s1",p_item,etable,theta,predictors,itemtypes,cov=NULL,samp_size,num_responses[[item]],num_items,num_quadpts)
-          p_new <- p_item[grep(paste0("c0_itm",item,"_"),names(p_item),fixed=T)][1] - anl_deriv[[1]]/anl_deriv[[2]]
+          # anl_deriv <- d_sigma("s1",p_item,etable,theta,responses[,item],predictors,itemtypes,cov=cov,samp_size,num_items,num_quadpts)
+          # z <- (anl_deriv[[2]]*p_item[grep(paste0("s_itm",item,"_cov",cov),names(p_item),fixed=T)] - anl_deriv[[1]])/anl_deriv[[2]]
+          # p_new <- sign(z)*max(abs(z) - penalty[pen], 0)
+          # p_item <- replace(p_item,names(p_new),p_new)
+
+          anl_deriv <- d_sigma("s1",p_item,etable,theta,responses[,item],predictors,itemtypes[item],cov=cov,samp_size,num_items,num_quadpts)
+          p_new <- p_item[grep(paste0("s_itm",item,"_cov",cov),names(p_item),fixed=T)][1] - anl_deriv[[1]]/anl_deriv[[2]]
           p_item <- replace(p_item,names(p_new),p_new)
         }
+
       }
 
 

@@ -10,6 +10,9 @@ LazyData: true
 RoxygenNote: 6.1.1
 Imports:
     stats (> 3.0.0),
-    utils
+    utils,
+    Rcpp (>= 1.0.0),
+    RcppArmadillo
+LinkingTo: Rcpp, RcppArmadillo
 Suggests:
     testthat (>= 2.1.0)

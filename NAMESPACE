@@ -2,6 +2,9 @@
 
 S3method(coef,regDIF)
 S3method(print,regDIF)
+export(add.one.sqrt)
 export(regDIF)
 import(stats)
 import(utils)
+importFrom(Rcpp,sourceCpp)
+useDynLib(regDIF, .registration = TRUE)

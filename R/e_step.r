@@ -7,7 +7,6 @@ Estep_2pl <-
            responses,
            predictors,
            theta,
-           itemtypes,
            samp_size,
            num_items,
            num_responses,
@@ -24,10 +23,12 @@ Estep_2pl <-
 
     #compute the trace lines
     for (item in 1:num_items) { #loop through items
-      if(num_responses[item] > 1){
+      if(num_responses[item] == 1){
+        itemtrace[[item]] <- gaussian_traceline_pts(p[[item]],theta,responses[,item],predictors,samp_size,num_quadpts)
+      } else if (num_responses[item] == 2){
+        itemtrace[[item]] <- bernoulli_traceline_pts(p[[item]],theta,predictors,samp_size,num_quadpts)
+      } else if (num_responses[item] > 2){
         itemtrace[[item]] <- categorical_traceline_pts(p[[item]],theta,predictors,samp_size,num_responses[item],num_quadpts)
-      } else{
-        itemtrace[[item]] <- continuous_traceline_pts(p[[item]],theta,responses[,item],predictors,samp_size,num_quadpts)
       }
     }
 
@@ -35,11 +36,13 @@ Estep_2pl <-
     for(case in 1:samp_size) { #looping over samples
 
       #qaudrature points
-      posterior <- dnorm(theta, mean = alpha[case], sd = sqrt(phi[case]))/sum(dnorm(theta, mean = alpha[case], sd = sqrt(phi[case])))
+      # posterior <- dnorm(theta, mean = alpha[case], sd = sqrt(phi[case]))/sum(dnorm(theta, mean = alpha[case], sd = sqrt(phi[case])))
+
+      posterior <- dnorm(theta, mean = alpha[case], sd = sqrt(phi[case]))
 
       #within each response pattern, loop over items and compute posterior probability of response pattern
       for(item in 1:num_items) {
-        x <- responses[case,item] #get response
+        x <- responses[case,item]
         if (is.na(x)) {
           posterior <- posterior #if missing (NA), posterior probability remains the same as guassian points
         } else if (num_responses[item] == 1){
@@ -56,12 +59,8 @@ Estep_2pl <-
 
       #for individual i, add posterior to the r1 and r0 tables depending on response
       for(item in 1:num_items) { #within a person, loop over items
-        x <- responses[case,item] #get one cell within responses, **x will either be TRUE or FALSE** (endorse or not endorse)
-        if (is.na(x)) {
-          etable[[item]][case,] <- c(etable[[item]][case,][1:num_quadpts],NA) #if missing (NA), conditional expected proportion of endorsing item j and not endorsing item j remains the same
-        } else{
-          etable[[item]][case,] <- c(etable[[item]][case,][1:num_quadpts] + posterior, x)
-        }
+        x <- responses[case,item]
+        etable[[item]][case,] <- c(etable[[item]][case,][1:num_quadpts] + posterior, x)
       }
 
     } #end loop over N

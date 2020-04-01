@@ -1,6 +1,20 @@
 #################
 # 2PL Traceline #
 #################
+bernoulli_traceline_pts <-
+  function(p_active,
+           theta,
+           predictors,
+           samp_size,
+           num_quadpts) {
+
+    traceline <- replicate(n=2, matrix(0,nrow=samp_size,ncol=num_quadpts), simplify = F)
+
+    traceline[[1]] <- sapply(theta,function(x){1-1/(1+exp(-((p_active[grep("c0",names(p_active),fixed=T)][1] + predictors %*% p_active[grep("c1",names(p_active),fixed=T)]) + (p_active[grep("a0",names(p_active),fixed=T)] + predictors %*% p_active[grep("a1",names(p_active),fixed=T)])*x)))})
+    traceline[[2]] <- -traceline[[1]] + 1
+
+    return(traceline)
+  }
 
 categorical_traceline_pts <-
   function(p_active,
@@ -28,11 +42,8 @@ categorical_traceline_pts <-
         }
       }
       #for item response J
-      if(num_responses_item > 2){
-        traceline[[num_responses_item]] <- sapply(theta,function(x){1/(1+exp(-((p_active[grep("c0",names(p_active),fixed=T)][1] - p_active[grep("c0",names(p_active),fixed=T)][num_responses_item-1] + predictors %*% p_active[grep("c1",names(p_active),fixed=T)]) + (p_active[grep("a0",names(p_active),fixed=T)] + predictors %*% p_active[grep("a1",names(p_active),fixed=T)])*x)))})
-      } else{
-        traceline[[num_responses_item]] <- sapply(theta,function(x){1/(1+exp(-((p_active[grep("c0",names(p_active),fixed=T)][1] + predictors %*% p_active[grep("c1",names(p_active),fixed=T)]) + (p_active[grep("a0",names(p_active),fixed=T)] + predictors %*% p_active[grep("a1",names(p_active),fixed=T)])*x)))})
-      }
+      traceline[[num_responses_item]] <- sapply(theta,function(x){1/(1+exp(-((p_active[grep("c0",names(p_active),fixed=T)][1] - p_active[grep("c0",names(p_active),fixed=T)][num_responses_item-1] + predictors %*% p_active[grep("c1",names(p_active),fixed=T)]) + (p_active[grep("a0",names(p_active),fixed=T)] + predictors %*% p_active[grep("a1",names(p_active),fixed=T)])*x)))})
+
       return(traceline)
   }
 
@@ -59,7 +70,7 @@ cumulative_traceline_pts <-
     return(traceline)
   }
 
-continuous_traceline_pts <-
+gaussian_traceline_pts <-
   function(p_active,
            theta,
            responses_item,

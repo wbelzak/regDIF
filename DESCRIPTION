@@ -7,7 +7,7 @@ Description: Tests for differential item functioning (DIF) among multiple covari
 License: GPL-2
 Encoding: UTF-8
 LazyData: true
-RoxygenNote: 6.1.1
+RoxygenNote: 7.1.0
 Imports:
     stats (> 3.0.0),
     utils,

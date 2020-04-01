@@ -162,7 +162,7 @@ regDIF <- function(x,
       elist <- Estep_2pl(p,responses,predictors,theta,samp_size,num_items,num_responses,final.control$num_quadpts)
 
       #M-step: Optimize parameters
-      p <- Mstep_2pl_dif(p,responses,predictors,elist,theta,itemtypes,penalty,lambda[pen],gamma,pen,anchor,rasch,maxit,samp_size,num_responses,num_items,final.control$num_quadpts,num_predictors)
+      p <- Mstep_2pl_dif(p,responses,predictors,elist,theta,itemtypes,penalty,lambda[pen],gamma,pen,anchor,rasch,final.control$maxit,samp_size,num_responses,num_items,final.control$num_quadpts,num_predictors)
 
       #Update and check for convergence: Calculate the difference in parameter estimates from current to previous
       eps = sqrt(sum((unlist(p)-unlist(lastp))^2))

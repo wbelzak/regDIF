@@ -4,10 +4,19 @@
 \alias{regDIF}
 \title{Regularized Differential Item Functioning}
 \usage{
-regDIF(x, y, itemtypes = c("bernoulli", "categorical", "gaussian"),
-  penalty = c("lasso", "mcp"), nlambda = 100, lambda.max = 3,
-  gamma = 3, lambda = NULL, anchor = NULL, rasch = FALSE,
-  control = list())
+regDIF(
+  x,
+  y,
+  itemtypes = c("bernoulli", "categorical", "gaussian"),
+  penalty = c("lasso", "mcp"),
+  nlambda = 100,
+  lambda.max = 3,
+  gamma = 3,
+  lambda = NULL,
+  anchor = NULL,
+  rasch = FALSE,
+  control = list()
+)
 }
 \arguments{
 \item{x}{Matrix or dataframe of predictors (i.e., DIF covariates). Supports categorical and continuous predictors.}

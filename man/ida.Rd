@@ -4,7 +4,8 @@
 \name{ida}
 \alias{ida}
 \title{Simulated data example with multiple DIF covariates}
-\format{A data frame with 500 rows and 9 variables:
+\format{
+A data frame with 500 rows and 9 variables:
 \describe{
   \item{item1}{}
   \item{item2}{}
@@ -17,7 +18,8 @@
   \item{study}{}
 
   ...
-}}
+}
+}
 \usage{
 ida
 }

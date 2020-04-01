@@ -14,7 +14,7 @@ print.regDIF <-
     print(x$call)
     ## create table to display results
     table <- data.frame(
-      "Penalty" = x$Penalty,
+      "Lambda" = x$Lambda,
       "BIC" = x$BIC
     )
     cat("\nRegDIF Results:\n")

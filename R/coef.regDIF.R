@@ -8,16 +8,11 @@
 
 coef.regDIF <-
   function(object, ...) {
-    ## print to screen with line break
-    cat("Call:\n")
-    ## print the model formula we fit
-    print(object$call)
     ## create table to display results
     table <- list("Impact" = object$Impact,
                   "DIF" = object$DIF)
-    cat("\nRegDIF Results:\n")
     ## print the results table
-    print(table)
+    return(table)
   }
 
 

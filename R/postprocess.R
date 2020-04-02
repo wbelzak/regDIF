@@ -6,6 +6,8 @@ postprocess <-
   function(estimates,
            responses,
            predictors,
+           y,
+           x,
            theta,
            lambda,
            pen,
@@ -14,6 +16,7 @@ postprocess <-
            final,
            samp_size,
            num_responses,
+           num_predictors,
            num_items) {
 
   #get estimates
@@ -21,7 +24,7 @@ postprocess <-
   p <- estimates[[2]]
 
   #get information criteria
-  infocrit <- information_criteria(elist,p,theta,predictors,lambda,pen,samp_size,num_responses,num_items,final.control$num_quadpts)
+  infocrit <- information_criteria(elist,p,responses,predictors,theta,lambda,pen,samp_size,num_responses,num_items,final.control$num_quadpts)
 
   #Organize impact parameters
   parms_impact <- rbind(p[[num_items+1]],p[[num_items+2]])

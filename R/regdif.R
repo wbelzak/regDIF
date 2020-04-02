@@ -57,7 +57,7 @@ regDIF <- function(x,
     #obtain regDIF estimates
     estimates <- em_estimation(data_scrub$p,data_scrub$responses,data_scrub$predictors,data_scrub$theta,data_scrub$itemtypes,penalty,data_scrub$lambda,gamma,pen,anchor,rasch,data_scrub$final.control,data_scrub$samp_size,data_scrub$num_items,data_scrub$num_responses,data_scrub$num_predictors)
 
-    data_final <- postprocess(estimates,data_scrub$responses,data_scrub$predictors,data_scrub$theta,lambda,pen,anchor,data_scrub$final.control,data_scrub$final,data_scrub$samp_size,data_scrub$num_responses,data_scrub$num_items)
+    data_final <- postprocess(estimates,data_scrub$responses,data_scrub$predictors,y,x,data_scrub$theta,lambda,pen,anchor,data_scrub$final.control,data_scrub$final,data_scrub$samp_size,data_scrub$num_responses,data_scrub$num_predictors,data_scrub$num_items)
 
   }
 

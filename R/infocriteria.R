@@ -5,8 +5,9 @@
 information_criteria <-
   function(elist,
            p,
-           theta,
+           responses,
            predictors,
+           theta,
            lambda,
            pen,
            samp_size,

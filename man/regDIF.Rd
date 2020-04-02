@@ -10,7 +10,7 @@ regDIF(
   itemtypes = c("bernoulli", "categorical", "gaussian"),
   penalty = c("lasso", "mcp"),
   nlambda = 100,
-  lambda.max = 3,
+  lambda.max = 2,
   gamma = 3,
   lambda = NULL,
   anchor = NULL,

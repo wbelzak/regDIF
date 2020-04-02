@@ -12,7 +12,6 @@ Mstep_2pl_dif <-
            penalty,
            lambda,
            gamma,
-           pen,
            anchor,
            rasch,
            maxit,

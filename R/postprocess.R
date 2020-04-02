@@ -75,13 +75,17 @@ postprocess <-
   }
   #stop if there is a large change in DIF parameters
   if(pen > 1){
-    second_last <- sum(final$DIF[[pen-1]][,-grep("0",colnames(final$DIF[[pen-1]]))] == 0)
-    last <- sum(final$DIF[[pen]][,-grep("0",colnames(final$DIF[[pen-1]]))] == 0)
+    second_last <- sum(final$DIF[[pen-1]][,-c(1,2+num_predictors)] == 0)
+    last <- sum(final$DIF[[pen]][,-c(1,2+num_predictors)] == 0)
     if((second_last - last) > (num_predictors*num_items)){
       print(final)
       stop(paste0("Large increase in the number of DIF parameters from iteration ",pen-1," to ",pen,".\n  Two Options:\n  1. Provide smaller differences between lambda values.\n  2. Provide anchor item(s)."), call. = TRUE)
     }
   }
+
+  #print information about optimization
+  cat('\r',"Models Completed:",pen,"of",length(lambda)," Iteration:", 0," Change:")
+  flush.console()
 
   return(final)
 

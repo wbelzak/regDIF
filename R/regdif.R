@@ -39,7 +39,7 @@ regDIF <- function(x,
                    itemtypes = c("bernoulli","categorical","gaussian"),
                    penalty = c("lasso","mcp"),
                    nlambda = 100,
-                   lambda.max = 3,
+                   lambda.max = 2,
                    gamma = 3,
                    lambda = NULL,
                    anchor = NULL,
@@ -51,7 +51,7 @@ regDIF <- function(x,
   data_scrub <- preprocess(x,y,itemtypes,penalty,nlambda,lambda.max,lambda,anchor,rasch,control,call)
 
   #Run Reg-DIF by looping through lambda
-  for(pen in 1:length(lambda)){
+  for(pen in 1:length(data_scrub$lambda)){
 
     #obtain regDIF estimates
     estimates <- em_estimation(data_scrub$p,data_scrub$responses,data_scrub$predictors,data_scrub$theta,data_scrub$itemtypes,penalty,data_scrub$lambda,gamma,pen,anchor,rasch,data_scrub$final.control,data_scrub$samp_size,data_scrub$num_items,data_scrub$num_responses,data_scrub$num_predictors)

@@ -24,7 +24,7 @@ postprocess <-
   p <- estimates[[2]]
 
   #get information criteria
-  infocrit <- information_criteria(elist,p,responses,predictors,theta,lambda,pen,samp_size,num_responses,num_items,final.control$num_quadpts)
+  infocrit <- information_criteria(elist,p,responses,predictors,theta,lambda[pen],samp_size,num_responses,num_items,final.control$num_quadpts)
 
   #Organize impact parameters
   parms_impact <- rbind(p[[num_items+1]],p[[num_items+2]])
@@ -59,6 +59,7 @@ postprocess <-
                            'slp_base',
                            dif_colnames_slp)
   rownames(parms_dif) <- dif_rownames
+
 
   #assign output to final list
   final$Lambda[pen] <- lambda[pen]

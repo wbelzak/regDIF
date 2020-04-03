@@ -21,10 +21,10 @@ firm_threshold <-
            lambda,
            gamma) {
 
-  if(abs(z) <= gamma*lambda){
-    p_new <- (gamma/(gamma-1))*soft_threshold(z,lambda,alpha)
+  if(abs(z/(1+lambda*(1-alpha))) <= gamma*lambda){
+    p_new <- (gamma/(gamma-1))*soft_threshold(z,alpha,lambda)
   }else{
-    p_new <- z
+    p_new <- z/(1+lambda*(1-alpha))
   }
 
   return(p_new)

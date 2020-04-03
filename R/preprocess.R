@@ -23,6 +23,7 @@ preprocess <-
   itemtypes <- family
 
   #preprocess warnings
+  # if(penalty == "mcp")
   if(!(any(itemtypes == "bernoulli") | any(itemtypes == "categorical") | any(itemtypes == "gaussian"))) stop("Item response types must be distributed 'bernoulli', 'categorical', or 'gaussian'.")
   if(any(lambda < 0)) stop("Lambda values must be non-negative.", call. = TRUE)
   if(length(lambda) > 1 & all(diff(lambda) >= 0)) stop("Lambda values must be in descending order (e.g., lambda = c(-2,-1,0)).")

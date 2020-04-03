@@ -11,6 +11,7 @@ Mstep_2pl_dif <-
            itemtypes,
            penalty,
            lambda,
+           alpha,
            gamma,
            anchor,
            rasch,
@@ -102,7 +103,7 @@ Mstep_2pl_dif <-
 
           anl_deriv <- d_bernoulli("c1",p_item,etable,theta,predictors,cov,samp_size,num_items,num_quadpts)
           z <- p_item[grep(paste0("c1_itm",item,"_cov",cov),names(p_item),fixed=T)] - anl_deriv[[1]]/anl_deriv[[2]]
-          p_new <- ifelse(penalty == "lasso",soft_threshold(z,lambda),firm_threshold(z,lambda,gamma))
+          p_new <- ifelse(penalty == "lasso",soft_threshold(z,alpha,lambda),firm_threshold(z,alpha,lambda,gamma))
           names(p_new) <- names(z)
           p_item <- replace(p_item,names(p_new),p_new)
         }
@@ -118,7 +119,7 @@ Mstep_2pl_dif <-
           if(rasch == FALSE){
             anl_deriv <- d_bernoulli("a1",p_item,etable,theta,predictors,cov,samp_size,num_items,num_quadpts)
             z <- p_item[grep(paste0("a1_itm",item,"_cov",cov),names(p_item),fixed=T)] - anl_deriv[[1]]/anl_deriv[[2]]
-            p_new <- ifelse(penalty == "lasso",soft_threshold(z,lambda),firm_threshold(z,lambda,gamma))
+            p_new <- ifelse(penalty == "lasso",soft_threshold(z,alpha,lambda),firm_threshold(z,alpha,lambda,gamma))
             names(p_new) <- names(z)
             p_item <- replace(p_item,names(p_new),p_new)
           }
@@ -166,7 +167,7 @@ Mstep_2pl_dif <-
 
           anl_deriv <- d_categorical("c1",p_item,etable,theta,predictors,thr=NULL,cov,samp_size,num_responses[[item]],num_items,num_quadpts)
           z <- p_item[grep(paste0("c1_itm",item,"_cov",cov),names(p_item),fixed=T)] - anl_deriv[[1]]/anl_deriv[[2]]
-          p_new <- ifelse(penalty == "lasso",soft_threshold(z,lambda),firm_threshold(z,lambda,gamma))
+          p_new <- ifelse(penalty == "lasso",soft_threshold(z,alpha,lambda),firm_threshold(z,alpha,lambda,gamma))
           names(p_new) <- names(z)
           p_item <- replace(p_item,names(p_new),p_new)
         }
@@ -182,7 +183,7 @@ Mstep_2pl_dif <-
           if(rasch == FALSE){
             anl_deriv <- d_categorical("a1",p_item,etable,theta,predictors,thr=NULL,cov,samp_size,num_responses[[item]],num_items,num_quadpts)
             z <- p_item[grep(paste0("a1_itm",item,"_cov",cov),names(p_item),fixed=T)] - anl_deriv[[1]]/anl_deriv[[2]]
-            p_new <- ifelse(penalty == "lasso",soft_threshold(z,lambda),firm_threshold(z,lambda,gamma))
+            p_new <- ifelse(penalty == "lasso",soft_threshold(z,alpha,lambda),firm_threshold(z,alpha,lambda,gamma))
             names(p_new) <- names(z)
             p_item <- replace(p_item,names(p_new),p_new)
           }
@@ -235,7 +236,7 @@ Mstep_2pl_dif <-
 
           anl_deriv <- d_mu_gaussian("c1",p_item,etable,theta,responses[,item],predictors,cov,samp_size,num_items,num_quadpts)
           z <- p_item[grep(paste0("c1_itm",item,"_cov",cov),names(p_item),fixed=T)] - anl_deriv[[1]]/anl_deriv[[2]]
-          p_new <- ifelse(penalty == "lasso",soft_threshold(z,lambda),firm_threshold(z,lambda,gamma))
+          p_new <- ifelse(penalty == "lasso",soft_threshold(z,alpha,lambda),firm_threshold(z,alpha,lambda,gamma))
           names(p_new) <- names(z)
           p_item <- replace(p_item,names(p_new),p_new)
         }
@@ -251,7 +252,7 @@ Mstep_2pl_dif <-
           if(rasch == FALSE){
             anl_deriv <- d_mu_gaussian("a1",p_item,etable,theta,responses[,item],predictors,cov,samp_size,num_items,num_quadpts)
             z <- p_item[grep(paste0("a1_itm",item,"_cov",cov),names(p_item),fixed=T)] - anl_deriv[[1]]/anl_deriv[[2]]
-            p_new <- ifelse(penalty == "lasso",soft_threshold(z,lambda),firm_threshold(z,lambda,gamma))
+            p_new <- ifelse(penalty == "lasso",soft_threshold(z,alpha,lambda),firm_threshold(z,alpha,lambda,gamma))
             names(p_new) <- names(z)
             p_item <- replace(p_item,names(p_new),p_new)
           }

@@ -9,6 +9,7 @@
 #'        penalty = c("lasso","mcp"),
 #'        nlambda = 100,
 #'        lambda.max = 2,
+#'        alpha = 1,
 #'        gamma = 3,
 #'        lambda = NULL,
 #'        anchor = NULL,
@@ -24,9 +25,13 @@
 #'    \item{\code{"bernoulli"} - Bernoulli item response via logistic link function (i.e., 1PL or 2PL model, see rasch option below for 1PL). Must be numeric/integer (2 unique values), factor (2 levels), or logical.}
 #'    \item{\code{"categorical"} - Categorical item response via ordered logistic link function (i.e., Graded Response Model). Must be numeric/integer or factor.}
 #'    \item{\code{"gaussian"} - Gaussian item response via identity link function (i.e., Confirmatory Factor Analysis). Must be numeric/integer.}}
-#' @param penalty Character value indicating the penalty function to use. Supports the least absolute selection and shrinkage operator (LASSO) and the minimax concave penalty (MCP).
+#' @param penalty Character value indicating the penalty function to use. Supports:
+#' \itemize{
+#'    \item{\code{"lasso"} - The least absolute selection and shrinkage operator (LASSO) which controls DIF selection through \eqn{\lambda} (lambda).}
+#'    \item{\code{"mcp"} - The minimax concave penalty (MCP) which controls DIF selection through \eqn{\lambda} (lambda) and estimator bias through \eqn{\gamma} (gamma).}}
 #' @param nlambda Numeric value indicating how many lambda values to fit. Default is 100.
 #' @param lambda.max Numberic value indicating the maximum lambda parameter to use for internal construction of lambda vector. Default is 3. Must be large enough to shrink all DIF effects to zero to begin with.
+#' @param alpha Numeric value indicating the alpha parameter in the elastic net penalty function. Alpha controls the degree to which LASSO or ridge is used during regularization. Default is 1, which is equivalent to LASSO. For ridge, set alpha to 0.
 #' @param gamma Numeric value indicating the gamma parameter in the MCP function. Gamma controls the degree of tapering of DIF effects as lambda decreases. Larger gamma leads to faster tapering (less bias but possibly more unstable optimization), whereas smaller gamma leads to slower tapering (more bias but more stable optimization). Default is 3. Must be greater than 1.
 #' @param lambda Optional numeric vector of lambda values \eqn{\ge} 0. If lambda is supplied, this overrides the automatic construction of lambda values via \code{nlambda}. Must be non-negative and in descending order, from largest to smallest values (e.g., \code{seq(1,0,-.01)}.
 #' @param anchor Optional numeric value or vector indicating which item response(s) are anchors (e.g., \code{anchor = 1}). Default is \code{NULL}, meaning at least one DIF effect per covariate will be fixed to zero as lambda approaches 0 (required to identify the model).
@@ -64,6 +69,7 @@ regDIF <- function(x,
                    penalty = c("lasso","mcp"),
                    nlambda = 100,
                    lambda.max = 2,
+                   alpha = 1,
                    gamma = 3,
                    lambda = NULL,
                    anchor = NULL,
@@ -80,7 +86,7 @@ regDIF <- function(x,
   for(pen in 1:length(data_scrub$lambda)){
 
     #obtain regDIF estimates
-    estimates <- em_estimation(data_scrub$p,data_scrub$responses,data_scrub$predictors,data_scrub$theta,data_scrub$itemtypes,penalty,data_scrub$lambda,gamma,pen,anchor,rasch,data_scrub$final.control,data_scrub$samp_size,data_scrub$num_items,data_scrub$num_responses,data_scrub$num_predictors,data_scrub$num_quadpts)
+    estimates <- em_estimation(data_scrub$p,data_scrub$responses,data_scrub$predictors,data_scrub$theta,data_scrub$itemtypes,penalty,data_scrub$lambda,alpha,gamma,pen,anchor,rasch,data_scrub$final.control,data_scrub$samp_size,data_scrub$num_items,data_scrub$num_responses,data_scrub$num_predictors,data_scrub$num_quadpts)
 
     #postprocess data
     data_final <- postprocess(estimates,data_scrub$responses,data_scrub$predictors,y,x,data_scrub$theta,data_scrub$lambda,pen,anchor,data_scrub$final.control,data_scrub$final,data_scrub$samp_size,data_scrub$num_responses,data_scrub$num_predictors,data_scrub$num_items,data_scrub$num_quadpts)

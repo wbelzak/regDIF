@@ -10,6 +10,7 @@ regDIF(x,
        penalty = c("lasso","mcp"),
        nlambda = 100,
        lambda.max = 2,
+       alpha = 1,
        gamma = 3,
        lambda = NULL,
        anchor = NULL,
@@ -29,11 +30,16 @@ regDIF(x,
    \item{\code{"categorical"} - Categorical item response via ordered logistic link function (i.e., Graded Response Model). Must be numeric/integer or factor.}
    \item{\code{"gaussian"} - Gaussian item response via identity link function (i.e., Confirmatory Factor Analysis). Must be numeric/integer.}}}
 
-\item{penalty}{Character value indicating the penalty function to use. Supports the least absolute selection and shrinkage operator (LASSO) and the minimax concave penalty (MCP).}
+\item{penalty}{Character value indicating the penalty function to use. Supports:
+\itemize{
+   \item{\code{"lasso"} - The least absolute selection and shrinkage operator (LASSO) which controls DIF selection through \eqn{\lambda} (lambda).}
+   \item{\code{"mcp"} - The minimax concave penalty (MCP) which controls DIF selection through \eqn{\lambda} (lambda) and estimator bias through \eqn{\gamma} (gamma).}}}
 
 \item{nlambda}{Numeric value indicating how many lambda values to fit. Default is 100.}
 
 \item{lambda.max}{Numberic value indicating the maximum lambda parameter to use for internal construction of lambda vector. Default is 3. Must be large enough to shrink all DIF effects to zero to begin with.}
+
+\item{alpha}{Numeric value indicating the alpha parameter in the elastic net penalty function. Alpha controls the degree to which LASSO or ridge is used during regularization. Default is 1, which is equivalent to LASSO. For ridge, set alpha to 0.}
 
 \item{gamma}{Numeric value indicating the gamma parameter in the MCP function. Gamma controls the degree of tapering of DIF effects as lambda decreases. Larger gamma leads to faster tapering (less bias but possibly more unstable optimization), whereas smaller gamma leads to slower tapering (more bias but more stable optimization). Default is 3. Must be greater than 1.}
 

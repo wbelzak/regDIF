@@ -5,9 +5,10 @@
 #lasso penalty
 soft_threshold <-
   function(z,
+           alpha,
            lambda) {
 
-  p_new <- sign(z)*max(abs(z) - lambda, 0)
+  p_new <- sign(z)*max(abs(z/(1+lambda*(1-alpha))) - (lambda*alpha)/(1+lambda*(1-alpha)), 0)
 
   return(p_new)
 
@@ -16,11 +17,12 @@ soft_threshold <-
 #mcp penalty
 firm_threshold <-
   function(z,
+           alpha,
            lambda,
            gamma) {
 
   if(abs(z) <= gamma*lambda){
-    p_new <- (gamma/(gamma-1))*soft_threshold(z,lambda)
+    p_new <- (gamma/(gamma-1))*soft_threshold(z,lambda,alpha)
   }else{
     p_new <- z
   }

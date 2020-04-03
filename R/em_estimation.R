@@ -9,6 +9,7 @@ em_estimation <- function(p,
                           itemtypes,
                           penalty,
                           lambda,
+                          alpha,
                           gamma,
                           pen,
                           anchor,
@@ -32,7 +33,7 @@ em_estimation <- function(p,
     elist <- Estep_2pl(p,responses,predictors,theta,samp_size,num_items,num_responses,num_quadpts)
 
     #M-step: Optimize parameters
-    p <- Mstep_2pl_dif(p,responses,predictors,elist,theta,itemtypes,penalty,lambda[pen],gamma,anchor,rasch,final.control$maxit,samp_size,num_responses,num_items,num_quadpts,num_predictors)
+    p <- Mstep_2pl_dif(p,responses,predictors,elist,theta,itemtypes,penalty,lambda[pen],alpha,gamma,anchor,rasch,final.control$maxit,samp_size,num_responses,num_items,num_quadpts,num_predictors)
 
     #Update and check for convergence: Calculate the difference in parameter estimates from current to previous
     eps = sqrt(sum((unlist(p)-unlist(lastp))^2))

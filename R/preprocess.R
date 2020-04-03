@@ -48,7 +48,7 @@ preprocess <-
   num_predictors <- dim(predictors)[2]
 
   #get latent variable values (i.e., predictor values) for quadrature and tracelines
-  theta <- seq(-10, 10, length.out = final.control$num_quadpts)
+  theta <- seq(-10, 10, length.out = num_quadpts)
 
   #turn data into numeric if not already
   if(any(!sapply(responses,function(x)is.numeric(x)))){responses <- sapply(responses,function(x)as.numeric(x))}
@@ -110,6 +110,7 @@ preprocess <-
               num_responses = num_responses,
               num_predictors = num_predictors,
               samp_size = samp_size,
-              num_items = num_items))
+              num_items = num_items,
+              num_quadpts = num_quadpts))
 
 }

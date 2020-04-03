@@ -17,7 +17,8 @@ em_estimation <- function(p,
                           samp_size,
                           num_items,
                           num_responses,
-                          num_predictors) {
+                          num_predictors,
+                          num_quadpts) {
 
   #Maximization settings
   lastp <- p
@@ -28,10 +29,10 @@ em_estimation <- function(p,
   while(eps > final.control$tol & iter < final.control$maxit){
 
     #E-step: Evaluate Q function with current parameter estimates p
-    elist <- Estep_2pl(p,responses,predictors,theta,samp_size,num_items,num_responses,final.control$num_quadpts)
+    elist <- Estep_2pl(p,responses,predictors,theta,samp_size,num_items,num_responses,num_quadpts)
 
     #M-step: Optimize parameters
-    p <- Mstep_2pl_dif(p,responses,predictors,elist,theta,itemtypes,penalty,lambda[pen],gamma,anchor,rasch,final.control$maxit,samp_size,num_responses,num_items,final.control$num_quadpts,num_predictors)
+    p <- Mstep_2pl_dif(p,responses,predictors,elist,theta,itemtypes,penalty,lambda[pen],gamma,anchor,rasch,final.control$maxit,samp_size,num_responses,num_items,num_quadpts,num_predictors)
 
     #Update and check for convergence: Calculate the difference in parameter estimates from current to previous
     eps = sqrt(sum((unlist(p)-unlist(lastp))^2))

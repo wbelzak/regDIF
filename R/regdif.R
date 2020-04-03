@@ -28,10 +28,10 @@
 #' @param nlambda Numeric value indicating how many lambda values to fit. Default is 100.
 #' @param lambda.max Numberic value indicating the maximum lambda parameter to use for internal construction of lambda vector. Default is 3. Must be large enough to shrink all DIF effects to zero to begin with.
 #' @param gamma Numeric value indicating the gamma parameter in the MCP function. Gamma controls the degree of tapering of DIF effects as lambda decreases. Larger gamma leads to faster tapering (less bias but possibly more unstable optimization), whereas smaller gamma leads to slower tapering (more bias but more stable optimization). Default is 3. Must be greater than 1.
-#' @param lambda Optional numeric vector of lambda values \eqn{\ge} 0. WARNING: If lambda is supplied, this overrides the automatic construction of lambda values via \code{nlambda}. Must be non-negative and in descending order, from largest to smallest values (e.g., \code{seq(1,0,-.01)}.
+#' @param lambda Optional numeric vector of lambda values \eqn{\ge} 0. If lambda is supplied, this overrides the automatic construction of lambda values via \code{nlambda}. Must be non-negative and in descending order, from largest to smallest values (e.g., \code{seq(1,0,-.01)}.
 #' @param anchor Optional numeric value or vector indicating which item response(s) are anchors (e.g., \code{anchor = 1}). Default is \code{NULL}, meaning at least one DIF effect per covariate will be fixed to zero as lambda approaches 0 (required to identify the model).
 #' @param rasch Logical value indicating whether to constrain item slopes to 1 (i.e., equal slopes). If \code{TRUE}, no slope DIF will be evaluated. Default is \code{FALSE}.
-#' @param standardize Logical value indicating whether to standardize DIF covariates for regularization. Default is \code{TRUE}, as it is recommended that all covariates are on the same scale.
+#' @param standardize Logical value indicating whether to standardize DIF covariates for regularization. Default is \code{TRUE}, as it is recommended that all covariates be on the same scale.
 #' @param quadpts Numeric value indicating the number of quadrature points to be used in approximating the latent variable distribution during estimation. Default is \code{81}. Not recommended to be below 10 for accurate estimation.
 #' @param control Optional list of optimization parameters. May be:
 #' \describe{
@@ -45,8 +45,8 @@
 #'
 #' library(regDIF)
 #' head(ida)
-#' y <- ida[,1:6]
 #' x <- ida[,7:9]
+#' y <- ida[,1:6]
 #' fit <- regDIF(x, y, family = "bernoulli", penalty = "lasso")
 #' fit
 #'

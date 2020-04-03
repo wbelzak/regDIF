@@ -2,13 +2,16 @@
 [![Travis build status](https://travis-ci.org/wbelzak/regDIF.svg?branch=master)](https://travis-ci.org/wbelzak/regDIF)
 <!-- badges: end -->
 
-# regDIF
+# regDIF: Regularized Differential Item Functioning
 
-Regularized Differential Item Functioning
-
-## Description
-
-An R package that performs regularization of differential item functioning in item response theory and factor analysis models using a penalized expectation-maximization algorithm. Handles multiple DIF covariates. Supports Bernoulli, categorical, and Gaussian item responses. Includes LASSO, Ridge, MCP, and elastic net penalty functions.
+An R package that performs regularization of differential item functioning in item response theory and factor analysis models using a penalized expectation-maximization algorithm.
+ 
+## Features
+\itemize{
+ \item {Handles multiple continuous and categorical DIF covariates.}
+ \item {Supports Bernou}
+}
+Handles multiple DIF covariates. Supports Bernoulli, categorical, and Gaussian item responses. Includes LASSO, Ridge, MCP, and elastic net penalty functions.
 
 ## Examples
 

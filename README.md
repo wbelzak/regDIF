@@ -4,7 +4,7 @@
 
 # regDIF: Regularized Differential Item Functioning
 
-An R package that performs regularization of differential item functioning in item response theory and factor analysis models using a penalized expectation-maximization algorithm.
+An R package that performs regularization of differential item functioning (DIF) in item response theory (IRT) and confirmatory factor analysis (CFA) models using a penalized expectation-maximization algorithm.
  
 ## Features
 

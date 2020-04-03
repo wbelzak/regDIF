@@ -3,7 +3,7 @@ Title: Regularized Differential Item Functioning
 Version: 0.0.1
 Author: William Belzak
 Maintainer: William Belzak <wbelzak@live.unc.edu>
-Description: Performs regularization of differential item functioning in item response theory and factor analysis models using a penalized expectation-maximization algorithm. Handles multiple DIF covariates. Supports Bernoulli, categorical, and Gaussian item responses. Includes LASSO, Ridge, MCP, and elastic net penalty functions.
+Description: Performs regularization of differential item functioning (DIF) in item response theory (IRT) and confirmatory factor analysis (CFA) models using a penalized expectation-maximization algorithm.
 License: GPL-2
 Encoding: UTF-8
 LazyData: true

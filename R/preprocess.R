@@ -5,15 +5,22 @@
 preprocess <-
   function(x,
            y,
-           itemtypes,
+           family,
            penalty,
            nlambda,
            lambda.max,
            lambda,
            anchor,
            rasch,
+           standardize,
+           quadpts,
            control,
            call){
+
+  #data
+  responses <- y
+  predictors <- x
+  itemtypes <- family
 
   #preprocess warnings
   if(!(any(itemtypes == "bernoulli") | any(itemtypes == "categorical") | any(itemtypes == "gaussian"))) stop("Item response types must be distributed 'bernoulli', 'categorical', or 'gaussian'.")
@@ -22,14 +29,8 @@ preprocess <-
   if(is.null(anchor) & length(lambda) == 1){if(lambda == 0) stop("Anchor item must be specified with lambda = 0.", call. = TRUE)}
   if(!is.null(anchor) & !is.numeric(anchor)) stop("Anchor items must be numeric (e.g., anchor = 1).", call. = TRUE)
 
-  #data
-  responses <- y
-  predictors <- x
-
   #control parameters
-  final.control <- list(standardize = TRUE,
-                        num_quadpts = 101,
-                        tol = 10^-6,
+  final.control <- list(tol = 10^-5,
                         maxit = 10000)
   if(length(control) > 0) final.control[names(control)] <- control #user control parameters
 
@@ -41,8 +42,9 @@ preprocess <-
   #speeds up computation
   responses <- as.matrix(responses)
   predictors <- as.matrix(predictors)
-  num_items <- dim(responses)[2]
   samp_size <- dim(responses)[1]
+  num_items <- dim(responses)[2]
+  num_quadpts <- quadpts
   num_predictors <- dim(predictors)[2]
 
   #get latent variable values (i.e., predictor values) for quadrature and tracelines
@@ -67,7 +69,7 @@ preprocess <-
   }
 
   #standardize predictors
-  if(final.control$standardize == TRUE){
+  if(standardize == TRUE){
     predictors <- scale(predictors)
   }
 

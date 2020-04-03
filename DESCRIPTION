@@ -8,11 +8,14 @@ License: GPL-2
 Encoding: UTF-8
 LazyData: true
 RoxygenNote: 7.1.0
+VignetteBuilder: knitr
 Imports:
     stats (> 3.0.0),
     utils,
     Rcpp (>= 1.0.0),
-    RcppArmadillo
+    RcppArmadillo,
+    devtools
 LinkingTo: Rcpp, RcppArmadillo
 Suggests:
+    knitr,
     testthat (>= 2.1.0)

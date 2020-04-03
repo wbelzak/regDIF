@@ -1,0 +1,27 @@
+---
+title: "Getting started with regDIF"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Vignette Title}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+This vignette introduces regDIF to the general user by providing common use cases.
+
+## LASSO regularization for evaluating DIF in 2PL-IRT model
+```{r,eval=T,message=F}
+library(devtools)
+install_github("wbelzak/regDIF")
+library(regDIF)
+head(ida)
+x <- ida[,7:9]
+y <- ida[,1:6]
+fit <- regDIF(x, y, family = "bernoulli", penalty = "lasso", lambda = 2)
+fit
+coef(fit)
+```

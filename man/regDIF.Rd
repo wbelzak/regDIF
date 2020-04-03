@@ -4,48 +4,59 @@
 \alias{regDIF}
 \title{Regularized Differential Item Functioning}
 \usage{
-regDIF(
-  x,
-  y,
-  itemtypes = c("bernoulli", "categorical", "gaussian"),
-  penalty = c("lasso", "mcp"),
-  nlambda = 100,
-  lambda.max = 2,
-  gamma = 3,
-  lambda = NULL,
-  anchor = NULL,
-  rasch = FALSE,
-  control = list()
-)
+regDIF(x,
+       y,
+       family = c("bernoulli","categorical","gaussian"),
+       penalty = c("lasso","mcp"),
+       nlambda = 100,
+       lambda.max = 2,
+       gamma = 3,
+       lambda = NULL,
+       anchor = NULL,
+       rasch = FALSE,
+       standardize = TRUE,
+       quadpts = 81,
+       control = list())
 }
 \arguments{
-\item{x}{Matrix or dataframe of predictors (i.e., DIF covariates). Supports categorical and continuous predictors.}
+\item{x}{Matrix or dataframe of DIF predictors.}
 
-\item{y}{Matrix or dataframe of item responses. Supports Bernoulli (e.g., 0,1), categorical (e.g., 0,1,2,...,k), and Gaussian item responses.}
+\item{y}{Matrix or dataframe of item responses. See below for supported distributions.}
 
-\item{itemtypes}{Character value or vector indicating the item response distributions. For scales where item responses are of one type only, the user may input one character value indicating the type (e.g., \code{"categorical"}). For mixed item types, the user must specify a vector of characters in the order that corresponds to the response matrix (e.g. \code{c(rep("categorical",3),rep("gaussian",3))}). Supports categorical and continuous responses, including Bernoulli with logistic link (i.e., binary outcomes), categorical with ordered logistic link (i.e., graded response model), and Gaussian with identity link (i.e., factor analysis).}
+\item{family}{Character value or vector indicating the item response distributions via \code{y}. For scales where item responses are of one type only, the user may input one character value indicating the type (e.g., \code{"categorical"}). For mixed item types, the user must specify a vector of characters in the order that corresponds to the response matrix via \code{y}; e.g., \code{c(rep("categorical",2)}\code{, "bernoulli"}\code{, rep("gaussian",3))}. Supports:
+\itemize{
+   \item{\code{"bernoulli"} - Bernoulli item response via logistic link function (i.e., 1PL or 2PL model, see rasch option below for 1PL). Must be numeric/integer (2 unique values), factor (2 levels), or logical.}
+   \item{\code{"categorical"} - Categorical item response via ordered logistic link function (i.e., Graded Response Model). Must be numeric/integer or factor.}
+   \item{\code{"gaussian"} - Gaussian item response via identity link function (i.e., Confirmatory Factor Analysis). Must be numeric/integer.}}}
 
-\item{penalty}{Character value indicating the penalty function to use. Supports the least absolute selection and shrinkage operator (lasso) and the minimax concave penalty (mcp).}
+\item{penalty}{Character value indicating the penalty function to use. Supports the least absolute selection and shrinkage operator (LASSO) and the minimax concave penalty (MCP).}
 
-\item{nlambda}{Numeric value indicating the number of lambda values to fit.}
+\item{nlambda}{Numeric value indicating how many lambda values to fit. Default is 100.}
 
-\item{lambda.max}{Numberic value indicating the maximum lambda (shrinkage tuning parameter) to fit. Default is 3.}
+\item{lambda.max}{Numberic value indicating the maximum lambda parameter to use for internal construction of lambda vector. Default is 3. Must be large enough to shrink all DIF effects to zero to begin with.}
 
-\item{gamma}{Numeric value indicating the gamma (tapering tuning parameter) to fit. Default is 3.}
+\item{gamma}{Numeric value indicating the gamma parameter in the MCP function. Gamma controls the degree of tapering of DIF effects as lambda decreases. Larger gamma leads to faster tapering (less bias but possibly more unstable optimization), whereas smaller gamma leads to slower tapering (more bias but more stable optimization). Default is 3. Must be greater than 1.}
 
-\item{lambda}{Optional numeric vector of tuning parameter values \eqn{\ge} 0. If supplied, must be in descending order, from largest to smallest values (e.g., \code{seq(1,0,-.01)}.}
+\item{lambda}{Optional numeric vector of lambda values \eqn{\ge} 0. WARNING: If lambda is supplied, this overrides the automatic construction of lambda values via \code{nlambda}. Must be non-negative and in descending order, from largest to smallest values (e.g., \code{seq(1,0,-.01)}.}
 
-\item{anchor}{Optional numeric vector indicating which items are anchors (e.g., \code{anchor = 1}). Default is \code{NULL}, meaning at least one DIF parameter (per covariate) will be fixed to zero as lambda approaches 0. This is required to identify the model.}
+\item{anchor}{Optional numeric value or vector indicating which item response(s) are anchors (e.g., \code{anchor = 1}). Default is \code{NULL}, meaning at least one DIF effect per covariate will be fixed to zero as lambda approaches 0 (required to identify the model).}
 
 \item{rasch}{Logical value indicating whether to constrain item slopes to 1 (i.e., equal slopes). If \code{TRUE}, no slope DIF will be evaluated. Default is \code{FALSE}.}
 
-\item{control}{Optional list of control parameters. See documentation.}
+\item{standardize}{Logical value indicating whether to standardize DIF covariates for regularization. Default is \code{TRUE}, as it is recommended that all covariates are on the same scale.}
+
+\item{quadpts}{Numeric value indicating the number of quadrature points to be used in approximating the latent variable distribution during estimation. Default is \code{81}. Not recommended to be below 10 for accurate estimation.}
+
+\item{control}{Optional list of optimization parameters. May be:
+\describe{
+   \item{tol}{Convergence threshold of EM algorithm. Default is \code{10^-5}.}
+   \item{maxiter}{Maximum number of EM iterations. Default is \code{10000}.}}}
 }
 \value{
 Function returns an object of class \code{regDIF}
 }
 \description{
-Regularization of DIF parameters in item response theory (IRT) and moderated nonlinear factor analysis (MNLFA) models.
+Performs regularization of DIF effects in item response theory and confirmatory factor analysis models via penalized expectation-maximization.
 }
 \examples{
 \dontrun{
@@ -54,7 +65,7 @@ library(regDIF)
 head(ida)
 y <- ida[,1:6]
 x <- ida[,7:9]
-fit <- regDIF(x, y, itemtypes = "bernoulli", penalty = "lasso")
+fit <- regDIF(x, y, family = "bernoulli", penalty = "lasso")
 fit
 
 }

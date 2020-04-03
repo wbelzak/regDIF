@@ -21,11 +21,3 @@ cumulative_traceline <- function(p_c0, p_a0, p_thr, p_c1, p_a1, theta, predictor
     .Call(`_regDIF_cumulative_traceline`, p_c0, p_a0, p_thr, p_c1, p_a1, theta, predictors, samp_size, num_quadpts, num_responses_item)
 }
 
-bernoulli_traceline2 <- function(p_item, theta, predictors, samp_size, num_quadpts, num_items) {
-    .Call(`_regDIF_bernoulli_traceline2`, p_item, theta, predictors, samp_size, num_quadpts, num_items)
-}
-
-bernoulli_traceline3 <- function(p_item, theta, predictors, samp_size, num_quadpts) {
-    .Call(`_regDIF_bernoulli_traceline3`, p_item, theta, predictors, samp_size, num_quadpts)
-}
-

@@ -97,37 +97,6 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// bernoulli_traceline2
-List bernoulli_traceline2(NumericVector& p_item, NumericVector& theta, NumericMatrix& predictors, double samp_size, double num_quadpts, double num_items);
-RcppExport SEXP _regDIF_bernoulli_traceline2(SEXP p_itemSEXP, SEXP thetaSEXP, SEXP predictorsSEXP, SEXP samp_sizeSEXP, SEXP num_quadptsSEXP, SEXP num_itemsSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< NumericVector& >::type p_item(p_itemSEXP);
-    Rcpp::traits::input_parameter< NumericVector& >::type theta(thetaSEXP);
-    Rcpp::traits::input_parameter< NumericMatrix& >::type predictors(predictorsSEXP);
-    Rcpp::traits::input_parameter< double >::type samp_size(samp_sizeSEXP);
-    Rcpp::traits::input_parameter< double >::type num_quadpts(num_quadptsSEXP);
-    Rcpp::traits::input_parameter< double >::type num_items(num_itemsSEXP);
-    rcpp_result_gen = Rcpp::wrap(bernoulli_traceline2(p_item, theta, predictors, samp_size, num_quadpts, num_items));
-    return rcpp_result_gen;
-END_RCPP
-}
-// bernoulli_traceline3
-List bernoulli_traceline3(arma::vec p_item, arma::vec theta, arma::mat predictors, double samp_size, double num_quadpts);
-RcppExport SEXP _regDIF_bernoulli_traceline3(SEXP p_itemSEXP, SEXP thetaSEXP, SEXP predictorsSEXP, SEXP samp_sizeSEXP, SEXP num_quadptsSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< arma::vec >::type p_item(p_itemSEXP);
-    Rcpp::traits::input_parameter< arma::vec >::type theta(thetaSEXP);
-    Rcpp::traits::input_parameter< arma::mat >::type predictors(predictorsSEXP);
-    Rcpp::traits::input_parameter< double >::type samp_size(samp_sizeSEXP);
-    Rcpp::traits::input_parameter< double >::type num_quadpts(num_quadptsSEXP);
-    rcpp_result_gen = Rcpp::wrap(bernoulli_traceline3(p_item, theta, predictors, samp_size, num_quadpts));
-    return rcpp_result_gen;
-END_RCPP
-}
 
 static const R_CallMethodDef CallEntries[] = {
     {"_regDIF_bernoulli_traceline4", (DL_FUNC) &_regDIF_bernoulli_traceline4, 5},
@@ -135,8 +104,6 @@ static const R_CallMethodDef CallEntries[] = {
     {"_regDIF_bernoulli_traceline", (DL_FUNC) &_regDIF_bernoulli_traceline, 8},
     {"_regDIF_categorical_traceline", (DL_FUNC) &_regDIF_categorical_traceline, 10},
     {"_regDIF_cumulative_traceline", (DL_FUNC) &_regDIF_cumulative_traceline, 10},
-    {"_regDIF_bernoulli_traceline2", (DL_FUNC) &_regDIF_bernoulli_traceline2, 6},
-    {"_regDIF_bernoulli_traceline3", (DL_FUNC) &_regDIF_bernoulli_traceline3, 5},
     {NULL, NULL, 0}
 };
 

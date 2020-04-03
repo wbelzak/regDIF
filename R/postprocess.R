@@ -85,8 +85,9 @@ postprocess <-
     }
   }
 
+  flush.console()
   #print information about optimization
-  cat('\r',"Models Completed:",pen,"of",length(lambda)," Iteration:", 0," Change:")
+  cat('\r',"Models Completed:",pen,"of",length(lambda)," Iteration: ",0," Change: ", 0, "         ")
   flush.console()
 
   return(final)

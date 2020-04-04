@@ -1,33 +1,34 @@
 #' Coefficient function for regDIF function
 #'
-#' @param regDIF_object Fitted regDIF model object.
+#' @param object Fitted regDIF model object.
 #' @param lambda Optional character or numeric indicating the lambda(s) at which the model coefficients are returned. For character value, may be \code{"lambda.min"}, which returns model coefficients for the value of lambda at which the minimum fit statistic is identified. For numeric, the value(s) provided corresponds to the value(s) of lambda.
 #' @param method Character value indicating the model fit statistic to be used for determining \code{"lambda.min"}. Default is \code{"bic"}. May also be \code{"aic"}.
+#' @param ... Additional arguments to be passed through.
+#' @rdname coef.regDIF
 #'
-#' @return \code{NULL}
 #' @export
 
 coef.regDIF <-
-  function(regDIF_object, lambda = NULL, method = "bic") {
+  function(object, lambda = NULL, method = "bic", ...) {
     #create table to display results
     if(is.null(lambda)){
-      table <- list("Lambda" = regDIF_object$Lambda,
-                    "Impact" = regDIF_object$Impact,
-                    "DIF" = regDIF_object$DIF)
+      table <- list("Lambda" = object$Lambda,
+                    "Impact" = object$Impact,
+                    "DIF" = object$DIF)
     } else if(lambda == "lambda.min"){
       if(method == "aic"){
-        table <- list("Lambda" = regDIF_object$Lambda[which.min(regDIF_object$AIC)],
-                      "Impact" = regDIF_object$Impact[which.min(regDIF_object$AIC)],
-                      "DIF" = regDIF_object$DIF[which.min(regDIF_object$AIC)])
+        table <- list("Lambda" = object$Lambda[which.min(object$AIC)],
+                      "Impact" = object$Impact[which.min(object$AIC)],
+                      "DIF" = object$DIF[which.min(object$AIC)])
       }else if(method == "bic"){
-        table <- list("Lambda" = regDIF_object$Lambda[which.min(regDIF_object$BIC)],
-                      "Impact" = regDIF_object$Impact[which.min(regDIF_object$BIC)],
-                      "DIF" = regDIF_object$DIF[which.min(regDIF_object$BIC)])
+        table <- list("Lambda" = object$Lambda[which.min(object$BIC)],
+                      "Impact" = object$Impact[which.min(object$BIC)],
+                      "DIF" = object$DIF[which.min(object$BIC)])
       }
     } else if(is.numeric(lambda)) {
-      table <- list("Lambda" = regDIF_object$Lambda[lambda],
-                    "Impact" = regDIF_object$Impact[lambda],
-                    "DIF" = regDIF_object$DIF[lambda])
+      table <- list("Lambda" = object$Lambda[lambda],
+                    "Impact" = object$Impact[lambda],
+                    "DIF" = object$DIF[lambda])
     }
     return(table)
   }

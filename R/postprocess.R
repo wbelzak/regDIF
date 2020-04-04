@@ -18,7 +18,9 @@ postprocess <-
            num_responses,
            num_predictors,
            num_items,
-           num_quadpts) {
+           num_quadpts,
+           iter,
+           eps) {
 
   #get estimates
   elist <- estimates[[1]]
@@ -85,9 +87,8 @@ postprocess <-
     }
   }
 
-  flush.console()
   #print information about optimization
-  cat('\r',"Models Completed:",pen,"of",length(lambda)," Iteration: ",0," Change: ", 0, "         ")
+  cat('\r',sprintf("Models Completed: %d of %d  Iteration: %d  Change: %f", pen, length(lambda), iter, eps))
   flush.console()
 
   return(final)

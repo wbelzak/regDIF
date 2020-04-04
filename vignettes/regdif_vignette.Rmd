@@ -15,13 +15,13 @@ This vignette introduces regDIF to the general user by providing common use case
 
 ## LASSO regularization for evaluating DIF in 2PL-IRT model
 ```{r,eval=T,message=F}
-library(devtools)
-install_github("wbelzak/regDIF")
-library(regDIF)
-head(ida)
-x <- ida[,7:9]
-y <- ida[,1:6]
-fit <- regDIF(x, y, family = "bernoulli", penalty = "lasso", lambda = 2)
-fit
-coef(fit)
+# library(devtools)
+# install_github("wbelzak/regDIF")
+# library(regDIF)
+# head(ida)
+# x <- ida[,7:9]
+# y <- ida[,1:6]
+# fit <- regDIF(x, y, family = "bernoulli", penalty = "lasso", lambda = 2)
+# fit
+# coef(fit)
 ```

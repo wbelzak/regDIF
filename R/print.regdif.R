@@ -15,6 +15,7 @@ print.regDIF <-
     ## create table to display results
     table <- data.frame(
       "Lambda" = x$Lambda,
+      "AIC" = x$AIC,
       "BIC" = x$BIC
     )
     cat("\nRegDIF Results:\n")

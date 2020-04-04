@@ -4,12 +4,14 @@
 \alias{coef.regDIF}
 \title{Coefficient function for regDIF function}
 \usage{
-\method{coef}{regDIF}(object, ...)
+\method{coef}{regDIF}(regDIF_object, lambda = NULL, method = "bic")
 }
 \arguments{
-\item{object}{regDIF model object to obtain coefficient values.}
+\item{regDIF_object}{Fitted regDIF model object.}
 
-\item{...}{Additional arguments to be passed through}
+\item{lambda}{Optional character or numeric indicating the lambda(s) at which the model coefficients are returned. For character value, may be \code{"lambda.min"}, which returns model coefficients for the value of lambda at which the minimum fit statistic is identified. For numeric, the value(s) provided corresponds to the value(s) of lambda.}
+
+\item{method}{Character value indicating the model fit statistic to be used for determining \code{"lambda.min"}. Default is \code{"bic"}. May also be \code{"aic"}.}
 }
 \value{
 \code{NULL}

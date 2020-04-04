@@ -1,17 +1,34 @@
 #' Coefficient function for regDIF function
 #'
-#' @param object regDIF model object to obtain coefficient values.
-#' @param ... Additional arguments to be passed through
+#' @param regDIF_object Fitted regDIF model object.
+#' @param lambda Optional character or numeric indicating the lambda(s) at which the model coefficients are returned. For character value, may be \code{"lambda.min"}, which returns model coefficients for the value of lambda at which the minimum fit statistic is identified. For numeric, the value(s) provided corresponds to the value(s) of lambda.
+#' @param method Character value indicating the model fit statistic to be used for determining \code{"lambda.min"}. Default is \code{"bic"}. May also be \code{"aic"}.
 #'
 #' @return \code{NULL}
 #' @export
 
 coef.regDIF <-
-  function(object, ...) {
-    ## create table to display results
-    table <- list("Impact" = object$Impact,
-                  "DIF" = object$DIF)
-    ## print the results table
+  function(regDIF_object, lambda = NULL, method = "bic") {
+    #create table to display results
+    if(is.null(lambda)){
+      table <- list("Lambda" = regDIF_object$Lambda,
+                    "Impact" = regDIF_object$Impact,
+                    "DIF" = regDIF_object$DIF)
+    } else if(lambda == "lambda.min"){
+      if(method == "aic"){
+        table <- list("Lambda" = regDIF_object$Lambda[which.min(regDIF_object$AIC)],
+                      "Impact" = regDIF_object$Impact[which.min(regDIF_object$AIC)],
+                      "DIF" = regDIF_object$DIF[which.min(regDIF_object$AIC)])
+      }else if(method == "bic"){
+        table <- list("Lambda" = regDIF_object$Lambda[which.min(regDIF_object$BIC)],
+                      "Impact" = regDIF_object$Impact[which.min(regDIF_object$BIC)],
+                      "DIF" = regDIF_object$DIF[which.min(regDIF_object$BIC)])
+      }
+    } else if(is.numeric(lambda)) {
+      table <- list("Lambda" = regDIF_object$Lambda[lambda],
+                    "Impact" = regDIF_object$Impact[lambda],
+                    "DIF" = regDIF_object$DIF[lambda])
+    }
     return(table)
   }
 

@@ -39,7 +39,7 @@ regDIF(x,
 
 \item{lambda.max}{Numberic value indicating the maximum lambda parameter to use for internal construction of lambda vector. Default is 3. Must be large enough to shrink all DIF effects to zero to begin with.}
 
-\item{alpha}{Numeric value indicating the alpha parameter in the elastic net penalty function. Alpha controls the degree to which LASSO or ridge is used during regularization. Default is 1, which is equivalent to LASSO. For ridge, set alpha to 0.}
+\item{alpha}{Numeric value indicating the alpha parameter in the elastic net penalty function. Alpha controls the degree to which LASSO or ridge is used during regularization. Default is 1, which is equivalent to LASSO. For ridge, set alpha to 0. NOTE: If using MCP penalty, alpha may not be exactly 0.}
 
 \item{gamma}{Numeric value indicating the gamma parameter in the MCP function. Gamma controls the degree of tapering of DIF effects as lambda decreases. Larger gamma leads to faster tapering (less bias but possibly more unstable optimization), whereas smaller gamma leads to slower tapering (more bias but more stable optimization). Default is 3. Must be greater than 1.}
 

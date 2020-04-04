@@ -50,6 +50,6 @@ em_estimation <- function(p,
 
   } #End EM once converged or reached iteration limit
 
-  return(list(elist,p,iter,round(eps,5)))
+  return(list(elist,p,iter,round(eps,6)))
 
 }

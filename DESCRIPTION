@@ -13,8 +13,7 @@ Imports:
     stats (> 3.0.0),
     utils,
     Rcpp (>= 1.0.0),
-    RcppArmadillo,
-    devtools
+    RcppArmadillo
 LinkingTo: Rcpp, RcppArmadillo
 Suggests:
     knitr,

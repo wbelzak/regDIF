@@ -1,5 +1,6 @@
 <!-- badges: start -->
 [![Travis build status](https://travis-ci.org/wbelzak/regDIF.svg?branch=master)](https://travis-ci.org/wbelzak/regDIF)
+[![Codecov test coverage](https://codecov.io/gh/wbelzak/regDIF/branch/master/graph/badge.svg)](https://codecov.io/gh/wbelzak/regDIF?branch=master)
 <!-- badges: end -->
 
 # regDIF: Regularized Differential Item Functioning

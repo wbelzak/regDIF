@@ -1,7 +1,7 @@
 #' Print function for regDIF function
 #'
-#' @param x regDIF model object to obtain basic results
-#' @param ... Additional arguments to be passed through
+#' @param x Fitted regDIF model object.
+#' @param ... Additional arguments to be passed through \code{print}.
 #'
 #' @return \code{NULL}
 #' @export
@@ -14,9 +14,9 @@ print.regDIF <-
     print(x$call)
     ## create table to display results
     table <- data.frame(
-      "Lambda" = x$Lambda,
-      "AIC" = x$AIC,
-      "BIC" = x$BIC
+      "Lambda" = x$lambda,
+      "AIC" = x$aic,
+      "BIC" = x$bic
     )
     cat("\nRegDIF Results:\n")
     ## print the results table

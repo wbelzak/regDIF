@@ -4,7 +4,7 @@
 \alias{coef.regDIF}
 \title{Coefficient function for regDIF function}
 \usage{
-\method{coef}{regDIF}(object, lambda = NULL, method = "bic", ...)
+\method{coef}{regDIF}(object, lambda = NULL, method = "bic", view = "matrix", ...)
 }
 \arguments{
 \item{object}{Fitted regDIF model object.}

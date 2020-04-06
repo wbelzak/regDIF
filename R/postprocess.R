@@ -10,6 +10,7 @@ postprocess <-
            x,
            theta,
            lambda,
+           alpha,
            pen,
            anchor,
            final.control,
@@ -30,53 +31,49 @@ postprocess <-
   infocrit <- information_criteria(elist,p,responses,predictors,theta,lambda[pen],samp_size,num_responses,num_items,num_quadpts)
 
   #Organize impact parameters
-  parms_impact <- rbind(p[[num_items+1]],p[[num_items+2]])
+  lv_parms <- c(lambda[pen],p[[num_items+1]],p[[num_items+2]])
   if(is.null(colnames(x)) | length(colnames(x)) == 0){
-    impact_colnames <- c(paste0('cov',1:num_predictors))
+    lv_names <- c('lambda',paste0('lv.mean.covariate',1:num_predictors),paste0('var.covariate',1:num_predictors))
   } else{
-    impact_colnames <- colnames(x)
+    lv_names <- c('lambda',paste0('lv.mean.',colnames(x)),paste0('lv.var.',colnames(x)))
   }
-  colnames(parms_impact) <- impact_colnames
-  rownames(parms_impact) <- c('Mean','Variance')
 
-  #Organize dif parameters
+  #Organize item baseline parameters
   p2 <- unlist(p)
-  parms_dif <- cbind(p2[grep("c0_itm",names(p2))],
-                     do.call(rbind, split(p2[grep("c1_itm",names(p2),fixed=T)],rep(1:num_items,each=num_predictors))),
-                     p2[grep("a0_itm",names(p2))],
-                     do.call(rbind, split(p2[grep("a1_itm",names(p2),fixed=T)],rep(1:num_items,each=num_predictors))))
+  item_parms_base <- c(lambda[pen],p2[grep("c0_itm",names(p2))],p2[grep("a0_itm",names(p2))])
   if(is.null(colnames(x)) | length(colnames(x)) == 0){
-    dif_colnames_int <- paste0('int_cov',1:num_predictors)
-    dif_colnames_slp <- paste0('slp_cov',1:num_predictors)
+    item_names_base <- c('lambda',paste0('item',1:num_items,".c0"),paste0('item',1:num_items,".a0"))
   } else{
-    dif_colnames_int <- paste0('int_',colnames(x))
-    dif_colnames_slp <- paste0('slp_',colnames(x))
+    item_names_base <- c('lambda',paste0('item',1:num_items,".c0.base"),paste0('item',1:num_items,".a0.base"))
   }
-  if(is.null(rownames(y)) | length(rownames(y)) == 0){
-    dif_rownames <- paste0(1:num_items)
+
+  #Organize item dif parameters
+  item_parms_dif <- c(lambda[pen],p2[grep("c1_itm",names(p2),fixed=T)],p2[grep("a1_itm",names(p2),fixed=T)])
+  if(is.null(colnames(x)) | length(colnames(x)) == 0){
+    item_names_dif <- c('lambda',paste0(rep(paste0('item',1:num_items),each = 3),'.c',1:num_predictors),paste0(rep(paste0('item',1:num_items),each = 3),'.a',1:num_predictors))
   } else{
-    dif_rownames <- colnames(y)
+    item_names_dif <- c('lambda',paste0(rep(paste0('item',1:num_items),each = 3),'.c',1:num_predictors,'.',colnames(x)),paste0(rep(paste0('item',1:num_items),each = 3),'.a',1:num_predictors,'.',colnames(x)))
   }
-  colnames(parms_dif) <- c('int_base',
-                           dif_colnames_int,
-                           'slp_base',
-                           dif_colnames_slp)
-  rownames(parms_dif) <- dif_rownames
+
 
 
   #assign output to final list
-  final$Lambda[pen] <- lambda[pen]
-  final$AIC[pen] <- round(infocrit[1],2)
-  final$BIC[pen] <- round(infocrit[2],2)
-  final$Impact[[pen]] <- round(parms_impact,2)
-  final$DIF[[pen]] <- round(parms_dif,2)
-
+  final$lambda[pen] <- lambda[pen]
+  final$aic[pen] <- round(infocrit[1],3)
+  final$bic[pen] <- round(infocrit[2],3)
+  final$impact.lv.parms[,pen] <- round(lv_parms,3)
+  final$base.item.parms[,pen] <- round(item_parms_base,3)
+  final$dif.item.parms[,pen] <- round(item_parms_dif,3)
+  rownames(final$impact.lv.parms) <- lv_names
+  rownames(final$base.item.parms) <- item_names_base
+  rownames(final$dif.item.parms) <- item_names_dif
 
   #stop if lambda is too small on first run (this leads to different results b/c of identification constraints on DIF parameters)
-  if(is.null(anchor) & pen == 1 & sum(abs(p2[grep(paste0("cov"),names(p2))])) > 0){
+  if(is.null(anchor) & pen == 1 & sum(abs(p2[grep(paste0("cov"),names(p2))])) > 0 & alpha == 1){
     print(coef(final))
     stop("First Lambda value is too small.\n  Two Options:\n  1. Increase first Lambda value large enough to ensure all DIF parameters are removed from the model.\n  2. Provide anchor item(s).", call. = TRUE)
   }
+
   #stop if there is a large change in DIF parameters
   if(pen > 1){
     second_last <- sum(final$DIF[[pen-1]][,-c(1,2+num_predictors)] == 0)
@@ -89,7 +86,7 @@ postprocess <-
 
   #print information about optimization
   cat('\r',sprintf("Models Completed: %d of %d  Iteration: %d  Change: %f", pen, length(lambda), iter, eps))
-  flush.console()
+  utils::flush.console()
 
   return(final)
 

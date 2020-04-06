@@ -82,6 +82,7 @@ regDIF <- function(x,
   call <- match.call()
   data_scrub <- preprocess(x,y,family,penalty,nlambda,lambda.max,lambda,anchor,rasch,standardize,quadpts,control,call)
 
+
   #Run Reg-DIF by looping through lambda
   for(pen in 1:length(data_scrub$lambda)){
 
@@ -89,7 +90,7 @@ regDIF <- function(x,
     estimates <- em_estimation(data_scrub$p,data_scrub$responses,data_scrub$predictors,data_scrub$theta,data_scrub$itemtypes,penalty,data_scrub$lambda,alpha,gamma,pen,anchor,rasch,data_scrub$final.control,data_scrub$samp_size,data_scrub$num_items,data_scrub$num_responses,data_scrub$num_predictors,data_scrub$num_quadpts)
 
     #postprocess data
-    data_final <- postprocess(estimates,data_scrub$responses,data_scrub$predictors,y,x,data_scrub$theta,data_scrub$lambda,pen,anchor,data_scrub$final.control,data_scrub$final,data_scrub$samp_size,data_scrub$num_responses,data_scrub$num_predictors,data_scrub$num_items,data_scrub$num_quadpts,estimates[[3]],estimates[[4]])
+    data_final <- postprocess(estimates,data_scrub$responses,data_scrub$predictors,y,x,data_scrub$theta,data_scrub$lambda,alpha,pen,anchor,data_scrub$final.control,data_scrub$final,data_scrub$samp_size,data_scrub$num_responses,data_scrub$num_predictors,data_scrub$num_items,data_scrub$num_quadpts,estimates[[3]],estimates[[4]])
 
     #update parameter estimates for next lambda value
     data_scrub$p <- estimates[[2]]

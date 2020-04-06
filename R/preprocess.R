@@ -93,11 +93,12 @@ preprocess <-
   p[[(num_items+1)]] <- p[[(num_items+2)]] <- rep(0,num_predictors)
   names(p[[(num_items+1)]]) <- paste0(rep(paste0('g',1:num_predictors)))
   names(p[[(num_items+2)]]) <- paste0(rep(paste0('b',1:num_predictors)))
-  final <- list(Lambda = rep(NA,length(lambda)),
-                AIC = rep(NA,length(lambda)),
-                BIC = rep(NA,length(lambda)),
-                Impact = replicate(n=length(lambda), NA, simplify = F),
-                DIF = replicate(n=length(lambda), NA, simplify = F),
+  final <- list(lambda = rep(NA,length(lambda)),
+                aic = rep(NA,length(lambda)),
+                bic = rep(NA,length(lambda)),
+                impact.lv.parms = matrix(NA,ncol=length(lambda),nrow=1+num_predictors*2),
+                base.item.parms = matrix(NA,ncol=length(lambda),nrow=1+(num_items*2)),
+                dif.item.parms = matrix(NA,ncol=length(lambda),nrow=1+(num_predictors*2)*num_items),
                 call = call)
 
   return(list(p = p,

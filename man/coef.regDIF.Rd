@@ -4,7 +4,7 @@
 \alias{coef.regDIF}
 \title{Coefficient function for regDIF function}
 \usage{
-\method{coef}{regDIF}(object, lambda = NULL, method = "bic", view = "matrix", ...)
+\method{coef}{regDIF}(object, lambda = NULL, method = "bic", ...)
 }
 \arguments{
 \item{object}{Fitted regDIF model object.}
@@ -13,7 +13,7 @@
 
 \item{method}{Character value indicating the model fit statistic to be used for determining \code{"lambda.min"}. Default is \code{"bic"}. May also be \code{"aic"}.}
 
-\item{...}{Additional arguments to be passed through.}
+\item{...}{Additional arguments to be passed through to \code{coef}.}
 }
 \description{
 Coefficient function for regDIF function

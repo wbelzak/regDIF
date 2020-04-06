@@ -2,10 +2,12 @@
 #'
 #' @param x Fitted regDIF model object.
 #' @param y Unused for plotting regDIF model object.
+#' @param method Fit statistic to use for identifying DIF effects in plot.
+#' @param legend.seed Random seed to sample line colors and line types for DIF effects in plot.
 #' @param ... Additional arguments to be passed through to \code{plot}.
 #'
 #' @rdname plot.regDIF
-#'
+#' @importFrom graphics abline legend lines plot
 #' @export
 #'
 

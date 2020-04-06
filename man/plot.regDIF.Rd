@@ -4,12 +4,18 @@
 \alias{plot.regDIF}
 \title{Plot function for regDIF function}
 \usage{
-\method{plot}{regDIF}(x, y, ...)
+\method{plot}{regDIF}(x, y = NULL, method = "bic", legend.seed = 123, ...)
 }
 \arguments{
 \item{x}{Fitted regDIF model object.}
 
-\item{y}{Unused.}
+\item{y}{Unused for plotting regDIF model object.}
+
+\item{method}{Fit statistic to use for identifying DIF effects in plot.}
+
+\item{legend.seed}{Random seed to sample line colors and line types for DIF effects in plot.}
+
+\item{...}{Additional arguments to be passed through to \code{plot}.}
 }
 \description{
 Plot function for regDIF function

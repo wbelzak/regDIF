@@ -3,6 +3,8 @@
 #' @param x Fitted regDIF model object.
 #' @param ... Additional arguments to be passed through \code{print}.
 #'
+#' @rdname print.regDIF
+#'
 #' @return \code{NULL}
 #' @export
 

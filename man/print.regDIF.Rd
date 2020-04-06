@@ -7,9 +7,9 @@
 \method{print}{regDIF}(x, ...)
 }
 \arguments{
-\item{x}{regDIF model object to obtain basic results}
+\item{x}{Fitted regDIF model object.}
 
-\item{...}{Additional arguments to be passed through}
+\item{...}{Additional arguments to be passed through \code{print}.}
 }
 \value{
 \code{NULL}

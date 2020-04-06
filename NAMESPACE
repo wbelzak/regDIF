@@ -3,6 +3,7 @@
 S3method(coef,regDIF)
 S3method(plot,regDIF)
 S3method(print,regDIF)
+S3method(summary,regDIF)
 export(regDIF)
 exportMethods(coef)
 exportMethods(plot)

@@ -97,7 +97,7 @@ Mstep_2pl_dif <-
         for(cov in 1:num_predictors){
 
           #end routine if only one anchor item is left on each covariate for each item parameter
-          if(is.null(anchor) & sum(p2[grep(paste0("c1(.*?)cov",cov),names(p2))] != 0) > (num_items - 2)){
+          if(is.null(anchor) & sum(p2[grep(paste0("c1(.*?)cov",cov),names(p2))] != 0) > (num_items - 2) & alpha == 1){
             next
           }
 
@@ -112,7 +112,7 @@ Mstep_2pl_dif <-
         for(cov in 1:num_predictors){
 
           #end routine if only one anchor item is left on each covariate for each item parameter
-          if(is.null(anchor) & sum(p2[grep(paste0("a1(.*?)cov",cov),names(p2))] != 0) > (num_items - 2)){
+          if(is.null(anchor) & sum(p2[grep(paste0("a1(.*?)cov",cov),names(p2))] != 0) > (num_items - 2) & alpha == 1){
             next
           }
 
@@ -161,7 +161,7 @@ Mstep_2pl_dif <-
         for(cov in 1:num_predictors){
 
           #end routine if only one anchor item is left on each covariate for each item parameter
-          if(is.null(anchor) & sum(p2[grep(paste0("c1(.*?)cov",cov),names(p2))] != 0) > (num_items - 2)){
+          if(is.null(anchor) & sum(p2[grep(paste0("c1(.*?)cov",cov),names(p2))] != 0) > (num_items - 2) & alpha == 1){
             next
           }
 
@@ -176,7 +176,7 @@ Mstep_2pl_dif <-
         for(cov in 1:num_predictors){
 
           #end routine if only one anchor item is left on each covariate for each item parameter
-          if(is.null(anchor) & sum(p2[grep(paste0("a1(.*?)cov",cov),names(p2))] != 0) > (num_items - 2)){
+          if(is.null(anchor) & sum(p2[grep(paste0("a1(.*?)cov",cov),names(p2))] != 0) > (num_items - 2) & alpha == 1){
             next
           }
 
@@ -230,7 +230,7 @@ Mstep_2pl_dif <-
         for(cov in 1:num_predictors){
 
           #end routine if only one anchor item is left on each covariate for each item parameter
-          if(is.null(anchor) & sum(p2[grep(paste0("c1(.*?)cov",cov),names(p2))] != 0) > (num_items - 2)){
+          if(is.null(anchor) & sum(p2[grep(paste0("c1(.*?)cov",cov),names(p2))] != 0) > (num_items - 2) & alpha == 1){
             next
           }
 
@@ -245,7 +245,7 @@ Mstep_2pl_dif <-
         for(cov in 1:num_predictors){
 
           #end routine if only one anchor item is left on each covariate for each item parameter
-          if(is.null(anchor) & sum(p2[grep(paste0("a1(.*?)cov",cov),names(p2))] != 0) > (num_items - 2)){
+          if(is.null(anchor) & sum(p2[grep(paste0("a1(.*?)cov",cov),names(p2))] != 0) > (num_items - 2) & alpha == 1){
             next
           }
 

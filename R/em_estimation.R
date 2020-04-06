@@ -46,7 +46,7 @@ em_estimation <- function(p,
     if(iter == final.control$maxit) warning("EM iteration limit reached without convergence")
 
     cat('\r',sprintf("Models Completed: %d of %d  Iteration: %d  Change: %f", pen-1, length(lambda), iter, round(eps,6))) #print information about optimization
-    flush.console()
+    utils::flush.console()
 
   } #End EM once converged or reached iteration limit
 

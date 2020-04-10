@@ -19,16 +19,11 @@ postprocess <-
            num_responses,
            num_predictors,
            num_items,
-           num_quadpts,
-           iter,
-           eps) {
+           num_quadpts) {
 
-  #get estimates
-  elist <- estimates[[1]]
-  p <- estimates[[2]]
-
-  #get information criteria
-  infocrit <- information_criteria(elist,p,responses,predictors,theta,lambda[pen],samp_size,num_responses,num_items,num_quadpts)
+  #get estimates and information criteria
+  p <- estimates[[1]]
+  infocrit <- estimates[[2]]
 
   #Organize impact parameters
   lv_parms <- c(lambda[pen],p[[num_items+1]],p[[num_items+2]])
@@ -85,7 +80,7 @@ postprocess <-
   }
 
   #print information about optimization
-  cat('\r',sprintf("Models Completed: %d of %d  Iteration: %d  Change: %f", pen, length(lambda), iter, eps))
+  cat('\r',sprintf("Models Completed: %d of %d  Iteration: %d  Change: %d              ", pen, length(lambda), 0, 0))
   utils::flush.console()
 
   return(final)

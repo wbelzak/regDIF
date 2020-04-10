@@ -15,7 +15,6 @@ Mstep_2pl_dif <-
            gamma,
            anchor,
            rasch,
-           maxit,
            samp_size,
            num_responses,
            num_items,

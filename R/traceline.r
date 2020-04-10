@@ -16,7 +16,8 @@ bernoulli_traceline_pts <-
 
   return(traceline)
 
-}
+  }
+
 
 categorical_traceline_pts <-
   function(p_active,

@@ -21,6 +21,7 @@ em_estimation <- function(p,
                           num_predictors,
                           num_quadpts) {
 
+   # p <- data_scrub$p; responses <- data_scrub$responses;predictors <- data_scrub$predictors;theta <- data_scrub$theta;itemtypes <- data_scrub$itemtypes;lambda <- data_scrub$lambda; final.control <- data_scrub$final.control;samp_size <- data_scrub$samp_size;num_items <- data_scrub$num_items;num_responses <- data_scrub$num_responses;num_predictors <- data_scrub$num_predictors;num_quadpts <- data_scrub$num_quadpts
   #Maximization settings
   lastp <- p
   eps <- Inf
@@ -33,7 +34,9 @@ em_estimation <- function(p,
     elist <- Estep_2pl(p,responses,predictors,theta,samp_size,num_items,num_responses,num_quadpts)
 
     #M-step: Optimize parameters
-    p <- Mstep_2pl_dif(p,responses,predictors,elist,theta,itemtypes,penalty,lambda[pen],alpha,gamma,anchor,rasch,final.control$maxit,samp_size,num_responses,num_items,num_quadpts,num_predictors)
+    p <- Mstep_2pl_dif(p,responses,predictors,elist,theta,itemtypes,penalty,lambda[pen],alpha,gamma,anchor,rasch,samp_size,num_responses,num_items,num_quadpts,num_predictors)
+
+    # p <- em_step(p,theta,responses,predictors,itemtypes,penalty,lambda,pen,alpha,gamma,anchor,rasch,samp_size,num_items,num_responses,num_quadpts,num_predictors)
 
     #Update and check for convergence: Calculate the difference in parameter estimates from current to previous
     eps = sqrt(sum((unlist(p)-unlist(lastp))^2))
@@ -46,10 +49,14 @@ em_estimation <- function(p,
     if(iter == final.control$maxit) warning("EM iteration limit reached without convergence")
 
     cat('\r',sprintf("Models Completed: %d of %d  Iteration: %d  Change: %f", pen-1, length(lambda), iter, round(eps,6))) #print information about optimization
+
     utils::flush.console()
 
   } #End EM once converged or reached iteration limit
 
-  return(list(elist,p,iter,round(eps,6)))
+  #get information criteria
+  infocrit <- information_criteria(elist,p,responses,predictors,theta,lambda[pen],samp_size,num_responses,num_items,num_quadpts)
+
+  return(list(p,infocrit))
 
 }

@@ -70,3 +70,4 @@ Estep_2pl <-
 
 
 } #end of E-step
+

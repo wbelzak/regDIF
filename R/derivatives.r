@@ -19,7 +19,7 @@ d_alpha <-
 
   eta_d <- matrix(rep(predictors[,cov], num_quadpts), ncol = num_quadpts, nrow = samp_size)
 
-  d1_trace <- t(sapply(1:samp_size, function(x){eta_d[x,]/phi[x]*(theta-alpha[x,])}))
+  d1_trace <- t(sapply(1:samp_size, function(x){eta_d[x,]/phi[x]*(theta-alpha[x])}))
   d2_trace <- t(sapply(1:samp_size, function(x){-eta_d[x,]**2/phi[x]}))
 
   d1 <- sum(etable_all*d1_trace)
@@ -47,8 +47,8 @@ d_phi <-
   eta_d1 <- .5*sqrt(phi)*predictors[,cov]
   eta_d2 <- .25*sqrt(phi)*predictors[,cov]**2
 
-  d1_trace <- t(sapply(1:samp_size, function(x) {eta_d1[x]*((theta-alpha[x,])**2/phi[x]**(3/2) - 1/sqrt(phi[x]))}))
-  d2_trace <- t(sapply(1:samp_size, function(x) {-2*eta_d2[x]*(phi[x]**(-3/2)*(theta-alpha[x,])**2)}))
+  d1_trace <- t(sapply(1:samp_size, function(x) {eta_d1[x]*((theta-alpha[x])**2/phi[x]**(3/2) - 1/sqrt(phi[x]))}))
+  d2_trace <- t(sapply(1:samp_size, function(x) {-2*eta_d2[x]*(phi[x]**(-3/2)*(theta-alpha[x])**2)}))
 
   d1 <- sum(etable_all*d1_trace)
   d2 <- sum(etable_all*d2_trace)

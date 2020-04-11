@@ -13,21 +13,25 @@ coef.regDIF <-
 
       #which lambda/model to show
       if(is.null(lambda)){
-        table <- list("impact.lv.parms" = object$impact.lv.parms,
+        table <- list("lambda.parms" = object$lambda,
+                      "impact.lv.parms" = object$impact.lv.parms,
                       "base.item.parms" = object$base.item.parms,
                       "dif.item.parms" = object$dif.item.parms)
       } else if(lambda == "lambda.min"){
         if(method == "aic"){
-          table <- list("impact.lv.parms" = object$impact.lv.parms[,which.min(object$aic)],
+          table <- list("lambda.parms" = object$lambda[which.min(object$aic)],
+                        "impact.lv.parms" = object$impact.lv.parms[,which.min(object$aic)],
                         "base.item.parms" = object$base.item.parms[,which.min(object$aic)],
                         "dif.item.parms" = object$dif.item.parms[,which.min(object$aic)])
         }else if(method == "bic"){
-          table <- list("impact.lv.parms" = object$impact.lv.parms[,which.min(object$bic)],
+          table <- list("lambda.parms" = object$lambda[which.min(object$bic)],
+                        "impact.lv.parms" = object$impact.lv.parms[,which.min(object$bic)],
                         "base.item.parms" = object$base.item.parms[,which.min(object$bic)],
                         "dif.item.parms" = object$dif.item.parms[,which.min(object$bic)])
         }
       } else if(is.numeric(lambda)) {
-        table <- list("impact.lv.parms" = object$impact.lv.parms[,lambda],
+        table <- list("lambda.parms" = object$lambda[lambda],
+                      "impact.lv.parms" = object$impact.lv.parms[,lambda],
                       "base.item.parms" = object$base.item.parms[,lambda],
                       "dif.item.parms" = object$dif.item.parms[,lambda])
       }

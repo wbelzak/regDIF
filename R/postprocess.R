@@ -21,33 +21,35 @@ postprocess <-
            num_items,
            num_quadpts) {
 
+    # responses <- data_scrub$responses;predictors <- data_scrub$predictors;theta <- data_scrub$theta;itemtypes <- data_scrub$itemtypes;lambda <- data_scrub$lambda; final.control <- data_scrub$final.control;final <- data_scrub$final;samp_size <- data_scrub$samp_size;num_items <- data_scrub$num_items;num_responses <- data_scrub$num_responses;num_predictors <- data_scrub$num_predictors;num_quadpts <- data_scrub$num_quadpts
+
   #get estimates and information criteria
   p <- estimates[[1]]
   infocrit <- estimates[[2]]
 
   #Organize impact parameters
-  lv_parms <- c(lambda[pen],p[[num_items+1]],p[[num_items+2]])
+  lv_parms <- c(p[[num_items+1]],p[[num_items+2]])
   if(is.null(colnames(x)) | length(colnames(x)) == 0){
-    lv_names <- c('lambda',paste0('lv.mean.covariate',1:num_predictors),paste0('var.covariate',1:num_predictors))
+    lv_names <- c(paste0('lv.mean.covariate',1:num_predictors),paste0('var.covariate',1:num_predictors))
   } else{
-    lv_names <- c('lambda',paste0('lv.mean.',colnames(x)),paste0('lv.var.',colnames(x)))
+    lv_names <- c(paste0('lv.mean.',colnames(x)),paste0('lv.var.',colnames(x)))
   }
 
   #Organize item baseline parameters
   p2 <- unlist(p)
-  item_parms_base <- c(lambda[pen],p2[grep("c0_itm",names(p2))],p2[grep("a0_itm",names(p2))])
-  if(is.null(colnames(x)) | length(colnames(x)) == 0){
-    item_names_base <- c('lambda',paste0('item',1:num_items,".c0"),paste0('item',1:num_items,".a0"))
+  item_parms_base <- c(p2[grep("c0_itm",names(p2))],p2[grep("a0_itm",names(p2))])
+  if(is.null(colnames(y)) | length(colnames(y)) == 0){
+    item_names_base <- c(paste0('item',1:num_items,".int.base"),paste0('item',1:num_items,".slp.base"))
   } else{
-    item_names_base <- c('lambda',paste0('item',1:num_items,".c0.base"),paste0('item',1:num_items,".a0.base"))
+    item_names_base <- c(paste0(colnames(y),".int.base"),paste0(colnames(y),".slp.base"))
   }
 
   #Organize item dif parameters
-  item_parms_dif <- c(lambda[pen],p2[grep("c1_itm",names(p2),fixed=T)],p2[grep("a1_itm",names(p2),fixed=T)])
+  item_parms_dif <- c(p2[grep("c1_itm",names(p2),fixed=T)],p2[grep("a1_itm",names(p2),fixed=T)])
   if(is.null(colnames(x)) | length(colnames(x)) == 0){
-    item_names_dif <- c('lambda',paste0(rep(paste0('item',1:num_items),each = 3),'.c',1:num_predictors),paste0(rep(paste0('item',1:num_items),each = 3),'.a',1:num_predictors))
+    item_names_dif <- c(paste0(rep(paste0('item',1:num_items),each = 3),'.int.cov',1:num_predictors),paste0(rep(paste0('item',1:num_items),each = 3),'.slp.cov',1:num_predictors))
   } else{
-    item_names_dif <- c('lambda',paste0(rep(paste0('item',1:num_items),each = 3),'.c',1:num_predictors,'.',colnames(x)),paste0(rep(paste0('item',1:num_items),each = 3),'.a',1:num_predictors,'.',colnames(x)))
+    item_names_dif <- c(paste0(rep(paste0('item',1:num_items),each = 3),'.int.',colnames(x)),paste0(rep(paste0('item',1:num_items),each = 3),'.slp.',colnames(x)))
   }
 
 
@@ -63,16 +65,10 @@ postprocess <-
   rownames(final$base.item.parms) <- item_names_base
   rownames(final$dif.item.parms) <- item_names_dif
 
-  #stop if lambda is too small on first run (this leads to different results b/c of identification constraints on DIF parameters)
-  if(is.null(anchor) & pen == 1 & sum(abs(p2[grep(paste0("cov"),names(p2))])) > 0 & alpha == 1){
-    print(coef(final))
-    stop("First Lambda value is too small.\n  Two Options:\n  1. Increase first Lambda value large enough to ensure all DIF parameters are removed from the model.\n  2. Provide anchor item(s).", call. = TRUE)
-  }
-
   #stop if there is a large change in DIF parameters
   if(pen > 1){
-    second_last <- sum(final$DIF[[pen-1]][,-c(1,2+num_predictors)] == 0)
-    last <- sum(final$DIF[[pen]][,-c(1,2+num_predictors)] == 0)
+    second_last <- sum(final$dif.item.parms[-1,pen-1] == 0)
+    last <- sum(final$dif.item.parms[-1,pen] == 0)
     if((second_last - last) > (num_predictors*num_items)){
       print(final)
       stop(paste0("Large increase in the number of DIF parameters from iteration ",pen-1," to ",pen,".\n  Two Options:\n  1. Provide smaller differences between lambda values.\n  2. Provide anchor item(s)."), call. = TRUE)

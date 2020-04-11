@@ -96,9 +96,9 @@ preprocess <-
   final <- list(lambda = rep(NA,length(lambda)),
                 aic = rep(NA,length(lambda)),
                 bic = rep(NA,length(lambda)),
-                impact.lv.parms = matrix(NA,ncol=length(lambda),nrow=1+num_predictors*2),
-                base.item.parms = matrix(NA,ncol=length(lambda),nrow=1+(num_items*2)),
-                dif.item.parms = matrix(NA,ncol=length(lambda),nrow=1+(num_predictors*2)*num_items),
+                impact.lv.parms = matrix(NA,ncol=length(lambda),nrow=num_predictors*2),
+                base.item.parms = matrix(NA,ncol=length(lambda),nrow=(num_items*2)),
+                dif.item.parms = matrix(NA,ncol=length(lambda),nrow=(num_predictors*2)*num_items),
                 call = call)
 
   return(list(p = p,

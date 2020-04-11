@@ -4,10 +4,12 @@
 \alias{summary.regDIF}
 \title{Summary function for regDIF function}
 \usage{
-\method{summary}{regDIF}(object, ...)
+\method{summary}{regDIF}(object, method = "bic", ...)
 }
 \arguments{
 \item{object}{Fitted regDIF model object.}
+
+\item{method}{Fit statistic to use for displaying minimum lambda model.}
 
 \item{...}{Additional arguments to be passed through \code{summary}.}
 }

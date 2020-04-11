@@ -78,24 +78,60 @@ regDIF <- function(x,
                    quadpts = 81,
                    control = list()){
 
+
   # family <- 'bernoulli';penalty <- 'lasso';nlambda <- 100;lambda.max <- 2;alpha <- 1;pen <- 1;gamma <- 3;lambda <- .5;anchor <- 1;rasch <- F;standardize <- T;quadpts <- 81;control <- list()
-  #preprocess data
-  call <- match.call()
-  data_scrub <- preprocess(x,y,family,penalty,nlambda,lambda.max,lambda,anchor,rasch,standardize,quadpts,control,call)
+
+  #obtain larger lambda if necessary
+  need_larger_lambda <- TRUE #only true to start
+  lambda_times <- 0
+  while(need_larger_lambda | lambda_times < 6){
 
 
-  #Run Reg-DIF by looping through lambda
-  for(pen in 1:length(data_scrub$lambda)){
+    #increase lambda.max if all penalized parameters have NOT been removed from model (unless specifying anchor item)
+    if(need_larger_lambda == FALSE) break
+    if(lambda_times > 0) {
+      lambda.max <- lambda.max*1.5
+      lambda[1] <- lambda[1]*1.5
+    }
+    #if too many lambda.max values have been tried, stop.
+    if(lambda_times == 5){
+      print(coef(data_scrub$final))
+      stop("lambda.max is too small.\n  Three possible solutions:\n  1. Increase lambda.max large enough to ensure all DIF parameters are removed from the model.\n  2. Standardize predictors if not already standardized.\n  3. Provide anchor item(s).", call. = TRUE)
+    }
 
-    #obtain regDIF estimates
-    estimates <- em_estimation(data_scrub$p,data_scrub$responses,data_scrub$predictors,data_scrub$theta,data_scrub$itemtypes,penalty,data_scrub$lambda,alpha,gamma,pen,anchor,rasch,data_scrub$final.control,data_scrub$samp_size,data_scrub$num_items,data_scrub$num_responses,data_scrub$num_predictors,data_scrub$num_quadpts)
+    #preprocess data
+    call <- match.call()
+    data_scrub <- preprocess(x,y,family,penalty,nlambda,lambda.max,lambda,anchor,rasch,standardize,quadpts,control,call)
 
-    #postprocess data
-    data_final <- postprocess(estimates,data_scrub$responses,data_scrub$predictors,y,x,data_scrub$theta,data_scrub$lambda,alpha,pen,anchor,data_scrub$final.control,data_scrub$final,data_scrub$samp_size,data_scrub$num_responses,data_scrub$num_predictors,data_scrub$num_items,data_scrub$num_quadpts)
 
-    #update parameter estimates for next lambda value
-    data_scrub$p <- estimates[[1]]
-    data_scrub$final <- data_final
+    #Run Reg-DIF by looping through lambda
+    for(pen in 1:length(data_scrub$lambda)){
+
+      #obtain regDIF estimates
+      estimates <- em_estimation(data_scrub$p,data_scrub$responses,data_scrub$predictors,data_scrub$theta,data_scrub$itemtypes,penalty,data_scrub$lambda,alpha,gamma,pen,anchor,rasch,data_scrub$final.control,data_scrub$samp_size,data_scrub$num_items,data_scrub$num_responses,data_scrub$num_predictors,data_scrub$num_quadpts)
+
+      #stop if lambda.max is too small on first run
+      p2 <- unlist(estimates[[1]])
+      if(is.null(anchor) & #no anchor
+         pen == 1 & #first penalty value
+         sum(abs(p2[grep(paste0("cov"),names(p2))])) > 0 & #not all DIF effects are zero
+         alpha == 1 #alpha is 1 for lasso
+         ){
+        message("\nWarning: lambda.max or user-defined lambda value is too small to penalize all parameters to zero without anchor item. Automatically trying larger lambda.max or lambda value.")
+        lambda_times <- lambda_times + 1
+        break
+      } else{
+        need_larger_lambda <- FALSE
+      }
+
+      #postprocess data
+      data_final <- postprocess(estimates,data_scrub$responses,data_scrub$predictors,y,x,data_scrub$theta,data_scrub$lambda,alpha,pen,anchor,data_scrub$final.control,data_scrub$final,data_scrub$samp_size,data_scrub$num_responses,data_scrub$num_predictors,data_scrub$num_items,data_scrub$num_quadpts)
+
+      #update parameter estimates for next lambda value
+      data_scrub$p <- estimates[[1]]
+      data_scrub$final <- data_final
+    }
+
   }
 
   #Obtain final results

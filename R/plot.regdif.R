@@ -14,8 +14,8 @@
 plot.regDIF <-
   function(x, y = NULL, method = "bic", legend.seed = 123, ...) {
 
-    lambda <- x$dif.item.parms[1,]
-    dif.parms <- x$dif.item.parms[2:nrow(x$dif.item.parms),]
+    lambda <- x$lambda
+    dif.parms <- x$dif.item.parms
     min.lambda <- lambda[which.min(unlist(x[method]))]
     dif.min.lambda <- dif.parms[,which(lambda == min.lambda)]
     nonzero.dif <- dif.min.lambda[!(dif.min.lambda == 0)]
@@ -50,7 +50,7 @@ plot.regDIF <-
         dif.lines[i,2] <- linetype
 
       }
-    lines(lambda, rep(0,length(lambda)), type = 'l')
+    lines(c(lambda[first.lambda]+.5,lambda), rep(0,length(lambda)+1), type = 'l', xlim = c(lambda[first.lambda]+.5,min(lambda)))
     nonzero.dif.lines <- dif.lines[!(dif.min.lambda == 0)]
     legend("topleft", legend = names(nonzero.dif), col = nonzero.dif.lines[1:length(nonzero.dif)], lty = as.numeric(nonzero.dif.lines[(length(nonzero.dif)+1):(length(nonzero.dif)*2)]), lwd = 2, cex = 0.75)
 

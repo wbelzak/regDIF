@@ -78,6 +78,13 @@ regDIF <- function(x,
                    quadpts = 81,
                    control = list()){
 
+  # data <- read.table("C:\\Users\\wbelz\\Dropbox\\Will\\Research\\Small Samples Categorical Paper\\simdata\\ss500ni6dm2pd2im1\\ss500ni6dm2pd2im1_1.dat")
+  # y <- data[,9:14]
+  # y[which(y[,3]<3),3] <- 0
+  # y[which(y[,3]>=3),3] <- 1
+  # y[which(data[,10]==3 & data[,7] > 1.5),2] <- 4
+  # x <- data[,3]
+  # family <- c('categorical','categorical','bernoulli','categorical','categorical','categorical');penalty <- 'lasso';nlambda <- 100;lambda.max <- 2;alpha <- 1;pen <- 1;gamma <- 3;lambda <- .5;anchor <- 1;rasch <- F;standardize <- T;quadpts <- 81;control <- list()
 
   # family <- 'bernoulli';penalty <- 'lasso';nlambda <- 100;lambda.max <- 2;alpha <- 1;pen <- 1;gamma <- 3;lambda <- .5;anchor <- 1;rasch <- F;standardize <- T;quadpts <- 81;control <- list()
 

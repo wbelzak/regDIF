@@ -93,12 +93,19 @@ preprocess <-
   p[[(num_items+1)]] <- p[[(num_items+2)]] <- rep(0,num_predictors)
   names(p[[(num_items+1)]]) <- paste0(rep(paste0('g',1:num_predictors)))
   names(p[[(num_items+2)]]) <- paste0(rep(paste0('b',1:num_predictors)))
+  if(any(itemtypes == "gaussian")){
+    num_base_parms <- length(c(unlist(p)[grep('c0',names(unlist(p)))],unlist(p)[grep('a0',names(unlist(p)))],unlist(p)[grep('s0',names(unlist(p)))]))
+    num_dif_parms <- length(c(unlist(p)[grep('c1',names(unlist(p)))],unlist(p)[grep('a1',names(unlist(p)))],unlist(p)[grep('s1',names(unlist(p)))]))
+  } else{
+    num_base_parms <- length(c(unlist(p)[grep('c0',names(unlist(p)))],unlist(p)[grep('a0',names(unlist(p)))]))
+    num_dif_parms <- length(c(unlist(p)[grep('c1',names(unlist(p)))],unlist(p)[grep('a1',names(unlist(p)))]))
+  }
   final <- list(lambda = rep(NA,length(lambda)),
                 aic = rep(NA,length(lambda)),
                 bic = rep(NA,length(lambda)),
                 impact.lv.parms = matrix(NA,ncol=length(lambda),nrow=num_predictors*2),
-                base.item.parms = matrix(NA,ncol=length(lambda),nrow=(num_items*2)),
-                dif.item.parms = matrix(NA,ncol=length(lambda),nrow=(num_predictors*2)*num_items),
+                base.item.parms = matrix(NA,ncol=length(lambda),nrow=num_base_parms),
+                dif.item.parms = matrix(NA,ncol=length(lambda),nrow=num_dif_parms),
                 call = call)
 
   return(list(p = p,

@@ -39,7 +39,20 @@ postprocess <-
   p2 <- unlist(p)
   item_parms_base <- c(p2[grep("c0_itm",names(p2))],p2[grep("a0_itm",names(p2))])
   if(is.null(colnames(y)) | length(colnames(y)) == 0){
-    item_names_base <- c(paste0('item',1:num_items,".int.base"),paste0('item',1:num_items,".slp.base"))
+    # if(any(num_responses > 2)){
+    #   item_int <- item_parms_base[grep("int",names(item_parms_base))]
+    #   item_thr <- item_parms_base[grep("thr",names(item_parms_base))]
+    #   item_slp <- item_parms_base[grep("a0",names(item_parms_base))]
+    #   item_parms_base <- c(item_int,item_thr,item_slp)
+    #   item_names_thr <- NULL
+    #   for(i in 1:num_items){
+    #     item_names_thr_temp <- paste0('item')
+    #   }
+    #   sum((num_responses - 2)[which((num_responses - 2) > 0)])
+    #   item_names_base <- c(paste0('item',1:num_items,".int.base"),paste0('item',1:num_items,".slp.base"))
+    # } else{
+      item_names_base <- c(paste0('item',1:num_items,".int.base"),paste0('item',1:num_items,".slp.base"))
+    # }
   } else{
     item_names_base <- c(paste0(colnames(y),".int.base"),paste0(colnames(y),".slp.base"))
   }

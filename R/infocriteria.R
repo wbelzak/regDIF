@@ -38,7 +38,12 @@ information_criteria <-
       itemtrace <- categorical_traceline_pts(p[[item]],theta,predictors,samp_size,num_responses[item],num_quadpts)
       ll_dif_item <- 0
       for(resp in 1:num_responses[item]){
-      ll_dif_item <- ll_dif_item + -1*sum(etable[[resp]]*ifelse(all(itemtrace[[item]][[resp]] == 0),0,itemtrace[[resp]]), na.rm = TRUE)
+      if(all(itemtrace[[resp]] == 0)){
+        log_itemtrace_cat <- 0
+      } else{
+        log_itemtrace_cat <- log(itemtrace[[resp]])
+      }
+      ll_dif_item <- ll_dif_item + -1*sum(etable[[resp]]*log_itemtrace_cat, na.rm = TRUE)
       }
     }
 

@@ -15,11 +15,12 @@ plot.regDIF <-
   function(x, y = NULL, method = "bic", legend.seed = 123, ...) {
 
     lambda <- x$lambda
+    if(length(lambda) < 2) stop(paste0("Must run multiple lambda values to plot."), call. = TRUE)
     dif.parms <- x$dif.item.parms[grep(paste0(c("int","slp"),collapse = "|"),rownames(x$dif.item.parms)),]
     min.lambda <- lambda[which.min(unlist(x[method]))]
     dif.min.lambda <- dif.parms[,which(lambda == min.lambda)]
     nonzero.dif <- dif.min.lambda[!(dif.min.lambda == 0)]
-    if(length(nonzero.dif) == 0) stop(paste0("No DIF effects in final model to plot."), call. = FALSE)
+    if(length(nonzero.dif) == 0) stop(paste0("No DIF effects in final model to plot."), call. = TRUE)
     #find first lambda with non-zero dif parms
       for(j in 1:ncol(dif.parms)){
         if(sum(abs(dif.parms[,j])) > 0){

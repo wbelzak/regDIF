@@ -99,14 +99,14 @@ postprocess <-
   final_slp_base <- final$base.item.parms[grep(".slp",rownames(final$base.item.parms)),]
   final_res_base <- final$base.item.parms[grep(".res",rownames(final$base.item.parms)),]
   final_names_base <- names(c(final_int_thr_base,final_slp_base,final_res_base))
-  final$base.item.parms[,pen] <-  matrix(c(final_int_thr_base,final_slp_base,final_res_base),nrow=1)
+  final$base.item.parms[,pen] <-  matrix(c(final_int_thr_base,final_slp_base,final_res_base),ncol=1)
   rownames(final$base.item.parms) <- final_names_base
 
   final_int_dif <- final$dif.item.parms[grep(".int",rownames(final$dif.item.parms)),]
   final_slp_dif <- final$dif.item.parms[grep(".slp",rownames(final$dif.item.parms)),]
   final_res_dif <- final$dif.item.parms[grep(".res",rownames(final$dif.item.parms)),]
   final_names_dif <- names(c(final_int_dif,final_slp_dif,final_res_dif))
-  final$dif.item.parms[,pen] <-  matrix(c(final_int_dif,final_slp_dif,final_res_dif),nrow=1)
+  final$dif.item.parms[,pen] <-  matrix(c(final_int_dif,final_slp_dif,final_res_dif),ncol=1)
   rownames(final$dif.item.parms) <- final_names_dif
 
   #stop if there is a large change in DIF parameters

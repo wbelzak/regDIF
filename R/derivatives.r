@@ -172,7 +172,7 @@ d_mu_gaussian <-
 
   #get latent mean and variance vectors
   mu <- sapply(theta,function(x){(p_item[grep("c0",names(p_item),fixed=T)] + predictors %*% p_item[grep("c1",names(p_item),fixed=T)]) + (p_item[grep("a0",names(p_item),fixed=T)] + predictors %*% p_item[grep("a1",names(p_item),fixed=T)])*x})
-  sigma <- sqrt(p_item[grep("s_",names(p_item))][1]*exp(predictors %*% p_item[grep("s(.*?)cov",names(p_item))]))
+  sigma <- sqrt(p_item[grep("s0",names(p_item))][1]*exp(predictors %*% p_item[grep("s1",names(p_item))]))
 
 
   d1_trace <- t(sapply(1:samp_size, function(x){eta_d[x,]/sigma[x]**2*(responses_item[x]-mu[x,])}))
@@ -200,12 +200,12 @@ d_sigma_gaussian <-
            num_items,
            num_quadpts) {
 
-  sigma <- sqrt(p_item[grep("s_",names(p_item))][1]*exp(predictors %*% p_item[grep("s(.*?)cov",names(p_item))]))
+  sigma <- sqrt(p_item[grep("s0",names(p_item))][1]*exp(predictors %*% p_item[grep("s1",names(p_item))]))
   mu <- sapply(theta,function(x){(p_item[grep("c0",names(p_item),fixed=T)] + predictors %*% p_item[grep("c1",names(p_item),fixed=T)]) + (p_item[grep("a0",names(p_item),fixed=T)] + predictors %*% p_item[grep("a1",names(p_item),fixed=T)])*x})
 
   if(parm == "s0"){
-    eta_d1 <- sapply(1:samp_size, function(x) exp(predictors[x,] %*% p_item[grep("s(.*?)cov",names(p_item))])/(2*sigma[x]))
-    eta_d2 <- sapply(1:samp_size, function(x) -exp(predictors[x,] %*% p_item[grep("s(.*?)cov",names(p_item))])**2/(4*sigma[x]**3))
+    eta_d1 <- sapply(1:samp_size, function(x) exp(predictors[x,] %*% p_item[grep("s1",names(p_item))])/(2*sigma[x]))
+    eta_d2 <- sapply(1:samp_size, function(x) -exp(predictors[x,] %*% p_item[grep("s1",names(p_item))])**2/(4*sigma[x]**3))
   } else if(parm == "s1"){
     eta_d1 <- sapply(1:samp_size, function(x) sigma[x]*predictors[x,cov]/2)
     eta_d2 <- sapply(1:samp_size, function(x) sigma[x]*predictors[x,cov]**2/4)

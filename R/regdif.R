@@ -78,7 +78,7 @@ regDIF <- function(x,
                    quadpts = 81,
                    control = list()){
 
-  # data <- read.table("C:\\Users\\wbelz\\Dropbox\\Will\\Research\\Small Samples Categorical Paper\\simdata\\ss500ni6dm2pd2im1\\ss500ni6dm2pd2im1_1.dat")
+  # data <- read.table("C:\\Users\\wbelz\\Dropbox\\Will\\Research\\Small Sample DIF Paper\\Small Samples Categorical Paper\\simdata\\ss500ni6dm2pd2im1\\ss500ni6dm2pd2im1_1.dat")
   # y <- data[,9:14]
   # y[which(y[,3]<3),3] <- 0
   # y[which(y[,3]>=3),3] <- 1
@@ -87,6 +87,18 @@ regDIF <- function(x,
   # family <- c('categorical','categorical','bernoulli','categorical','categorical','categorical');penalty <- 'lasso';nlambda <- 100;lambda.max <- 2;alpha <- 1;pen <- 1;gamma <- 3;lambda <- .5;anchor <- 1;rasch <- F;standardize <- T;quadpts <- 81;control <- list()
 
   # family <- 'bernoulli';penalty <- 'lasso';nlambda <- 100;lambda.max <- 2;alpha <- 1;pen <- 1;gamma <- 3;lambda <- .5;anchor <- 1;rasch <- F;standardize <- T;quadpts <- 81;control <- list()
+  # library(lavaan)
+  # y <- HolzingerSwineford1939[,7:12]
+  # x <- HolzingerSwineford1939[,2]
+  # y[,1] <- ifelse(y[,1]>5,2,1)
+  # y[,2] <- as.numeric(cut(y[,2],seq(min(y[,2]),max(y[,2]),by=1.75)))
+  # # # write.table(cbind(1:nrow(y),y,x),"C:\\Users\\wbelz\\Dropbox\\Will\\Research\\Regularized IRT\\continuous_data.dat",col.names = F,row.names = F)
+  # family = 'gaussian'
+  # penalty = "lasso"
+  # anchor = 1
+  # standardize = F
+  # rasch = F
+  # nlambda <- 100;lambda.max <- 2;alpha <- 1;pen <- 1;gamma <- 3;lambda <- .5;anchor <- 1;rasch <- F;standardize <- T;quadpts <- 81;control <- list()
 
   #obtain larger lambda if necessary
   need_larger_lambda <- TRUE #only true to start
@@ -119,9 +131,11 @@ regDIF <- function(x,
 
       #stop if lambda.max is too small on first run
       p2 <- unlist(estimates[[1]])
+      dif_parms <- p2[grep(paste0("cov"),names(p2))]
+      if(any(data_scrub$itemtypes == "gaussian")) dif_parms <- dif_parms[-grep("s1",names(dif_parms))]
       if(is.null(anchor) & #no anchor
          pen == 1 & #first penalty value
-         sum(abs(p2[grep(paste0("cov"),names(p2))])) > 0 & #not all DIF effects are zero
+         sum(abs(dif_parms)) > 0 & #not all DIF effects are zero
          alpha == 1 #alpha is 1 for lasso
          ){
         message("\nWarning: lambda.max or user-defined lambda value is too small to penalize all parameters to zero without anchor item. Automatically trying larger lambda.max or lambda value.")

@@ -87,7 +87,7 @@ preprocess <-
       names(p[[item]]) <- c(paste0('c0_itm',item,"_int"),paste0('a0_itm',item,"_"),paste0('c1_itm',item,"_cov",1:num_predictors),paste0('a1_itm',item,"_cov",1:num_predictors))
     } else if(num_responses[item] == 1){ #normal item responses
       p[[item]] <- c(mean(responses[,item]), sqrt(.5*var(responses[,item])), rep(0, num_predictors), rep(0, num_predictors), .5*var(responses[,item]), rep(0, num_predictors))
-      names(p[[item]]) <- c(paste0('c0_itm',item,"_int"),paste0('a0_itm',item,"_"),paste0('c1_itm',item,"_cov",1:num_predictors),paste0('a1_itm',item,"_cov",1:num_predictors),paste0('s_itm',item,"_"),paste0('s_itm',item,"_cov",1:num_predictors))
+      names(p[[item]]) <- c(paste0('c0_itm',item,"_int"),paste0('a0_itm',item,"_"),paste0('c1_itm',item,"_cov",1:num_predictors),paste0('a1_itm',item,"_cov",1:num_predictors),paste0('s0_itm',item,"_"),paste0('s1_itm',item,"_cov",1:num_predictors))
     }
   }
   p[[(num_items+1)]] <- p[[(num_items+2)]] <- rep(0,num_predictors)

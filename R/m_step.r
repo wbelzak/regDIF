@@ -210,7 +210,7 @@ Mstep_2pl_dif <-
 
       #residual updates
       anl_deriv <- d_sigma_gaussian("s0",p_item,etable,theta,responses[,item],predictors,cov=NULL,samp_size,num_items,num_quadpts)
-      p_new <- p_item[grep(paste0("s_itm",item,"_"),names(p_item),fixed=T)][1] - anl_deriv[[1]]/anl_deriv[[2]]
+      p_new <- p_item[grep(paste0("s0_itm",item,"_"),names(p_item),fixed=T)][1] - anl_deriv[[1]]/anl_deriv[[2]]
       p_item <- replace(p_item,names(p_new),p_new)
 
 
@@ -219,7 +219,7 @@ Mstep_2pl_dif <-
         #residual dif updates
         for(cov in 1:num_predictors){
           anl_deriv <- d_sigma_gaussian("s1",p_item,etable,theta,responses[,item],predictors,cov=cov,samp_size,num_items,num_quadpts)
-          p_new <- p_item[grep(paste0("s_itm",item,"_cov",cov),names(p_item),fixed=T)][1] - anl_deriv[[1]]/anl_deriv[[2]]
+          p_new <- p_item[grep(paste0("s1_itm",item,"_cov",cov),names(p_item),fixed=T)][1] - anl_deriv[[1]]/anl_deriv[[2]]
           p_item <- replace(p_item,names(p_new),p_new)
         }
 

@@ -46,10 +46,10 @@ preprocess <-
   }
 
   #speeds up computation
-  responses <- as.matrix(responses)
-  predictors <- as.matrix(predictors)
-  mean_predictors <- as.matrix(mean_predictors)
-  var_predictors <- as.matrix(var_predictors)
+  responses <- as.matrix(sapply(responses,as.numeric))
+  predictors <- as.matrix(sapply(predictors,as.numeric))
+  mean_predictors <- as.matrix(sapply(mean_predictors,as.numeric))
+  var_predictors <- as.matrix(sapply(var_predictors,as.numeric))
   samp_size <- dim(responses)[1]
   num_items <- dim(responses)[2]
   num_quadpts <- quadpts

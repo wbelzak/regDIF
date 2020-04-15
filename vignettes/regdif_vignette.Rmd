@@ -13,8 +13,8 @@ knitr::opts_chunk$set(echo = TRUE)
 
 This vignette introduces regDIF to the general user by providing common use cases.
 
-## LASSO regularization for evaluating DIF in 2PL-IRT model
-```{r,eval=T,message=F}
+## LASSO regularization for evaluating DIF in 2PL-IRT model, large lambda parameter --> no DIF effects
+```{r,eval=T,message=F,echo=F}
 library(regDIF)
 head(ida)
 x <- ida[,7:9]
@@ -22,3 +22,13 @@ y <- ida[,1:6]
 fit <- regDIF(x, y, family = "bernoulli", penalty = "lasso", lambda = 2)
 summary(fit)
 ```
+
+## LASSO regularization for evaluating DIF in CFA model
+```{r,eval=T,message=F,echo=F}
+# library(lavaan)
+# school_predictor <- HolzingerSwineford1939[,c("school")]
+# speed_responses <- HolzingerSwineford1939[,c("x7","x8","x9")]
+# fit_holzswine <- regDIF(school_predictor, speed_responses, family = "gaussian", penalty = "lasso", lambda = 2)
+# summary(fit)
+```
+

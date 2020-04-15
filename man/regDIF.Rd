@@ -52,7 +52,7 @@ regDIF(x,
 
 \item{impact.x}{Optional list of matrices or data frames with predictors for mean and variance impact. Allows for different sets of predictors on the mean and variance impact equations compared to the item response DIF equations.}
 
-\item{standardize}{Logical value indicating whether to standardize DIF covariates for regularization. Default is \code{TRUE}, as it is recommended that all covariates be on the same scale.}
+\item{standardize}{Logical value indicating whether to standardize DIF and impact covariates for regularization. Default is \code{TRUE}, as it is recommended that all covariates be on the same scale.}
 
 \item{quadpts}{Numeric value indicating the number of quadrature points to be used in approximating the latent variable distribution during estimation. Default is \code{81}. Not recommended to be below 10 for accurate estimation.}
 

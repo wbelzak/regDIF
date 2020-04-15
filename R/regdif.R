@@ -38,7 +38,7 @@
 #' @param anchor Optional numeric value or vector indicating which item response(s) are anchors (e.g., \code{anchor = 1}). Default is \code{NULL}, meaning at least one DIF effect per covariate will be fixed to zero as lambda approaches 0 (required to identify the model).
 #' @param rasch Logical value indicating whether to constrain item slopes to 1 (i.e., equal slopes). If \code{TRUE}, no slope DIF will be evaluated. Default is \code{FALSE}.
 #' @param impact.x Optional list of matrices or data frames with predictors for mean and variance impact. Allows for different sets of predictors on the mean and variance impact equations compared to the item response DIF equations.
-#' @param standardize Logical value indicating whether to standardize DIF covariates for regularization. Default is \code{TRUE}, as it is recommended that all covariates be on the same scale.
+#' @param standardize Logical value indicating whether to standardize DIF and impact covariates for regularization. Default is \code{TRUE}, as it is recommended that all covariates be on the same scale.
 #' @param quadpts Numeric value indicating the number of quadrature points to be used in approximating the latent variable distribution during estimation. Default is \code{81}. Not recommended to be below 10 for accurate estimation.
 #' @param control Optional list of optimization parameters. May be:
 #' \describe{

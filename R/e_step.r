@@ -6,6 +6,8 @@ Estep_2pl <-
   function(p,
            responses,
            predictors,
+           mean_predictors,
+           var_predictors,
            theta,
            samp_size,
            num_items,
@@ -18,8 +20,8 @@ Estep_2pl <-
   etable_all <- matrix(0,nrow=samp_size,ncol=num_quadpts)
 
   #impact
-  alpha <- predictors %*% p[[num_items+1]]
-  phi <- exp(predictors %*% p[[num_items+2]])
+  alpha <- mean_predictors %*% p[[num_items+1]]
+  phi <- exp(var_predictors %*% p[[num_items+2]])
 
   #compute the trace lines
   for (item in 1:num_items) { #loop through items

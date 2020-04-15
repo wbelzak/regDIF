@@ -12,6 +12,7 @@ preprocess <-
            lambda,
            anchor,
            rasch,
+           impact.x,
            standardize,
            quadpts,
            control,
@@ -21,6 +22,10 @@ preprocess <-
   responses <- y
   predictors <- x
   itemtypes <- family
+
+  #impact data (if different)
+  if(is.null(impact.x$mean)){mean_predictors <- predictors} else{mean_predictors <- impact.x$mean}
+  if(is.null(impact.x$var)){var_predictors <- predictors} else{var_predictors <- impact.x$var}
 
   #preprocess warnings
   # if(penalty == "mcp")
@@ -43,6 +48,8 @@ preprocess <-
   #speeds up computation
   responses <- as.matrix(responses)
   predictors <- as.matrix(predictors)
+  mean_predictors <- as.matrix(mean_predictors)
+  var_predictors <- as.matrix(var_predictors)
   samp_size <- dim(responses)[1]
   num_items <- dim(responses)[2]
   num_quadpts <- quadpts
@@ -72,6 +79,8 @@ preprocess <-
   #standardize predictors
   if(standardize == TRUE){
     predictors <- scale(predictors)
+    mean_predictors <- scale(mean_predictors)
+    var_predictors <- scale(var_predictors)
   }
 
   ###################
@@ -90,9 +99,10 @@ preprocess <-
       names(p[[item]]) <- c(paste0('c0_itm',item,"_int"),paste0('a0_itm',item,"_"),paste0('c1_itm',item,"_cov",1:num_predictors),paste0('a1_itm',item,"_cov",1:num_predictors),paste0('s0_itm',item,"_"),paste0('s1_itm',item,"_cov",1:num_predictors))
     }
   }
-  p[[(num_items+1)]] <- p[[(num_items+2)]] <- rep(0,num_predictors)
-  names(p[[(num_items+1)]]) <- paste0(rep(paste0('g',1:num_predictors)))
-  names(p[[(num_items+2)]]) <- paste0(rep(paste0('b',1:num_predictors)))
+  p[[(num_items+1)]] <- rep(0,ncol(mean_predictors))
+  p[[(num_items+2)]] <- rep(0,ncol(var_predictors))
+  names(p[[(num_items+1)]]) <- paste0(rep(paste0('g',1:ncol(mean_predictors))))
+  names(p[[(num_items+2)]]) <- paste0(rep(paste0('b',1:ncol(var_predictors))))
   if(any(itemtypes == "gaussian")){
     num_base_parms <- length(c(unlist(p)[grep('c0',names(unlist(p)))],unlist(p)[grep('a0',names(unlist(p)))],unlist(p)[grep('s0',names(unlist(p)))]))
     num_dif_parms <- length(c(unlist(p)[grep('c1',names(unlist(p)))],unlist(p)[grep('a1',names(unlist(p)))],unlist(p)[grep('s1',names(unlist(p)))]))
@@ -103,7 +113,7 @@ preprocess <-
   final <- list(lambda = rep(NA,length(lambda)),
                 aic = rep(NA,length(lambda)),
                 bic = rep(NA,length(lambda)),
-                impact.lv.parms = matrix(NA,ncol=length(lambda),nrow=num_predictors*2),
+                impact.lv.parms = matrix(NA,ncol=length(lambda),nrow=(ncol(mean_predictors)+ncol(var_predictors))),
                 base.item.parms = matrix(NA,ncol=length(lambda),nrow=num_base_parms),
                 dif.item.parms = matrix(NA,ncol=length(lambda),nrow=num_dif_parms),
                 call = call)
@@ -112,6 +122,8 @@ preprocess <-
               final = final,
               responses = responses,
               predictors = predictors,
+              mean_predictors = mean_predictors,
+              var_predictors = var_predictors,
               itemtypes = itemtypes,
               final.control = final.control,
               lambda = lambda,

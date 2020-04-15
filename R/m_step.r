@@ -6,6 +6,8 @@ Mstep_2pl_dif <-
   function(p,
            responses,
            predictors,
+           mean_predictors,
+           var_predictors,
            elist,
            theta,
            itemtypes,
@@ -26,15 +28,15 @@ Mstep_2pl_dif <-
   etable_all <- elist[[2]]
 
   #impact mean updates
-  for(cov in 1:num_predictors){
-    anl_deriv <- d_alpha(p_impact,etable_all,theta,predictors,cov=cov,samp_size,num_items,num_quadpts)
+  for(cov in 1:ncol(mean_predictors)){
+    anl_deriv <- d_alpha(p_impact,etable_all,theta,mean_predictors,var_predictors,cov=cov,samp_size,num_items,num_quadpts)
     p_new <- p_impact[grep(paste0("g"),names(p_impact),fixed=T)][cov] - anl_deriv[[1]]/anl_deriv[[2]]
     p_impact <- replace(p_impact,names(p_new),p_new)
   }
 
   #impact variance updates
-  for(cov in 1:num_predictors){
-    anl_deriv <- d_phi(p_impact,etable_all,theta,predictors,cov=cov,samp_size,num_items,num_quadpts)
+  for(cov in 1:ncol(var_predictors)){
+    anl_deriv <- d_phi(p_impact,etable_all,theta,mean_predictors,var_predictors,cov=cov,samp_size,num_items,num_quadpts)
     p_new <- p_impact[grep(paste0("b"),names(p_impact),fixed=T)][cov] - anl_deriv[[1]]/anl_deriv[[2]]
     p_impact <- replace(p_impact,names(p_new),p_new)
   }

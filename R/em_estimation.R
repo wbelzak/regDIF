@@ -5,6 +5,8 @@
 em_estimation <- function(p,
                           responses,
                           predictors,
+                          mean_predictors,
+                          var_predictors,
                           theta,
                           itemtypes,
                           penalty,
@@ -21,7 +23,7 @@ em_estimation <- function(p,
                           num_predictors,
                           num_quadpts) {
 
-   # p <- data_scrub$p; responses <- data_scrub$responses;predictors <- data_scrub$predictors;theta <- data_scrub$theta;itemtypes <- data_scrub$itemtypes;lambda <- data_scrub$lambda; final.control <- data_scrub$final.control;samp_size <- data_scrub$samp_size;num_items <- data_scrub$num_items;num_responses <- data_scrub$num_responses;num_predictors <- data_scrub$num_predictors;num_quadpts <- data_scrub$num_quadpts
+   # p <- data_scrub$p; responses <- data_scrub$responses;predictors <- data_scrub$predictors;mean_predictors <- data_scrub$mean_predictors;var_predictors <- data_scrub$var_predictors;theta <- data_scrub$theta;itemtypes <- data_scrub$itemtypes;lambda <- data_scrub$lambda; final.control <- data_scrub$final.control;samp_size <- data_scrub$samp_size;num_items <- data_scrub$num_items;num_responses <- data_scrub$num_responses;num_predictors <- data_scrub$num_predictors;num_quadpts <- data_scrub$num_quadpts
   #Maximization settings
   lastp <- p
   eps <- Inf
@@ -31,10 +33,10 @@ em_estimation <- function(p,
   while(eps > final.control$tol & iter < final.control$maxit){
 
     #E-step: Evaluate Q function with current parameter estimates p
-    elist <- Estep_2pl(p,responses,predictors,theta,samp_size,num_items,num_responses,num_quadpts)
+    elist <- Estep_2pl(p,responses,predictors,mean_predictors,var_predictors,theta,samp_size,num_items,num_responses,num_quadpts)
 
     #M-step: Optimize parameters
-    p <- Mstep_2pl_dif(p,responses,predictors,elist,theta,itemtypes,penalty,lambda[pen],alpha,gamma,anchor,rasch,samp_size,num_responses,num_items,num_quadpts,num_predictors)
+    p <- Mstep_2pl_dif(p,responses,predictors,mean_predictors,var_predictors,elist,theta,itemtypes,penalty,lambda[pen],alpha,gamma,anchor,rasch,samp_size,num_responses,num_items,num_quadpts,num_predictors)
 
     # p <- em_step(p,theta,responses,predictors,itemtypes,penalty,lambda,pen,alpha,gamma,anchor,rasch,samp_size,num_items,num_responses,num_quadpts,num_predictors)
 
@@ -55,7 +57,7 @@ em_estimation <- function(p,
   } #End EM once converged or reached iteration limit
 
   #get information criteria
-  infocrit <- information_criteria(elist,p,responses,predictors,theta,lambda[pen],samp_size,num_responses,num_items,num_quadpts)
+  infocrit <- information_criteria(elist,p,responses,predictors,mean_predictors,var_predictors,theta,lambda[pen],samp_size,num_responses,num_items,num_quadpts)
 
   return(list(p,infocrit))
 

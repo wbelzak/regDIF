@@ -6,8 +6,11 @@ postprocess <-
   function(estimates,
            responses,
            predictors,
+           mean_predictors,
+           var_predictors,
            y,
            x,
+           impact.x,
            theta,
            lambda,
            alpha,
@@ -21,19 +24,47 @@ postprocess <-
            num_items,
            num_quadpts) {
 
-    # responses <- data_scrub$responses;predictors <- data_scrub$predictors;theta <- data_scrub$theta;itemtypes <- data_scrub$itemtypes;lambda <- data_scrub$lambda; final.control <- data_scrub$final.control;final <- data_scrub$final;samp_size <- data_scrub$samp_size;num_items <- data_scrub$num_items;num_responses <- data_scrub$num_responses;num_predictors <- data_scrub$num_predictors;num_quadpts <- data_scrub$num_quadpts
+    # responses <- data_scrub$responses;predictors <- data_scrub$predictors;mean_predictors <- data_scrub$mean_predictors;var_predictors <- data_scrub$var_predictors;theta <- data_scrub$theta;itemtypes <- data_scrub$itemtypes;lambda <- data_scrub$lambda; final.control <- data_scrub$final.control;final <- data_scrub$final;samp_size <- data_scrub$samp_size;num_items <- data_scrub$num_items;num_responses <- data_scrub$num_responses;num_predictors <- data_scrub$num_predictors;num_quadpts <- data_scrub$num_quadpts
 
   #get estimates and information criteria
   p <- estimates[[1]]
   infocrit <- estimates[[2]]
 
   #Organize impact parameters
-  lv_parms <- c(p[[num_items+1]],p[[num_items+2]])
-  if(is.null(colnames(x)) | length(colnames(x)) == 0){
-    lv_names <- c(paste0('mean.cov',1:num_predictors),paste0('var.cov',1:num_predictors))
+  if(is.null(impact.x$mean)){ #mean
+    if(is.null(colnames(x)) | length(colnames(x)) == 0){
+      mean_names <- paste0('mean.cov',1:ncol(mean_predictors))
+    } else{
+      mean_names <- paste0('mean.',colnames(x))
+    }
   } else{
-    lv_names <- c(paste0('mean.',colnames(x)),paste0('var.',colnames(x)))
+    if(is.null(colnames(impact.x$mean)) | length(colnames(impact.x$mean)) == 0){
+      mean_names <- paste0('mean.cov',1:ncol(mean_predictors))
+    } else{
+      mean_names <- paste0('mean.',colnames(impact.x$mean))
+    }
   }
+  if(is.null(impact.x$var)){
+    if(is.null(colnames(x)) | length(colnames(x)) == 0){
+      var_names <- paste0('var.cov',1:ncol(var_predictors))
+    } else{
+      var_names <- paste0('var.',colnames(x))
+    }
+  } else{
+    if(is.null(colnames(x)) | length(colnames(x)) == 0){
+      var_names <- paste0('var.cov',1:ncol(var_predictors))
+    } else{
+      var_names <- paste0('var.',colnames(impact.x$var))
+    }
+  }
+
+  lv_parms <- c(p[[num_items+1]],p[[num_items+2]])
+  lv_names <- c(mean_names,var_names)
+  # if(is.null(colnames(x)) | length(colnames(x)) == 0){
+  #   lv_names <- c(paste0('mean.cov',1:ncol(mean_predictors)),paste0('var.cov',1:ncol(var_predictors)))
+  # } else{
+  #   lv_names <- c(paste0('mean.',colnames(x)),paste0('var.',colnames(x)))
+  # }
 
   #Organize item baseline parameters
   p2 <- unlist(p)
@@ -82,6 +113,7 @@ postprocess <-
     all_items_parms_dif <- c(all_items_parms_dif,item_parms_dif)
     all_items_names_dif <- c(all_items_names_dif,item_names_dif)
   }
+
 
   #assign output to final list
   final$lambda[pen] <- lambda[pen]

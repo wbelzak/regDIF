@@ -20,7 +20,7 @@ regDIF(x,
        control = list())
 }
 \arguments{
-\item{x}{Matrix or dataframe of DIF predictors.}
+\item{x}{Matrix or dataframe of DIF and/or impact predictors. See below for option to specify different predictors for impact model.}
 
 \item{y}{Matrix or dataframe of item responses. See below for supported distributions.}
 
@@ -48,6 +48,8 @@ regDIF(x,
 \item{anchor}{Optional numeric value or vector indicating which item response(s) are anchors (e.g., \code{anchor = 1}). Default is \code{NULL}, meaning at least one DIF effect per covariate will be fixed to zero as lambda approaches 0 (required to identify the model).}
 
 \item{rasch}{Logical value indicating whether to constrain item slopes to 1 (i.e., equal slopes). If \code{TRUE}, no slope DIF will be evaluated. Default is \code{FALSE}.}
+
+\item{impact.x}{Optional list of matrices or data frames with predictors for mean and variance impact. Allows for different sets of predictors on the mean and variance impact equations compared to the item response DIF equations.}
 
 \item{standardize}{Logical value indicating whether to standardize DIF covariates for regularization. Default is \code{TRUE}, as it is recommended that all covariates be on the same scale.}
 

@@ -7,6 +7,8 @@ information_criteria <-
            p,
            responses,
            predictors,
+           mean_predictors,
+           var_predictors,
            theta,
            lambda,
            samp_size,
@@ -54,8 +56,8 @@ information_criteria <-
 
   #obtain likelihood value for latent variable model
   p_impact <- c(p[[num_items+1]],p[[num_items+2]])
-  alpha <- predictors %*% p_impact[grep("g",names(p_impact),fixed=T)]
-  phi <- exp(predictors %*% p_impact[grep("b",names(p_impact),fixed=T)])
+  alpha <- mean_predictors %*% p_impact[grep("g",names(p_impact),fixed=T)]
+  phi <- exp(var_predictors %*% p_impact[grep("b",names(p_impact),fixed=T)])
   prior_scores <- t(sapply(1:samp_size, function(x){dnorm(theta, mean = alpha[x], sd = sqrt(phi[x]))}))
   ll_impact <- -1*sum(elist[[2]]*log(prior_scores))
 

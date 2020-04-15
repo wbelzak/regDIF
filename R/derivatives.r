@@ -7,17 +7,18 @@ d_alpha <-
   function(p_impact,
            etable_all,
            theta,
-           predictors,
+           mean_predictors,
+           var_predictors,
            cov,
            samp_size,
            num_items,
            num_quadpts) {
 
   #get latent mean and variance vectors
-  alpha <- predictors %*% p_impact[grep("g",names(p_impact),fixed=T)]
-  phi <- exp(predictors %*% p_impact[grep("b",names(p_impact),fixed=T)])
+  alpha <- mean_predictors %*% p_impact[grep("g",names(p_impact),fixed=T)]
+  phi <- exp(var_predictors %*% p_impact[grep("b",names(p_impact),fixed=T)])
 
-  eta_d <- matrix(rep(predictors[,cov], num_quadpts), ncol = num_quadpts, nrow = samp_size)
+  eta_d <- matrix(rep(mean_predictors[,cov], num_quadpts), ncol = num_quadpts, nrow = samp_size)
 
   d1_trace <- t(sapply(1:samp_size, function(x){eta_d[x,]/phi[x]*(theta-alpha[x])}))
   d2_trace <- t(sapply(1:samp_size, function(x){-eta_d[x,]**2/phi[x]}))
@@ -34,18 +35,19 @@ d_phi <-
   function(p_impact,
            etable_all,
            theta,
-           predictors,
+           mean_predictors,
+           var_predictors,
            cov,
            samp_size,
            num_items,
            num_quadpts) {
 
   #get latent mean and variance vectors
-  alpha <- predictors %*% p_impact[grep("g",names(p_impact),fixed=T)]
-  phi <- exp(predictors %*% p_impact[grep("b",names(p_impact),fixed=T)])
+  alpha <- mean_predictors %*% p_impact[grep("g",names(p_impact),fixed=T)]
+  phi <- exp(var_predictors %*% p_impact[grep("b",names(p_impact),fixed=T)])
 
-  eta_d1 <- .5*sqrt(phi)*predictors[,cov]
-  eta_d2 <- .25*sqrt(phi)*predictors[,cov]**2
+  eta_d1 <- .5*sqrt(phi)*var_predictors[,cov]
+  eta_d2 <- .25*sqrt(phi)*var_predictors[,cov]**2
 
   d1_trace <- t(sapply(1:samp_size, function(x) {eta_d1[x]*((theta-alpha[x])**2/phi[x]**(3/2) - 1/sqrt(phi[x]))}))
   d2_trace <- t(sapply(1:samp_size, function(x) {-2*eta_d2[x]*(phi[x]**(-3/2)*(theta-alpha[x])**2)}))

@@ -14,6 +14,7 @@
 #'        lambda = NULL,
 #'        anchor = NULL,
 #'        rasch = FALSE,
+#'        impact.x = list(mean = NULL, var = NULL),
 #'        standardize = TRUE,
 #'        quadpts = 81,
 #'        control = list())

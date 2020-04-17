@@ -60,11 +60,6 @@ postprocess <-
 
   lv_parms <- c(p[[num_items+1]],p[[num_items+2]])
   lv_names <- c(mean_names,var_names)
-  # if(is.null(colnames(x)) | length(colnames(x)) == 0){
-  #   lv_names <- c(paste0('mean.cov',1:ncol(mean_predictors)),paste0('var.cov',1:ncol(var_predictors)))
-  # } else{
-  #   lv_names <- c(paste0('mean.',colnames(x)),paste0('var.',colnames(x)))
-  # }
 
   #Organize item baseline parameters
   p2 <- unlist(p)
@@ -78,13 +73,13 @@ postprocess <-
 
   for(item in 1:num_items){
     if(num_responses[item] == 1){
-      item_parms_base <- c(p2[grep(paste0("c0_itm",item),names(p2))],p2[grep(paste0("a0_itm",item),names(p2))],p2[grep(paste0("s0_itm",item),names(p2))])
+      item_parms_base <- c(p2[grep(paste0("c0_itm",item,"_"),names(p2))],p2[grep(paste0("a0_itm",item,"_"),names(p2))],p2[grep(paste0("s0_itm",item,"_"),names(p2))])
       item_names_base <- c(paste0(item_names[item],".int"),paste0(item_names[item],".slp"),paste0(item_names[item],".res"))
     } else if(num_responses[item] == 2){
-      item_parms_base <- c(p2[grep(paste0("c0_itm",item),names(p2))],p2[grep(paste0("a0_itm",item),names(p2))])
+      item_parms_base <- c(p2[grep(paste0("c0_itm",item,"_"),names(p2))],p2[grep(paste0("a0_itm",item,"_"),names(p2))])
       item_names_base <- c(paste0(item_names[item],".int"),paste0(item_names[item],".slp"))
     } else if(num_responses[item] > 2){
-      item_parms_base <- c(p2[grep(paste0("c0_itm",item),names(p2))],p2[grep(paste0("a0_itm",item),names(p2))])
+      item_parms_base <- c(p2[grep(paste0("c0_itm",item,"_"),names(p2))],p2[grep(paste0("a0_itm",item,"_"),names(p2))])
       item_names_base <- c(paste0(item_names[item],".int"),paste0(item_names[item],".thr",1:(num_responses[item]-2)),paste0(item_names[item],".slp"))
     }
     all_items_parms_base <- c(all_items_parms_base,item_parms_base)
@@ -104,10 +99,10 @@ postprocess <-
 
   for(item in 1:num_items){
     if(num_responses[item] == 1){
-      item_parms_dif <- c(p2[grep(paste0("c1_itm",item),names(p2),fixed=T)],p2[grep(paste0("a1_itm",item),names(p2),fixed=T)],p2[grep(paste0("s1_itm",item),names(p2),fixed=T)])
+      item_parms_dif <- c(p2[grep(paste0("c1_itm",item,"_"),names(p2),fixed=T)],p2[grep(paste0("a1_itm",item,"_"),names(p2),fixed=T)],p2[grep(paste0("s1_itm",item,"_"),names(p2),fixed=T)])
       item_names_dif <- c(paste0(rep(item_names[item],each = num_predictors),'.int.',cov_names),paste0(rep(item_names[item],each = num_predictors),'.slp.',cov_names),paste0(rep(item_names[item],each = num_predictors),'.res.',cov_names))
     } else{
-      item_parms_dif <- c(p2[grep(paste0("c1_itm",item),names(p2),fixed=T)],p2[grep(paste0("a1_itm",item),names(p2),fixed=T)])
+      item_parms_dif <- c(p2[grep(paste0("c1_itm",item,"_"),names(p2),fixed=T)],p2[grep(paste0("a1_itm",item,"_"),names(p2),fixed=T)])
       item_names_dif <- c(paste0(rep(item_names[item],each = num_predictors),'.int.',cov_names),paste0(rep(item_names[item],each = num_predictors),'.slp.',cov_names))
     }
     all_items_parms_dif <- c(all_items_parms_dif,item_parms_dif)

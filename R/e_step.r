@@ -42,7 +42,7 @@ Estep_2pl <-
 
     #within each response pattern, loop over items and compute posterior probability of response pattern
     for(item in 1:num_items) {
-      x <- responses[case,item]
+      x <- ifelse(num_responses[item] == 1, 1, responses[case,item])
       if(!is.na(x)) posterior <- posterior*itemtrace[[item]][[x]][case,]
     }
 

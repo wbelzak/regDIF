@@ -97,12 +97,12 @@ regDIF <- function(x,
   # y[,1] <- ifelse(y[,1]>5,2,1)
   # y[,2] <- as.numeric(cut(y[,2],seq(min(y[,2]),max(y[,2]),by=1.75)))
   # # # write.table(cbind(1:nrow(y),y,x),"C:\\Users\\wbelz\\Dropbox\\Will\\Research\\Regularized IRT\\continuous_data.dat",col.names = F,row.names = F)
-  # family = 'gaussian'
+  # family = c('bernoulli','categorical',rep('gaussian',4))
   # penalty = "lasso"
   # anchor = 1
   # standardize = F
   # rasch = F
-  # nlambda <- 100;lambda.max <- 2;alpha <- 1;pen <- 1;gamma <- 3;lambda <- .5;anchor <- 1;rasch <- F;standardize <- T;quadpts <- 81;control <- list()
+  # nlambda <- 100;lambda.max <- 2;alpha <- 1;pen <- 1;gamma <- 3;lambda <- .5;anchor <- 1;rasch <- F;standardize <- T;quadpts <- 81;control <- list();impact.x = list(mean = NULL, var = NULL)
 
   # data_ds <- read.table("C:\\Users\\wbelz\\Dropbox\\Will\\Research\\Reg-DIF\\dissertation\\analysis\\empirical\\longleaf\\ds.dat")
   # colnames(data_ds) <- c("id", "school", "male", "ageyrs", "live35", "maturity", "agecent", "agecent2", "maleage", "maleage2", "ds1", "ds2", "ds3", "ds4", "ds5", "ds6", "ds7", "ds8")

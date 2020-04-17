@@ -28,7 +28,7 @@ summary(fit)
 # library(lavaan)
 # school_predictor <- HolzingerSwineford1939[,c("school")]
 # speed_responses <- HolzingerSwineford1939[,c("x7","x8","x9")]
-# holzswine_model <- 'speed =~ NA*x7 + x8 + x9 
+# holzswine_model <- 'speed =~ NA*x7 + x8 + x9
 #                     speed ~~ 1*speed'
 # fit_holzswine_lavaan <- cfa(model = holzswine_model, data = HolzingerSwineford1939, group = "school")
 # fit_holzswine_regDIF <- regDIF(school_predictor, speed_responses, family = "gaussian", penalty = "lasso", lambda = 2)

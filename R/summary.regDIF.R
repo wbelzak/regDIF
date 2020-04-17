@@ -106,7 +106,7 @@ summary.regDIF <-
     #
 
     ## print the results table
-    cat("\nOptimal Model:\n")
+    cat(paste0("\nOptimal Model (out of ", length(object$lambda),"):\n"))
     print(sum_results)
     cat("\nLatent Variable Impact Parameters:\n")
     print(impact)

@@ -11,6 +11,8 @@ information_criteria <-
            var_predictors,
            theta,
            lambda,
+           gamma,
+           penalty,
            samp_size,
            num_responses,
            num_items,
@@ -50,8 +52,13 @@ information_criteria <-
     }
 
     #subtract out penalty and add negative log-likelihood over all items
-    current_pen <- (lambda*sum(c(abs(p_item[grep("c1_itm",names(p_item))]), abs(p_item[grep("a1_itm",names(p_item))])), na.rm = TRUE))
-    ll_dif <- ll_dif + ll_dif_item - current_pen #Q function we want to minimize
+    # if(penalty == "lasso"){
+    #   current_pen <- gamma*(1/gamma)*lambda*sum(c(abs(p_item[grep("c1_itm",names(p_item))]), abs(p_item[grep("a1_itm",names(p_item))])), na.rm = TRUE)
+    # } else if(penalty == "mcp"){
+    #   current_pen <- (lambda*sum(c(abs(p_item[grep("c1_itm",names(p_item))]), abs(p_item[grep("a1_itm",names(p_item))])), na.rm = TRUE))
+    # }
+    # ll_dif <- ll_dif + ll_dif_item - current_pen #Q function we want to minimize
+    ll_dif <- ll_dif + ll_dif_item
   }
 
   #obtain likelihood value for latent variable model

@@ -35,10 +35,12 @@ em_estimation <- function(p,
     #E-step: Evaluate Q function with current parameter estimates p
     elist <- Estep_2pl(p,responses,predictors,mean_predictors,var_predictors,theta,samp_size,num_items,num_responses,num_quadpts)
 
+    # elist2 <- em_step2(p,theta,responses,predictors,mean_predictors,var_predictors,samp_size,num_items,num_responses,num_quadpts)
+
     #M-step: Optimize parameters
     p <- Mstep_2pl_dif(p,responses,predictors,mean_predictors,var_predictors,elist,theta,itemtypes,penalty,lambda[pen],alpha,gamma,anchor,rasch,samp_size,num_responses,num_items,num_quadpts,num_predictors)
 
-    # p <- em_step(p,theta,responses,predictors,itemtypes,penalty,lambda,pen,alpha,gamma,anchor,rasch,samp_size,num_items,num_responses,num_quadpts,num_predictors)
+    # p2 <- em_step(p,theta,responses,predictors,mean_predictors,var_predictors,itemtypes,penalty,lambda,pen,alpha,gamma,anchor,rasch,samp_size,num_items,num_responses,num_quadpts,num_predictors)
 
     #Update and check for convergence: Calculate the difference in parameter estimates from current to previous
     eps = sqrt(sum((unlist(p)-unlist(lastp))^2))
@@ -57,7 +59,7 @@ em_estimation <- function(p,
   } #End EM once converged or reached iteration limit
 
   #get information criteria
-  infocrit <- information_criteria(elist,p,responses,predictors,mean_predictors,var_predictors,theta,lambda[pen],samp_size,num_responses,num_items,num_quadpts)
+  infocrit <- information_criteria(elist,p,responses,predictors,mean_predictors,var_predictors,theta,lambda[pen],gamma,penalty,samp_size,num_responses,num_items,num_quadpts)
 
   return(list(p,infocrit))
 

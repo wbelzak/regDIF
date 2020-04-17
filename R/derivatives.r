@@ -81,7 +81,7 @@ d_bernoulli <-
     eta_d <- matrix(rep(predictors[,cov], num_quadpts), ncol = num_quadpts, nrow = samp_size)*matrix(rep(matrix(theta, nrow = 1, ncol = length(theta)), samp_size), nrow = samp_size, ncol = length(theta), byrow = TRUE)
   }
 
-  traceline <- bernoulli_traceline_pts(p_item,theta,predictors,samp_size,num_quadpts)
+  traceline <- bernoulli_traceline_cpp(p_item,theta,predictors,samp_size,num_quadpts)
 
   d1 <- sum(traceline[[1]]*eta_d*etable[[2]]) + sum(-traceline[[2]]*eta_d*etable[[1]])
   d2 <- sum(-traceline[[2]]*traceline[[1]]*eta_d**2*etable[[1]]) + sum(-traceline[[2]]*traceline[[1]]*eta_d**2*etable[[2]])

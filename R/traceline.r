@@ -9,14 +9,13 @@ bernoulli_traceline_pts <-
            samp_size,
            num_quadpts) {
 
-  traceline <- replicate(n=2, matrix(0,nrow=samp_size,ncol=num_quadpts), simplify = F)
+    traceline0 <- sapply(theta,function(x){1-1/(1+exp(-((p_active[grep("c0",names(p_active),fixed=T)][1] + predictors %*% p_active[grep("c1",names(p_active),fixed=T)]) + (p_active[grep("a0",names(p_active),fixed=T)] + predictors %*% p_active[grep("a1",names(p_active),fixed=T)])*x)))})
+    traceline1 <- -traceline0 + 1
 
-  traceline[[1]] <- sapply(theta,function(x){1-1/(1+exp(-((p_active[grep("c0",names(p_active),fixed=T)][1] + predictors %*% p_active[grep("c1",names(p_active),fixed=T)]) + (p_active[grep("a0",names(p_active),fixed=T)] + predictors %*% p_active[grep("a1",names(p_active),fixed=T)])*x)))})
-  traceline[[2]] <- -traceline[[1]] + 1
-
-  return(traceline)
+    return(list(traceline0,traceline1))
 
   }
+
 
 
 categorical_traceline_pts <-
@@ -89,7 +88,7 @@ gaussian_traceline_pts <-
 
   traceline <- t(sapply(1:samp_size,function(x) dnorm(responses_item[x],mu[x,],sigma[x])))
 
-  return(traceline)
+  return(list(traceline))
 
 }
 

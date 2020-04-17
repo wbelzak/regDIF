@@ -5,6 +5,66 @@ using std::exp;
 using std::sqrt;
 using std::pow;
 
+
+////////////////////////////////////////////
+/////////////// TRESHOLDING ////////////////
+////////////////////////////////////////////
+
+template <typename T> double sgn(T val) {
+  return (T(0) < val) - (val < T(0));
+}
+template <class T> const T& max (const T& a, const T& b) {
+  return (a<b)?b:a;     // or: return comp(a,b)?b:a; for version (2)
+}
+
+//[[Rcpp::export]]
+double soft_thresh_est(
+    double z,
+    double alpha,
+    double lambda
+){
+
+  double t = fabs(z/(1+lambda*(1-alpha))) - (lambda*alpha)/(1+lambda*(1-alpha));
+  double p_new = sgn(z)*max(t,0.0);
+  return p_new;
+
+}
+
+//[[Rcpp::export]]
+double firm_thresh_est(
+    double z,
+    double alpha,
+    double lambda,
+    double gamma
+){
+
+  double p_new;
+  if(fabs(z/(1+lambda*(1-alpha))) <= gamma*lambda){
+    p_new = (gamma/(gamma-1))*soft_thresh_est(z,alpha,lambda);
+  }else{
+    p_new = z/(1+lambda*(1-alpha));
+  }
+
+  return(p_new);
+}
+
+//[[Rcpp::export]]
+arma::vec dnormCpp(
+    arma::vec theta,
+    double alpha_impact,
+    double phi_impact,
+    int num_quadpts
+){
+  arma::vec posterior(num_quadpts);
+  static const double pi = 3.14159265;
+
+  for(int q = 0; q < num_quadpts; q++){
+    posterior[q] = 1/sqrt(2*pi*phi_impact)*exp(-pow((theta[q] - alpha_impact),2)/(2*phi_impact));
+  }
+
+  return posterior;
+}
+
 ///////////////////////////////////////////
 /////////////// TRACELINES ////////////////
 ///////////////////////////////////////////
@@ -35,6 +95,39 @@ arma::mat bernoulli_traceline_est(
   return traceline;
 }
 
+
+//[[Rcpp::export]]
+List bernoulli_traceline_cpp(
+    arma::vec p_item,
+    arma::vec theta,
+    arma::mat predictors,
+    int samp_size,
+    int num_quadpts
+){
+
+  // split item parameter vector
+  double p_c0 = p_item(0,0);
+  double p_a0 = p_item(1,0);
+  arma::vec p_c1 = p_item.subvec(2,1+predictors.n_cols);
+  arma::vec p_a1 = p_item.subvec(2+predictors.n_cols,2*predictors.n_cols+1);
+
+  // create matrix to hold traceline
+  arma::mat traceline0 = arma::zeros(samp_size,num_quadpts);
+  arma::mat traceline1 = arma::zeros(samp_size,num_quadpts);
+
+  // Loop through quadrature points
+  for(int q = 0; q < num_quadpts; ++q){
+    traceline1.col(q) = 1/(1 + exp(-(p_c0 + predictors * p_c1 + (p_a0 + predictors * p_a1) * theta[q])));
+  }
+  traceline0 = 1 - traceline1;
+
+  List traceline_list(2);
+  traceline_list[0] = traceline0;
+  traceline_list[1] = traceline1;
+  return traceline_list;
+}
+
+
 ////////////////////////////////////////////
 /////////////// DERIVATIVES ////////////////
 ////////////////////////////////////////////
@@ -48,7 +141,8 @@ List d_alpha_est(
     arma::vec p_phi,
     arma::mat etable_all,
     arma::vec theta,
-    arma::mat predictors,
+    arma::mat mean_predictors,
+    arma::mat var_predictors,
     int cov,
     int samp_size,
     int num_items,
@@ -56,12 +150,12 @@ List d_alpha_est(
 ){
 
   // obtain latent mean and variance vectors
-  arma::vec alpha_impact = predictors * p_alpha;
-  arma::vec phi_impact = exp(predictors * p_phi);
+  arma::vec alpha_impact = mean_predictors * p_alpha;
+  arma::vec phi_impact = exp(var_predictors * p_phi);
 
   arma::mat eta_d = arma::zeros(samp_size,num_quadpts);
   for(int q = 0; q < num_quadpts; q++){
-    eta_d.col(q) = predictors.col(cov);
+    eta_d.col(q) = mean_predictors.col(cov);
   }
 
   arma::mat d1_trace = arma::zeros(samp_size,num_quadpts);
@@ -88,7 +182,8 @@ List d_phi_est(
     arma::vec p_phi,
     arma::mat etable_all,
     arma::vec theta,
-    arma::mat predictors,
+    arma::mat mean_predictors,
+    arma::mat var_predictors,
     int cov,
     int samp_size,
     int num_items,
@@ -96,11 +191,11 @@ List d_phi_est(
 ){
 
   // obtain latent mean and variance vectors
-  arma::vec alpha_impact = predictors * p_alpha;
-  arma::vec phi_impact = exp(predictors * p_phi);
+  arma::vec alpha_impact = mean_predictors * p_alpha;
+  arma::vec phi_impact = exp(var_predictors * p_phi);
 
-  arma::vec eta_d1 = sqrt(phi_impact) / 2 % predictors.col(cov);
-  arma::vec eta_d2 = sqrt(phi_impact) / 4 % pow(predictors.col(cov),2);
+  arma::vec eta_d1 = sqrt(phi_impact) / 2 % var_predictors.col(cov);
+  arma::vec eta_d2 = sqrt(phi_impact) / 4 % pow(var_predictors.col(cov),2);
 
   arma::mat d1_trace = arma::zeros(samp_size,num_quadpts);
   arma::mat d2_trace = arma::zeros(samp_size,num_quadpts);
@@ -138,8 +233,8 @@ List d_bernoulli_est(
   if(parm == "c0"){
     eta_d.ones();
   } else if(parm == "a0"){
-    for(int i = 0; i < samp_size; i++){
-      eta_d.row(i) = theta.t();
+    for(int q = 0; q < num_quadpts; q++){
+      eta_d.col(q) = arma::ones(samp_size) * theta[q];
     }
   } else if(parm == "c1"){
     for(int q = 0; q < num_quadpts; q++){
@@ -147,10 +242,7 @@ List d_bernoulli_est(
     }
   } else if(parm == "a1"){
     for(int q = 0; q < num_quadpts; q++){
-      eta_d.col(q) = predictors.col(cov);
-    }
-    for(int i = 0; i < samp_size; i++){
-      eta_d.row(i) = eta_d.row(i) % theta.t();
+      eta_d.col(q) = predictors.col(cov) * theta[q];
     }
   }
 
@@ -164,63 +256,23 @@ List d_bernoulli_est(
 
 }
 
-////////////////////////////////////////////
-/////////////// TRESHOLDING ////////////////
-////////////////////////////////////////////
-
-template <typename T> double sgn(T val) {
-  return (T(0) < val) - (val < T(0));
-}
-template <class T> const T& max (const T& a, const T& b) {
-  return (a<b)?b:a;     // or: return comp(a,b)?b:a; for version (2)
-}
-
-//[[Rcpp::export]]
-double soft_thresh_est(
-    double z,
-    double alpha,
-    double lambda
-){
-
-  double t = fabs(z/(1+lambda*(1-alpha))) - (lambda*alpha)/(1+lambda*(1-alpha));
-  double p_new = sgn(z)*max(t,0.0);
-  return p_new;
-
-}
-
-//[[Rcpp::export]]
-double firm_thresh_est(
-  double z,
-  double alpha,
-  double lambda,
-  double gamma
-){
-
-  double p_new;
-  if(fabs(z/(1+lambda*(1-alpha))) <= gamma*lambda){
-    p_new = (gamma/(gamma-1))*soft_thresh_est(z,alpha,lambda);
-  }else{
-    p_new = z/(1+lambda*(1-alpha));
-  }
-
-  return(p_new);
-}
-
-
 
 ////////////////////////////////////////
 /////////////// EM-STEP ////////////////
 ////////////////////////////////////////
 
+
 //[[Rcpp::export]]
 arma::mat em_step2(
     List p,
-    arma::vec theta,
-    arma::mat responses,
-    arma::mat predictors,
+    const arma::vec& theta,
+    const arma::mat& responses,
+    const arma::mat& predictors,
+    const arma::mat& mean_predictors,
+    const arma::mat& var_predictors,
     int samp_size,
     int num_items,
-    arma::vec num_responses,
+    const arma::vec& num_responses,
     int num_quadpts
 ){
 
@@ -228,9 +280,6 @@ arma::mat em_step2(
   /////////////// E-STEP ////////////////
   ///////////////////////////////////////
 
-  List traceline(num_items);
-  List etable(num_items);
-  arma::mat etable_all = arma::zeros(samp_size,num_quadpts);
   List p_working(num_items+2);
   for(int k = 0; k < (num_items+2); k++){
     arma::vec p_vec = p[k];
@@ -239,29 +288,28 @@ arma::mat em_step2(
 
   arma::vec p_alpha = p_working[num_items];
   arma::vec p_phi = p_working[num_items+1];
-  arma::vec alpha_impact = predictors * p_alpha;
-  arma::vec phi_impact = exp(predictors * p_phi);
+  arma::vec alpha_impact = mean_predictors * p_alpha;
+  arma::vec phi_impact = exp(var_predictors * p_phi);
 
+  List traceline(num_items);
+  List etable(num_items);
   for(int j = 0; j < num_items; j++){
     traceline[j] = bernoulli_traceline_est(p_working[j],theta,predictors,samp_size,num_quadpts);
     etable[j] = arma::zeros(samp_size,num_quadpts);
   }
 
-  arma::vec posterior(num_quadpts);
-
+  arma::mat etable_all = arma::zeros(samp_size,num_quadpts);
+  arma::vec posterior = arma::zeros(num_quadpts);
   for(int i = 0; i < samp_size; i++){
-    for(int q = 0; q < num_quadpts; q++){
-      posterior[q] = R::dnorm(theta[q], alpha_impact[i], sqrt(phi_impact[i]), FALSE);
-    }
 
+    posterior = dnormCpp(theta, alpha_impact[i], phi_impact[i], num_quadpts);
 
     for(int j = 0; j < num_items; j++){
       double resp = responses(i,j);
-      arma::mat item_traceline = traceline[j];
       if(resp == 1){
-        posterior = posterior % (1 - item_traceline.row(i).t());
+        posterior = posterior % (1 - as<arma::mat>(traceline[j]).row(i).t());
       } else if(resp == 2){
-        posterior = posterior % item_traceline.row(i).t();
+        posterior = posterior % as<arma::mat>(traceline[j]).row(i).t();
       } else{
         posterior = posterior;
       }
@@ -272,9 +320,7 @@ arma::mat em_step2(
     etable_all.row(i) = posterior.t();
 
     for(int j = 0; j < num_items; j++){
-      arma::mat item_etable = etable[j];
-      item_etable.row(i) = item_etable.row(i) + posterior.t();
-      etable[j] = item_etable;
+      as<arma::mat>(etable[j]).row(i) = as<arma::mat>(etable[j]).row(i) + posterior.t();
     }
 
   }
@@ -292,6 +338,8 @@ List em_step(
     arma::vec theta,
     arma::mat responses,
     arma::mat predictors,
+    arma::mat mean_predictors,
+    arma::mat var_predictors,
     StringVector itemtypes,
     StringVector penalty,
     arma::vec lambda,
@@ -322,8 +370,8 @@ List em_step(
 
   arma::vec p_alpha = p_working[num_items];
   arma::vec p_phi = p_working[num_items+1];
-  arma::vec alpha_impact = predictors * p_alpha;
-  arma::vec phi_impact = exp(predictors * p_phi);
+  arma::vec alpha_impact = mean_predictors * p_alpha;
+  arma::vec phi_impact = exp(var_predictors * p_phi);
 
   for(int j = 0; j < num_items; j++){
     traceline[j] = bernoulli_traceline_est(p_working[j],theta,predictors,samp_size,num_quadpts);
@@ -371,7 +419,7 @@ List em_step(
 
   List anl_deriv_alpha(1);
   for(int c = 0; c < num_predictors; c++){
-    anl_deriv_alpha = d_alpha_est(p_alpha,p_phi,etable_all,theta,predictors,c,samp_size,num_items,num_quadpts);
+    anl_deriv_alpha = d_alpha_est(p_alpha,p_phi,etable_all,theta,mean_predictors,var_predictors,c,samp_size,num_items,num_quadpts);
     double deriv1 = anl_deriv_alpha[0];
     double deriv2 = anl_deriv_alpha[1];
     double p_new = p_alpha[c] - deriv1/deriv2;
@@ -380,7 +428,7 @@ List em_step(
 
   List anl_deriv_phi(1);
   for(int c = 0; c < num_predictors; c++){
-    anl_deriv_phi = d_phi_est(p_alpha,p_phi,etable_all,theta,predictors,c,samp_size,num_items,num_quadpts);
+    anl_deriv_phi = d_phi_est(p_alpha,p_phi,etable_all,theta,mean_predictors,var_predictors,c,samp_size,num_items,num_quadpts);
     double deriv1 = anl_deriv_phi[0];
     double deriv2 = anl_deriv_phi[1];
     double p_new = p_phi[c] - deriv1/deriv2;

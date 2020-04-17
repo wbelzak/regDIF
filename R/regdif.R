@@ -104,11 +104,14 @@ regDIF <- function(x,
   # rasch = F
   # nlambda <- 100;lambda.max <- 2;alpha <- 1;pen <- 1;gamma <- 3;lambda <- .5;anchor <- 1;rasch <- F;standardize <- T;quadpts <- 81;control <- list()
 
-  # data_ds <- read.table("C:\\Users\\wbelz\\Dropbox\\Will\\Research\\Reg-DIF\\dissertation\\analysis\\scripts\\empirical\\ds.dat")
+  # data_ds <- read.table("C:\\Users\\wbelz\\Dropbox\\Will\\Research\\Reg-DIF\\dissertation\\analysis\\empirical\\longleaf\\ds.dat")
   # colnames(data_ds) <- c("id", "school", "male", "ageyrs", "live35", "maturity", "agecent", "agecent2", "maleage", "maleage2", "ds1", "ds2", "ds3", "ds4", "ds5", "ds6", "ds7", "ds8")
   # x <- data_ds[,c(3,7:10)]
   # y <- data_ds[,11:18]
-  # family <- 'bernoulli';penalty <- 'lasso';nlambda <- 100;lambda.max <- 2;alpha <- 1;pen <- 1;gamma <- 3;lambda <- c(2,1);anchor <- 1;rasch <- F;standardize <- T;quadpts <- 81;control <- list()
+  # data <- read.table("C:\\Users\\wbelz\\Dropbox\\Will\\Research\\Reg-DIF\\dissertation\\analysis\\simdata\\ss2ni1im0df2pd1\\ss2ni1im0df2pd1r100_m02_fs.dat")
+  # family <- 'bernoulli';penalty <- 'lasso';nlambda <- 100;lambda.max <- 2;alpha <- 1;pen <- 1;gamma <- 3;lambda <- 2;anchor <- 1;rasch <- F;impact.x = list(mean = NULL, var = NULL);standardize <- T;quadpts <- 81;control <- list()
+  # x <- data[,13:15]
+  # y <- data[,1:12]
 
   #obtain larger lambda if necessary
   need_larger_lambda <- TRUE #only true to start

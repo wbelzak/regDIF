@@ -24,7 +24,7 @@ double soft_thresh_est(
     double lambda
 ){
 
-  double t = fabs(z/(1+lambda*(1-alpha))) - (lambda*alpha)/(1+lambda*(1-alpha));
+  double t = (fabs(z) - lambda*alpha)/(1+lambda*(1-alpha));
   double p_new = sgn(z)*max(t,0.0);
   return p_new;
 
@@ -39,7 +39,7 @@ double firm_thresh_est(
 ){
 
   double p_new;
-  if(fabs(z/(1+lambda*(1-alpha))) <= gamma*lambda){
+  if(fabs(z)/(1+lambda*(1-alpha)) <= gamma*lambda){
     p_new = (gamma/(gamma-1))*soft_thresh_est(z,alpha,lambda);
   }else{
     p_new = z/(1+lambda*(1-alpha));

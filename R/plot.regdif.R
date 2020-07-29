@@ -31,7 +31,7 @@ plot.regDIF <-
         }
       }
 
-    plot(lambda, rep(0,length(lambda)), type = 'l', xlim = c(lambda[first.lambda]+.5,min(lambda)), main = "Regularization Paths", xlab = expression(lambda), ylab = "Estimate")
+    plot(lambda, rep(0,length(lambda)), type = 'l', xlim = c(lambda[first.lambda]+.1,min(lambda)), main = "Regularization Paths", xlab = expression(lambda), ylab = "Estimate")
     abline(v = min.lambda, lty = 2)
 
       dif.lines <- matrix(NA,ncol=2,nrow=nrow(dif.parms))
@@ -52,8 +52,16 @@ plot.regDIF <-
         dif.lines[i,2] <- linetype
 
       }
-    lines(c(lambda[first.lambda]+.5,lambda), rep(0,length(lambda)+1), type = 'l', xlim = c(lambda[first.lambda]+.5,min(lambda)))
+    lines(c(lambda[first.lambda]+.1,lambda), rep(0,length(lambda)+1), type = 'l', xlim = c(lambda[first.lambda]+.1,min(lambda)))
     nonzero.dif.lines <- dif.lines[!(dif.min.lambda == 0)]
     legend("topleft", legend = names(nonzero.dif), col = nonzero.dif.lines[1:length(nonzero.dif)], lty = as.numeric(nonzero.dif.lines[(length(nonzero.dif)+1):(length(nonzero.dif)*2)]), lwd = 2, cex = 0.75)
 
   }
+
+# fig_data <- data.frame(t(rbind(lambda,dif.parms)))
+# long_fig_data <- reshape(fig_data, varying = colnames(fig_data[,-1]), v.names = "est", timevar = "parm", times = colnames(fig_data[,-1]), direction="long")
+# ggplot(long_fig_data) +
+#   aes(x = lambda, y = est) +
+#   geom_line(aes(color = parm, linetype = parm)) +
+#   ggtitle("Evolution of test error vs lambda value") +
+#   scale_x_log10()

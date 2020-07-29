@@ -13,7 +13,8 @@ Imports:
     stats (> 3.0.0),
     utils,
     Rcpp (>= 1.0.0),
-    RcppArmadillo
+    RcppArmadillo,
+    ggplot2
 LinkingTo: Rcpp, RcppArmadillo
 Suggests:
     knitr,

@@ -33,7 +33,7 @@ summary(fit)
 #                     x8 ~ c(b,b)*1
 #                     speed ~ c(0,NA)*1'
 # fit_holzswine_lavaan <- cfa(model = holzswine_model, data = HolzingerSwineford1939, group = "school")
-# fit_holzswine_regDIF <- regDIF(school_predictor, speed_responses, family = "gaussian", penalty = "lasso", lambda = 0, anchor = 2, quadpts = 101)
+# fit_holzswine_regDIF <- regDIF(school_predictor, speed_responses, family = "gaussian", penalty = "lasso", lambda = 0, anchor = 2, standardize = F, quadpts = 101)
 # summary(fit_holzswine_lavaan)
 # summary(fit_holzswine_regDIF)
 ```

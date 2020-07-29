@@ -23,6 +23,7 @@ Mstep_2pl_dif <-
            num_quadpts,
            num_predictors) {
 
+
   #obtain parameter estimates and posterior probabilities
   p_impact <- c(p[[num_items+1]],p[[num_items+2]])
   etable_all <- elist[[2]]

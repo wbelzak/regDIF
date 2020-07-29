@@ -81,38 +81,6 @@ regDIF <- function(x,
                    quadpts = 81,
                    control = list()){
 
-  # data <- read.table("C:\\Users\\wbelz\\Dropbox\\Will\\Research\\Small Sample DIF Paper\\Small Samples Categorical Paper\\simdata\\ss500ni6dm2pd2im1\\ss500ni6dm2pd2im1_1.dat")
-  # y <- data[,9:14]
-  # y[which(y[,3]<3),3] <- 0
-  # y[which(y[,3]>=3),3] <- 1
-  # y[which(data[,10]==3 & data[,7] > 1.5),2] <- 4
-  # x <- data[,3]
-  # family <- c('categorical','categorical','bernoulli','categorical','categorical','categorical');penalty <- 'lasso';nlambda <- 100;lambda.max <- 2;alpha <- 1;pen <- 1;gamma <- 3;lambda <- .5;anchor <- 1;rasch <- F;standardize <- T;quadpts <- 81;control <- list()
-
-  # family <- 'bernoulli';penalty <- 'lasso';nlambda <- 100;lambda.max <- 2;alpha <- 1;pen <- 1;gamma <- 3;lambda <- .5;anchor <- 1;rasch <- F;standardize <- T;quadpts <- 81;control <- list()
-
-  # library(lavaan)
-  # y <- HolzingerSwineford1939[,7:12]
-  # x <- HolzingerSwineford1939[,2]
-  # y[,1] <- ifelse(y[,1]>5,2,1)
-  # y[,2] <- as.numeric(cut(y[,2],seq(min(y[,2]),max(y[,2]),by=1.75)))
-  # # # write.table(cbind(1:nrow(y),y,x),"C:\\Users\\wbelz\\Dropbox\\Will\\Research\\Regularized IRT\\continuous_data.dat",col.names = F,row.names = F)
-  # family = c('bernoulli','categorical',rep('gaussian',4))
-  # penalty = "lasso"
-  # anchor = 1
-  # standardize = F
-  # rasch = F
-  # nlambda <- 100;lambda.max <- 2;alpha <- 1;pen <- 1;gamma <- 3;lambda <- .5;anchor <- 1;rasch <- F;standardize <- T;quadpts <- 81;control <- list();impact.x = list(mean = NULL, var = NULL)
-
-  # data_ds <- read.table("C:\\Users\\wbelz\\Dropbox\\Will\\Research\\Reg-DIF\\dissertation\\analysis\\empirical\\longleaf\\ds.dat")
-  # colnames(data_ds) <- c("id", "school", "male", "ageyrs", "live35", "maturity", "agecent", "agecent2", "maleage", "maleage2", "ds1", "ds2", "ds3", "ds4", "ds5", "ds6", "ds7", "ds8")
-  # x <- data_ds[,c(3,7:10)]
-  # y <- data_ds[,11:18]
-  # data <- read.table("C:\\Users\\wbelz\\Dropbox\\Will\\Research\\Reg-DIF\\dissertation\\analysis\\simdata\\ss2ni1im0df2pd1\\ss2ni1im0df2pd1r100_m02_fs.dat")
-  # family <- 'bernoulli';penalty <- 'lasso';nlambda <- 100;lambda.max <- 2;alpha <- 1;pen <- 1;gamma <- 3;lambda <- 2;anchor <- 1;rasch <- F;impact.x = list(mean = NULL, var = NULL);standardize <- T;quadpts <- 81;control <- list()
-  # x <- data[,13:15]
-  # y <- data[,1:12]
-
   #obtain larger lambda if necessary
   need_larger_lambda <- TRUE #only true to start
   lambda_times <- 0

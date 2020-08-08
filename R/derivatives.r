@@ -23,8 +23,8 @@ d_alpha <-
   d1_trace <- t(sapply(1:samp_size, function(x){eta_d[x,]/phi[x]*(theta-alpha[x])}))
   d2_trace <- t(sapply(1:samp_size, function(x){-eta_d[x,]**2/phi[x]}))
 
-  d1 <- sum(etable_all*d1_trace)
-  d2 <- sum(etable_all*d2_trace)
+  d1 <- sum(etable_all*d1_trace, na.rm = TRUE)
+  d2 <- sum(etable_all*d2_trace, na.rm = TRUE)
 
   dlist <- list(d1,d2)
 
@@ -52,8 +52,8 @@ d_phi <-
   d1_trace <- t(sapply(1:samp_size, function(x) {eta_d1[x]*((theta-alpha[x])**2/phi[x]**(3/2) - 1/sqrt(phi[x]))}))
   d2_trace <- t(sapply(1:samp_size, function(x) {-2*eta_d2[x]*(phi[x]**(-3/2)*(theta-alpha[x])**2)}))
 
-  d1 <- sum(etable_all*d1_trace)
-  d2 <- sum(etable_all*d2_trace)
+  d1 <- sum(etable_all*d1_trace, na.rm = TRUE)
+  d2 <- sum(etable_all*d2_trace, na.rm = TRUE)
 
   dlist <- list(d1,d2)
 
@@ -83,8 +83,8 @@ d_bernoulli <-
 
   traceline <- bernoulli_traceline_cpp(p_item,theta,predictors,samp_size,num_quadpts)
 
-  d1 <- sum(traceline[[1]]*eta_d*etable[[2]]) + sum(-traceline[[2]]*eta_d*etable[[1]])
-  d2 <- sum(-traceline[[2]]*traceline[[1]]*eta_d**2*etable[[1]]) + sum(-traceline[[2]]*traceline[[1]]*eta_d**2*etable[[2]])
+  d1 <- sum(traceline[[1]]*eta_d*etable[[2]], na.rm = TRUE) + sum(-traceline[[2]]*eta_d*etable[[1]], na.rm = TRUE)
+  d2 <- sum(-traceline[[2]]*traceline[[1]]*eta_d**2*etable[[1]], na.rm = TRUE) + sum(-traceline[[2]]*traceline[[1]]*eta_d**2*etable[[2]], na.rm = TRUE)
 
   dlist <- list(d1,d2)
 
@@ -131,16 +131,16 @@ d_categorical <-
       }
     }
 
-    d1 <- sum(d1)
-    d2 <- sum(d2)
+    d1 <- sum(d1, na.rm = TRUE)
+    d2 <- sum(d2, na.rm = TRUE)
 
     #threshold derivatives
   } else {
     cat_traceline <- categorical_traceline_pts(p_item,theta,predictors,samp_size,num_responses_item,num_quadpts)
-    d1 <- sum(-etable[[thr]]*cum_traceline[[thr]]*(1-cum_traceline[[thr]])/cat_traceline[[thr]]) +
-      sum(etable[[thr+1]]*cum_traceline[[thr]]*(1-cum_traceline[[thr]])/cat_traceline[[thr+1]])
-    d2 <- sum(etable[[thr]]/cat_traceline[[thr]]*(cum_traceline[[thr]]*(1-cum_traceline[[thr]])**2 - cum_traceline[[thr]]**2*(1-cum_traceline[[thr]]) + cum_traceline[[thr]]**2*(1-cum_traceline[[thr]])**2/cat_traceline[[thr]])) -
-      sum(etable[[thr+1]]/cat_traceline[[thr+1]]*(cum_traceline[[thr]]*(1-cum_traceline[[thr]])**2 - cum_traceline[[thr]]**2*(1-cum_traceline[[thr]]) - cum_traceline[[thr]]**2*(1-cum_traceline[[thr]])**2/cat_traceline[[thr+1]]))
+    d1 <- sum(-etable[[thr]]*cum_traceline[[thr]]*(1-cum_traceline[[thr]])/cat_traceline[[thr]], na.rm = TRUE) +
+      sum(etable[[thr+1]]*cum_traceline[[thr]]*(1-cum_traceline[[thr]])/cat_traceline[[thr+1]], na.rm = TRUE)
+    d2 <- sum(etable[[thr]]/cat_traceline[[thr]]*(cum_traceline[[thr]]*(1-cum_traceline[[thr]])**2 - cum_traceline[[thr]]**2*(1-cum_traceline[[thr]]) + cum_traceline[[thr]]**2*(1-cum_traceline[[thr]])**2/cat_traceline[[thr]]), na.rm = TRUE) -
+      sum(etable[[thr+1]]/cat_traceline[[thr+1]]*(cum_traceline[[thr]]*(1-cum_traceline[[thr]])**2 - cum_traceline[[thr]]**2*(1-cum_traceline[[thr]]) - cum_traceline[[thr]]**2*(1-cum_traceline[[thr]])**2/cat_traceline[[thr+1]]), na.rm = TRUE)
 
   }
 
@@ -180,8 +180,8 @@ d_mu_gaussian <-
   d1_trace <- t(sapply(1:samp_size, function(x){eta_d[x,]/sigma[x]**2*(responses_item[x]-mu[x,])}))
   d2_trace <- t(sapply(1:samp_size, function(x){-eta_d[x,]**2/sigma[x]**2}))
 
-  d1 <- sum(etable[[1]]*d1_trace)
-  d2 <- sum(etable[[1]]*d2_trace)
+  d1 <- sum(etable[[1]]*d1_trace, na.rm = TRUE)
+  d2 <- sum(etable[[1]]*d2_trace, na.rm = TRUE)
 
   dlist <- list(d1,d2)
 
@@ -223,8 +223,8 @@ d_sigma_gaussian <-
     d2_trace <- t(sapply(1:samp_size, function(x) {-2*eta_d2[x]*(sigma[x]**(-3)*(responses_item[x]-mu[x,])**2)}))
   }
 
-  d1 <- sum(etable[[1]]*d1_trace)
-  d2 <- sum(etable[[1]]*d2_trace)
+  d1 <- sum(etable[[1]]*d1_trace, na.rm = TRUE)
+  d2 <- sum(etable[[1]]*d2_trace, na.rm = TRUE)
 
   dlist <- list(d1,d2)
 

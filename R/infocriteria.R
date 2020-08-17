@@ -47,10 +47,10 @@ information_criteria <-
       } else{
         log_itemtrace_cat <- log(itemtrace[[resp]])
       }
-      ll_dif_item <- ll_dif_item + -1*sum(etable[[resp]]*log_itemtrace_cat, na.rm = TRUE)
+        log_itemtrace_cat[is.infinite(log_itemtrace_cat)] <- NA
+        ll_dif_item <- ll_dif_item + -1*sum(etable[[resp]]*log_itemtrace_cat, na.rm = TRUE)
       }
     }
-
     #subtract out penalty and add negative log-likelihood over all items
     # if(penalty == "lasso"){
     #   current_pen <- gamma*(1/gamma)*lambda*sum(c(abs(p_item[grep("c1_itm",names(p_item))]), abs(p_item[grep("a1_itm",names(p_item))])), na.rm = TRUE)

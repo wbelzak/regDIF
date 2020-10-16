@@ -3,8 +3,8 @@
 #' Performs regularization of DIF effects in item response theory and confirmatory factor analysis models via penalized expectation-maximization.
 #'
 #' @usage
-#' regDIF(x,
-#'        y,
+#' regDIF(item.data,
+#'        predictor.data,
 #'        family = c("bernoulli","categorical","gaussian"),
 #'        penalty = c("lasso","mcp"),
 #'        nlambda = 100,
@@ -16,11 +16,11 @@
 #'        rasch = FALSE,
 #'        impact.x = list(mean = NULL, var = NULL),
 #'        standardize = TRUE,
-#'        quadpts = 81,
+#'        quadpts = 15,
 #'        control = list())
 #'
-#' @param x Matrix or dataframe of DIF and/or impact predictors. See below for option to specify different predictors for impact model.
-#' @param y Matrix or dataframe of item responses. See below for supported distributions.
+#' @param item.data Matrix or dataframe of item responses. See below for supported distributions.
+#' @param predictor.data Matrix or dataframe of DIF and/or impact predictors. See below for option to specify different predictors for impact model.
 #' @param family Character value or vector indicating the item response distributions via \code{y}. For scales where item responses are of one type only, the user may input one character value indicating the type (e.g., \code{"categorical"}). For mixed item types, the user must specify a vector of characters in the order that corresponds to the response matrix via \code{y}; e.g., \code{c(rep("categorical",2)}\code{, "bernoulli"}\code{, rep("gaussian",3))}. Supports:
 #' \itemize{
 #'    \item{\code{"bernoulli"} - Bernoulli item response via logistic link function (i.e., 1PL or 2PL model, see rasch option below for 1PL). Must be numeric/integer (2 unique values), factor (2 levels), or logical.}
@@ -37,9 +37,9 @@
 #' @param lambda Optional numeric vector of lambda values \eqn{\ge} 0. If lambda is supplied, this overrides the automatic construction of lambda values via \code{nlambda}. Must be non-negative and in descending order, from largest to smallest values (e.g., \code{seq(1,0,-.01)}.
 #' @param anchor Optional numeric value or vector indicating which item response(s) are anchors (e.g., \code{anchor = 1}). Default is \code{NULL}, meaning at least one DIF effect per covariate will be fixed to zero as lambda approaches 0 (required to identify the model).
 #' @param rasch Logical value indicating whether to constrain item slopes to 1 (i.e., equal slopes). If \code{TRUE}, no slope DIF will be evaluated. Default is \code{FALSE}.
-#' @param impact.x Optional list of matrices or data frames with predictors for mean and variance impact. Allows for different sets of predictors on the mean and variance impact equations compared to the item response DIF equations.
+#' @param impact.data Optional list of matrices or data frames with predictors for mean and variance impact. Allows for different sets of predictors on the mean and variance impact equations compared to the item response DIF equations.
 #' @param standardize Logical value indicating whether to standardize DIF and impact covariates for regularization. Default is \code{TRUE}, as it is recommended that all covariates be on the same scale.
-#' @param quadpts Numeric value indicating the number of quadrature points to be used in approximating the latent variable distribution during estimation. Default is \code{81}. Not recommended to be below 10 for accurate estimation.
+#' @param quadpts Numeric value indicating the number of quadrature points to be used in approximating the latent variable distribution during estimation. Default is \code{15}.
 #' @param control Optional list of optimization parameters. May be:
 #' \describe{
 #'    \item{tol}{Convergence threshold of EM algorithm. Default is \code{10^-5}.}
@@ -52,9 +52,9 @@
 #'
 #' library(regDIF)
 #' head(ida)
-#' x <- ida[,7:9]
-#' y <- ida[,1:6]
-#' fit <- regDIF(x, y, family = "bernoulli", penalty = "lasso")
+#' item.data <- ida[,1:6]
+#' predictor.data <- ida[,7:9]
+#' fit <- regDIF(item.data, predictor.data, family = "bernoulli", penalty = "lasso")
 #' fit
 #'
 #' }
@@ -65,8 +65,8 @@
 #'
 #' @export
 
-regDIF <- function(x,
-                   y,
+regDIF <- function(item.data,
+                   predictor.data,
                    family = c("bernoulli","categorical","gaussian"),
                    penalty = c("lasso","mcp"),
                    nlambda = 100,
@@ -76,10 +76,12 @@ regDIF <- function(x,
                    lambda = NULL,
                    anchor = NULL,
                    rasch = FALSE,
-                   impact.x = list(mean = NULL, var = NULL),
+                   impact.data = list(mean = NULL, var = NULL),
                    standardize = TRUE,
-                   quadpts = 81,
+                   quadpts = 15,
                    control = list()){
+
+  # family <- "bernoulli";penalty="lasso";nlambda=100;lambda.max=2;alpha=1;gamma=3;lambda=NULL;anchor=1;rasch=F;impact.data=list(mean = NULL, var = NULL);standardize=F;quadpts=15;control = list()
 
   #obtain larger lambda if necessary
   need_larger_lambda <- TRUE #only true to start
@@ -100,13 +102,13 @@ regDIF <- function(x,
 
     #preprocess data
     call <- match.call()
-    data_scrub <- preprocess(x,y,family,penalty,nlambda,lambda.max,lambda,anchor,rasch,impact.x,standardize,quadpts,control,call)
+    data_scrub <- preprocess(item.data,predictor.data,family,penalty,nlambda,lambda.max,lambda,anchor,rasch,impact.data,standardize,quadpts,control,call)
 
     #Run Reg-DIF by looping through lambda
     for(pen in 1:length(data_scrub$lambda)){
 
       #obtain regDIF estimates
-      estimates <- em_estimation(data_scrub$p,data_scrub$responses,data_scrub$predictors,data_scrub$mean_predictors,data_scrub$var_predictors,data_scrub$theta,data_scrub$itemtypes,penalty,data_scrub$lambda,alpha,gamma,pen,anchor,rasch,data_scrub$final.control,data_scrub$samp_size,data_scrub$num_items,data_scrub$num_responses,data_scrub$num_predictors,data_scrub$num_quadpts)
+      estimates <- em_estimation(data_scrub$p,data_scrub$responses,data_scrub$predictors,data_scrub$mean_predictors,data_scrub$var_predictors,data_scrub$itemtypes,penalty,data_scrub$lambda,alpha,gamma,pen,anchor,rasch,data_scrub$final.control,data_scrub$samp_size,data_scrub$num_items,data_scrub$num_responses,data_scrub$num_predictors,quadpts)
 
       #stop if lambda.max is too small on first run
       p2 <- unlist(estimates[[1]])
@@ -125,7 +127,7 @@ regDIF <- function(x,
       }
 
       #postprocess data
-      data_final <- postprocess(estimates,data_scrub$responses,data_scrub$predictors,data_scrub$mean_predictors,data_scrub$var_predictors,y,x,impact.x,data_scrub$theta,data_scrub$lambda,alpha,pen,anchor,data_scrub$final.control,data_scrub$final,data_scrub$samp_size,data_scrub$num_responses,data_scrub$num_predictors,data_scrub$num_items,data_scrub$num_quadpts)
+      data_final <- postprocess(estimates,data_scrub$responses,data_scrub$predictors,data_scrub$mean_predictors,data_scrub$var_predictors,item.data,predictor.data,impact.data,data_scrub$lambda,alpha,pen,anchor,data_scrub$final.control,data_scrub$final,data_scrub$samp_size,data_scrub$num_responses,data_scrub$num_predictors,data_scrub$num_items,data_scrub$num_quadpts)
 
       #update parameter estimates for next lambda value
       data_scrub$p <- estimates[[1]]

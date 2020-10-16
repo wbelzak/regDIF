@@ -14,7 +14,8 @@ Imports:
     utils,
     Rcpp (>= 1.0.0),
     RcppArmadillo,
-    ggplot2
+    ggplot2,
+    statmod
 LinkingTo: Rcpp, RcppArmadillo
 Suggests:
     knitr,

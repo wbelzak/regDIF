@@ -9,7 +9,7 @@ Mstep_2pl_dif <-
            mean_predictors,
            var_predictors,
            elist,
-           itemtypes,
+           item.type,
            penalty,
            tau,
            alpha,
@@ -61,7 +61,7 @@ Mstep_2pl_dif <-
     etable <- replicate(n=num_responses[item], elist[[1]][[item]], simplify = F)
 
     #obtain etables for each response category
-    if(itemtypes[item] == "bernoulli" | itemtypes[item] == "categorical"){
+    if(item.type[item] == "bernoulli" | item.type[item] == "categorical"){
       for(resp in 1:num_responses[item]){
         etable[[resp]][which(!(etable[[resp]][,ncol(etable[[resp]])] == resp)),] <- 0
       }
@@ -75,7 +75,7 @@ Mstep_2pl_dif <-
     # Bernoulli Responses #
     #######################
 
-    if(itemtypes[item] == "bernoulli"){
+    if(item.type[item] == "bernoulli"){
 
       #intercept updates
       anl_deriv <- d_bernoulli_est("c0",p_item,etable[[1]],etable[[2]],elist$theta,predictors,cov=0,samp_size,num_items,num_quadpts)
@@ -131,7 +131,7 @@ Mstep_2pl_dif <-
       # Categorical Responses #
       #########################
 
-  } else if(itemtypes[item] == "categorical"){
+  } else if(item.type[item] == "categorical"){
 
       #intercept updates
       anl_deriv <- d_categorical("c0",p_item,etable,elist$theta,predictors,thr=NULL,cov=NULL,samp_size,num_responses[[item]],num_items,num_quadpts)
@@ -196,7 +196,7 @@ Mstep_2pl_dif <-
       # Gaussian Responses #
       ######################
 
-    } else if(itemtypes[item] == "gaussian"){
+    } else if(item.type[item] == "gaussian"){
 
       #intercept updates
       anl_deriv <- d_mu_gaussian("c0",p_item,etable,elist$theta,responses[,item],predictors,cov=NULL,samp_size,num_items,num_quadpts)

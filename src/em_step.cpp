@@ -21,10 +21,10 @@ template <class T> const T& max (const T& a, const T& b) {
 double soft_thresh_est(
     double z,
     double alpha,
-    double lambda
+    double tau
 ){
 
-  double t = (fabs(z) - lambda*alpha)/(1+lambda*(1-alpha));
+  double t = (fabs(z) - tau*alpha)/(1+tau*(1-alpha));
   double p_new = sgn(z)*max(t,0.0);
   return p_new;
 
@@ -34,15 +34,15 @@ double soft_thresh_est(
 double firm_thresh_est(
     double z,
     double alpha,
-    double lambda,
+    double tau,
     double gamma
 ){
 
   double p_new;
-  if(fabs(z)/(1+lambda*(1-alpha)) <= gamma*lambda){
-    p_new = (gamma/(gamma-1))*soft_thresh_est(z,alpha,lambda);
+  if(fabs(z)/(1+tau*(1-alpha)) <= gamma*tau){
+    p_new = (gamma/(gamma-1))*soft_thresh_est(z,alpha,tau);
   }else{
-    p_new = z/(1+lambda*(1-alpha));
+    p_new = z/(1+tau*(1-alpha));
   }
 
   return(p_new);
@@ -342,7 +342,7 @@ List em_step(
     arma::mat var_predictors,
     StringVector itemtypes,
     StringVector penalty,
-    arma::vec lambda,
+    arma::vec tau,
     int pen,
     double alpha,
     double gamma,
@@ -492,9 +492,9 @@ List em_step(
       double z = p_item[2+c] - deriv1/deriv2;
       double p_new;
       if(penalty[0] == "lasso"){
-        p_new = soft_thresh_est(z,alpha,lambda[pen-1]);
+        p_new = soft_thresh_est(z,alpha,tau[pen-1]);
       } else{
-        p_new = firm_thresh_est(z,alpha,lambda[pen-1],gamma);
+        p_new = firm_thresh_est(z,alpha,tau[pen-1],gamma);
       }
       p_item[2+c] = p_new;
     }
@@ -507,9 +507,9 @@ List em_step(
       double z = p_item[2+num_predictors+c] - deriv1/deriv2;
       double p_new;
       if(penalty[0] == "lasso"){
-        p_new = soft_thresh_est(z,alpha,lambda[pen-1]);
+        p_new = soft_thresh_est(z,alpha,tau[pen-1]);
       } else{
-        p_new = firm_thresh_est(z,alpha,lambda[pen-1],gamma);
+        p_new = firm_thresh_est(z,alpha,tau[pen-1],gamma);
       }
       p_item[2+num_predictors+c] = p_new;
     }
@@ -524,4 +524,4 @@ List em_step(
   return(p_working);
 }
 
-//update <- em_step(p,theta,responses,predictors,itemtypes,penalty,lambda,pen,alpha,gamma,anchor,rasch,samp_size,num_items,num_responses,num_quadpts,num_predictors)
+//update <- em_step(p,theta,responses,predictors,itemtypes,penalty,tau,pen,alpha,gamma,anchor,rasch,samp_size,num_items,num_responses,num_quadpts,num_predictors)

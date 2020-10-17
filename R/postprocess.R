@@ -11,7 +11,7 @@ postprocess <-
            item.data,
            predictor.data,
            impact.data,
-           lambda,
+           tau,
            alpha,
            pen,
            anchor,
@@ -23,7 +23,7 @@ postprocess <-
            num_items,
            num_quadpts) {
 
-    # responses <- data_scrub$responses;predictors <- data_scrub$predictors;mean_predictors <- data_scrub$mean_predictors;var_predictors <- data_scrub$var_predictors;theta <- data_scrub$theta;itemtypes <- data_scrub$itemtypes;lambda <- data_scrub$lambda; final.control <- data_scrub$final.control;final <- data_scrub$final;samp_size <- data_scrub$samp_size;num_items <- data_scrub$num_items;num_responses <- data_scrub$num_responses;num_predictors <- data_scrub$num_predictors;num_quadpts <- data_scrub$num_quadpts
+    # responses <- data_scrub$responses;predictors <- data_scrub$predictors;mean_predictors <- data_scrub$mean_predictors;var_predictors <- data_scrub$var_predictors;theta <- data_scrub$theta;itemtypes <- data_scrub$itemtypes;tau <- data_scrub$tau; final.control <- data_scrub$final.control;final <- data_scrub$final;samp_size <- data_scrub$samp_size;num_items <- data_scrub$num_items;num_responses <- data_scrub$num_responses;num_predictors <- data_scrub$num_predictors;num_quadpts <- data_scrub$num_quadpts
 
   #get estimates and information criteria
   p <- estimates[[1]]
@@ -110,7 +110,7 @@ postprocess <-
 
 
   #assign output to final list
-  final$lambda[pen] <- lambda[pen]
+  final$tau[pen] <- tau[pen]
   final$aic[pen] <- round(infocrit[1],3)
   final$bic[pen] <- round(infocrit[2],3)
   final$impact.lv.parms[,pen] <- round(lv_parms,3)
@@ -141,12 +141,12 @@ postprocess <-
     last <- sum(final$dif.item.parms[-1,pen] == 0)
     if((second_last - last) > (num_predictors*num_items)){
       print(final)
-      stop(paste0("Large increase in the number of DIF parameters from iteration ",pen-1," to ",pen,".\n  Two Options:\n  1. Provide smaller differences between lambda values.\n  2. Provide anchor item(s)."), call. = FALSE)
+      stop(paste0("Large increase in the number of DIF parameters from iteration ",pen-1," to ",pen,".\n  Two Options:\n  1. Provide smaller differences between tau values.\n  2. Provide anchor item(s)."), call. = FALSE)
     }
   }
 
   #print information about optimization
-  cat('\r',sprintf("Models Completed: %d of %d  Iteration: %d  Change: %d              ", pen, length(lambda), 0, 0))
+  cat('\r',sprintf("Models Completed: %d of %d  Iteration: %d  Change: %d              ", pen, length(tau), 0, 0))
   utils::flush.console()
 
   return(final)

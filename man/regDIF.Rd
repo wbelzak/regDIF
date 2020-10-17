@@ -6,13 +6,13 @@
 \usage{
 regDIF(item.data,
        predictor.data,
-       family = c("bernoulli","categorical","gaussian"),
+       item.type = c("bernoulli","categorical","gaussian"),
        penalty = c("lasso","mcp"),
-       nlambda = 100,
-       lambda.max = 2,
+       ntau = 100,
+       tau.max = 2,
        alpha = 1,
        gamma = 3,
-       lambda = NULL,
+       tau = NULL,
        anchor = NULL,
        rasch = FALSE,
        impact.data = list(mean = NULL, var = NULL),
@@ -25,7 +25,7 @@ regDIF(item.data,
 
 \item{predictor.data}{Matrix or dataframe of DIF and/or impact predictors. See below for option to specify different predictors for impact model.}
 
-\item{family}{Character value or vector indicating the item response distributions via \code{y}. For scales where item responses are of one type only, the user may input one character value indicating the type (e.g., \code{"categorical"}). For mixed item types, the user must specify a vector of characters in the order that corresponds to the response matrix via \code{y}; e.g., \code{c(rep("categorical",2)}\code{, "bernoulli"}\code{, rep("gaussian",3))}. Supports:
+\item{item.type}{Character value or vector indicating the item response distributions via \code{y}. For scales where item responses are of one type only, the user may input one character value indicating the type (e.g., \code{"categorical"}). For mixed item types, the user must specify a vector of characters in the order that corresponds to the response matrix via \code{y}; e.g., \code{c(rep("categorical",2)}\code{, "bernoulli"}\code{, rep("gaussian",3))}. Supports:
 \itemize{
    \item{\code{"bernoulli"} - Bernoulli item response via logistic link function (i.e., 1PL or 2PL model, see rasch option below for 1PL). Must be numeric/integer (2 unique values), factor (2 levels), or logical.}
    \item{\code{"categorical"} - Categorical item response via ordered logistic link function (i.e., Graded Response Model). Must be numeric/integer or factor.}
@@ -33,20 +33,20 @@ regDIF(item.data,
 
 \item{penalty}{Character value indicating the penalty function to use. Supports:
 \itemize{
-   \item{\code{"lasso"} - The least absolute selection and shrinkage operator (LASSO) which controls DIF selection through \eqn{\lambda} (lambda).}
-   \item{\code{"mcp"} - The minimax concave penalty (MCP) which controls DIF selection through \eqn{\lambda} (lambda) and estimator bias through \eqn{\gamma} (gamma).}}}
+   \item{\code{"lasso"} - The least absolute selection and shrinkage operator (LASSO) which controls DIF selection through \eqn{\tau} (tau).}
+   \item{\code{"mcp"} - The minimax concave penalty (MCP) which controls DIF selection through \eqn{\tau} (tau) and estimator bias through \eqn{\gamma} (gamma).}}}
 
-\item{nlambda}{Numeric value indicating how many lambda values to fit. Default is 100.}
+\item{ntau}{Numeric value indicating how many tau values to fit. Default is 100.}
 
-\item{lambda.max}{Numberic value indicating the maximum lambda parameter to use for internal construction of lambda vector. Default is 3. Must be large enough to shrink all DIF effects to zero to begin with.}
+\item{tau.max}{Numberic value indicating the maximum tau parameter to use for internal construction of tau vector. Default is 3. Must be large enough to shrink all DIF effects to zero to begin with.}
 
 \item{alpha}{Numeric value indicating the alpha parameter in the elastic net penalty function. Alpha controls the degree to which LASSO or ridge is used during regularization. Default is 1, which is equivalent to LASSO. For ridge, set alpha to 0. NOTE: If using MCP penalty, alpha may not be exactly 0.}
 
-\item{gamma}{Numeric value indicating the gamma parameter in the MCP function. Gamma controls the degree of tapering of DIF effects as lambda decreases. Larger gamma leads to faster tapering (less bias but possibly more unstable optimization), whereas smaller gamma leads to slower tapering (more bias but more stable optimization). Default is 3. Must be greater than 1.}
+\item{gamma}{Numeric value indicating the gamma parameter in the MCP function. Gamma controls the degree of tapering of DIF effects as tau decreases. Larger gamma leads to faster tapering (less bias but possibly more unstable optimization), whereas smaller gamma leads to slower tapering (more bias but more stable optimization). Default is 3. Must be greater than 1.}
 
-\item{lambda}{Optional numeric vector of lambda values \eqn{\ge} 0. If lambda is supplied, this overrides the automatic construction of lambda values via \code{nlambda}. Must be non-negative and in descending order, from largest to smallest values (e.g., \code{seq(1,0,-.01)}.}
+\item{tau}{Optional numeric vector of tau values \eqn{\ge} 0. If tau is supplied, this overrides the automatic construction of tau values via \code{ntau}. Must be non-negative and in descending order, from largest to smallest values (e.g., \code{seq(1,0,-.01)}.}
 
-\item{anchor}{Optional numeric value or vector indicating which item response(s) are anchors (e.g., \code{anchor = 1}). Default is \code{NULL}, meaning at least one DIF effect per covariate will be fixed to zero as lambda approaches 0 (required to identify the model).}
+\item{anchor}{Optional numeric value or vector indicating which item response(s) are anchors (e.g., \code{anchor = 1}). Default is \code{NULL}, meaning at least one DIF effect per covariate will be fixed to zero as tau approaches 0 (required to identify the model).}
 
 \item{rasch}{Logical value indicating whether to constrain item slopes to 1 (i.e., equal slopes). If \code{TRUE}, no slope DIF will be evaluated. Default is \code{FALSE}.}
 
@@ -54,7 +54,7 @@ regDIF(item.data,
 
 \item{standardize}{Logical value indicating whether to standardize DIF and impact covariates for regularization. Default is \code{TRUE}, as it is recommended that all covariates be on the same scale.}
 
-\item{quadpts}{Numeric value indicating the number of quadrature points to be used in approximating the latent variable distribution during estimation. Default is \code{15}.}
+\item{quadpts}{Numeric value indicating the number of quadrature points to be used in approximating the latent variable distribution during estimation. Uses adaptive quadrature. Default is \code{15}.}
 
 \item{control}{Optional list of optimization parameters. May be:
 \describe{
@@ -74,7 +74,7 @@ library(regDIF)
 head(ida)
 item.data <- ida[,1:6]
 predictor.data <- ida[,7:9]
-fit <- regDIF(item.data, predictor.data, family = "bernoulli", penalty = "lasso")
+fit <- regDIF(item.data, predictor.data, item.type = "bernoulli", penalty = "lasso")
 fit
 
 }

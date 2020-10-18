@@ -6,7 +6,7 @@
 #' regDIF(item.data,
 #'        predictor.data,
 #'        item.type = c("bernoulli","categorical","gaussian"),
-#'        penalty = c("lasso","mcp"),
+#'        penalty = c("mcp","lasso"),
 #'        ntau = 100,
 #'        tau.max = 2,
 #'        alpha = 1,
@@ -28,8 +28,8 @@
 #'    \item{\code{"gaussian"} - Gaussian item response via identity link function (i.e., Confirmatory Factor Analysis). Must be numeric/integer.}}
 #' @param penalty Character value indicating the penalty function to use. Supports:
 #' \itemize{
-#'    \item{\code{"lasso"} - The least absolute selection and shrinkage operator (LASSO) which controls DIF selection through \eqn{\tau} (tau).}
 #'    \item{\code{"mcp"} - The minimax concave penalty (MCP) which controls DIF selection through \eqn{\tau} (tau) and estimator bias through \eqn{\gamma} (gamma).}}
+#'    \item{\code{"lasso"} - The least absolute selection and shrinkage operator (LASSO) which controls DIF selection through \eqn{\tau} (tau).}
 #' @param ntau Numeric value indicating how many tau values to fit. Default is 100.
 #' @param tau.max Numberic value indicating the maximum tau parameter to use for internal construction of tau vector. Default is 3. Must be large enough to shrink all DIF effects to zero to begin with.
 #' @param alpha Numeric value indicating the alpha parameter in the elastic net penalty function. Alpha controls the degree to which LASSO or ridge is used during regularization. Default is 1, which is equivalent to LASSO. For ridge, set alpha to 0. NOTE: If using MCP penalty, alpha may not be exactly 0.

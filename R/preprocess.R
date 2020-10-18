@@ -25,8 +25,8 @@ preprocess <-
   #preprocess warnings
   # if(penalty == "mcp")
   if(!(any(item.type == "bernoulli") | any(item.type == "categorical") | any(item.type == "gaussian"))) stop("Item response types must be distributed 'bernoulli', 'categorical', or 'gaussian'.")
-  if(any(tau < 0)) stop("tau values must be non-negative.", call. = TRUE)
-  if(length(tau) > 1 & all(diff(tau) >= 0)) stop("tau values must be in descending order (e.g., tau = c(-2,-1,0)).")
+  if(any(tau < 0)) stop("Tau values must be non-negative.", call. = TRUE)
+  if(length(tau) > 1 & all(diff(tau) >= 0)) stop("Tau values must be in descending order (e.g., tau = c(-2,-1,0)).")
   if(is.null(anchor) & length(tau) == 1){if(tau == 0) stop("Anchor item must be specified with tau = 0.", call. = TRUE)}
   if(!is.null(anchor) & !is.numeric(anchor)) stop("Anchor items must be numeric (e.g., anchor = 1).", call. = TRUE)
 

@@ -99,7 +99,7 @@ arma::mat bernoulli_traceline_est(
 //[[Rcpp::export]]
 List bernoulli_traceline_cpp(
     arma::vec p_item,
-    arma::mat theta,
+    arma::vec theta,
     arma::mat predictors,
     int samp_size,
     int num_quadpts
@@ -117,7 +117,7 @@ List bernoulli_traceline_cpp(
 
   // Loop through quadrature points
   for(int q = 0; q < num_quadpts; ++q){
-    traceline1.col(q) = 1/(1 + exp(-(p_c0 + predictors * p_c1 + (p_a0 + predictors * p_a1) % theta.col(q))));
+    traceline1.col(q) = 1/(1 + exp(-(p_c0 + predictors * p_c1 + (p_a0 + predictors * p_a1) * theta[q])));
   }
   traceline0 = 1 - traceline1;
 

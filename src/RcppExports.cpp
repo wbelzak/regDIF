@@ -63,13 +63,13 @@ BEGIN_RCPP
 END_RCPP
 }
 // bernoulli_traceline_cpp
-List bernoulli_traceline_cpp(arma::vec p_item, arma::mat theta, arma::mat predictors, int samp_size, int num_quadpts);
+List bernoulli_traceline_cpp(arma::vec p_item, arma::vec theta, arma::mat predictors, int samp_size, int num_quadpts);
 RcppExport SEXP _regDIF_bernoulli_traceline_cpp(SEXP p_itemSEXP, SEXP thetaSEXP, SEXP predictorsSEXP, SEXP samp_sizeSEXP, SEXP num_quadptsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< arma::vec >::type p_item(p_itemSEXP);
-    Rcpp::traits::input_parameter< arma::mat >::type theta(thetaSEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type theta(thetaSEXP);
     Rcpp::traits::input_parameter< arma::mat >::type predictors(predictorsSEXP);
     Rcpp::traits::input_parameter< int >::type samp_size(samp_sizeSEXP);
     Rcpp::traits::input_parameter< int >::type num_quadpts(num_quadptsSEXP);

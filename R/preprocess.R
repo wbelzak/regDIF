@@ -8,7 +8,7 @@ preprocess <-
            item.type,
            penalty,
            ntau,
-           tau.max,
+           tau_max,
            tau,
            anchor,
            rasch,
@@ -17,10 +17,6 @@ preprocess <-
            quadpts,
            control,
            call){
-
-  #data
-
-  item.type <- item.type
 
   #impact data (if different)
   if(is.null(impact.data$mean)){mean_predictors <- predictor.data} else{mean_predictors <- impact.data$mean}
@@ -41,7 +37,7 @@ preprocess <-
 
   #tau
   if(is.null(tau)){
-    tau <- seq(tau.max**(1/3),0,length.out = ntau)**3
+    tau <- seq(tau_max**(1/3),0,length.out = ntau)**3
   }
 
   #speeds up computation
@@ -59,11 +55,11 @@ preprocess <-
   }
 
   #get item response types
-  num_item.data <- rep(1,num_items)
+  num_responses <- rep(1,num_items)
   if(any(item.type == "bernoulli" | item.type == "categorical")){
     item.data[,which(item.type == "bernoulli" | item.type == "categorical")] <-
       apply(item.data[,which(item.type == "bernoulli" | item.type == "categorical")], 2, function(x) as.numeric(as.factor(x)))
-    num_item.data[which(item.type == "bernoulli" | item.type == "categorical")] <-
+    num_responses[which(item.type == "bernoulli" | item.type == "categorical")] <-
       apply(item.data[,which(item.type == "bernoulli" | item.type == "categorical")], 2, function(x) length(unique(na.omit(x))))
   }
 
@@ -79,13 +75,13 @@ preprocess <-
   ###################
   p <- replicate(n=num_items+2,list(NA),simplify=F)
   for(item in 1:num_items){
-    if(num_item.data[item] > 2){ #categorical item item.data
-      p[[item]] <- c(0, seq(.25,1,length.out = num_item.data[item]-2), 1, rep(0, num_predictors), rep(0, num_predictors))
-      names(p[[item]]) <- c(paste0('c0_itm',item,"_int"),paste0('c0_itm',item,"_thr",1:(num_item.data[item]-2),"_"),paste0('a0_itm',item,"_"),paste0('c1_itm',item,"_cov",1:num_predictors),paste0('a1_itm',item,"_cov",1:num_predictors))
-    } else if(num_item.data[item] == 2){ #bernoulli item item.data
+    if(num_responses[item] > 2){ #categorical item item.data
+      p[[item]] <- c(0, seq(.25,1,length.out = num_responses[item]-2), 1, rep(0, num_predictors), rep(0, num_predictors))
+      names(p[[item]]) <- c(paste0('c0_itm',item,"_int"),paste0('c0_itm',item,"_thr",1:(num_responses[item]-2),"_"),paste0('a0_itm',item,"_"),paste0('c1_itm',item,"_cov",1:num_predictors),paste0('a1_itm',item,"_cov",1:num_predictors))
+    } else if(num_responses[item] == 2){ #bernoulli item item.data
       p[[item]] <- c(0, 1, rep(0, num_predictors), rep(0, num_predictors))
       names(p[[item]]) <- c(paste0('c0_itm',item,"_int"),paste0('a0_itm',item,"_"),paste0('c1_itm',item,"_cov",1:num_predictors),paste0('a1_itm',item,"_cov",1:num_predictors))
-    } else if(num_item.data[item] == 1){ #normal item item.data
+    } else if(num_responses[item] == 1){ #normal item item.data
       p[[item]] <- c(mean(item.data[,item]), sqrt(.5*var(item.data[,item])), rep(0, num_predictors), rep(0, num_predictors), .5*var(item.data[,item]), rep(0, num_predictors))
       names(p[[item]]) <- c(paste0('c0_itm',item,"_int"),paste0('a0_itm',item,"_"),paste0('c1_itm',item,"_cov",1:num_predictors),paste0('a1_itm',item,"_cov",1:num_predictors),paste0('s0_itm',item,"_"),paste0('s1_itm',item,"_cov",1:num_predictors))
     }
@@ -118,7 +114,7 @@ preprocess <-
               item.type = item.type,
               final.control = final.control,
               tau = tau,
-              num_item.data = num_item.data,
+              num_responses = num_responses,
               num_predictors = num_predictors,
               samp_size = samp_size,
               num_items = num_items))

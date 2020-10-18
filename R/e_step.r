@@ -4,14 +4,14 @@
 
 Estep_2pl <-
   function(p,
-           item.data,
-           predictor.data,
+           responses,
+           predictors,
            mean_predictors,
            var_predictors,
            samp_size,
            num_items,
            num_responses,
-           num_quadpts) {
+           num_quadpts) { #p is parameters, responses is item responses, theta is values of latent variable
 
   #make space for the trace lines and the E-tables
   itemtrace <- rep(list(NA),num_items)
@@ -29,11 +29,11 @@ Estep_2pl <-
   #compute the trace lines
   for (item in 1:num_items) { #loop through items
     if(num_responses[item] == 1){
-      itemtrace[[item]] <- gaussian_traceline_pts(p[[item]],theta,item.data[,item],predictor.data,samp_size,num_quadpts)
+      itemtrace[[item]] <- gaussian_traceline_pts(p[[item]],theta,responses[,item],predictors,samp_size,num_quadpts)
     } else if (num_responses[item] == 2){
-      itemtrace[[item]] <- bernoulli_traceline_pts(p[[item]],theta,predictor.data,alpha,phi,samp_size,num_quadpts)
+      itemtrace[[item]] <- bernoulli_traceline_pts(p[[item]],theta,predictors,alpha,phi,samp_size,num_quadpts)
     } else if (num_responses[item] > 2){
-      itemtrace[[item]] <- categorical_traceline_pts(p[[item]],theta,predictor.data,samp_size,num_responses[item],num_quadpts)
+      itemtrace[[item]] <- categorical_traceline_pts(p[[item]],theta,predictors,samp_size,num_responses[item],num_quadpts)
     }
   }
 
@@ -45,7 +45,7 @@ Estep_2pl <-
 
     #within each response pattern, loop over items and compute posterior probability of response pattern
     for(item in 1:num_items) {
-      x <- if(num_responses[item] == 1) {1} else {item.data[case,item]}
+      x <- if(num_responses[item] == 1) {1} else {responses[case,item]}
       if(!is.na(x)) posterior <- posterior*itemtrace[[item]][[x]][case,]
     }
 
@@ -56,7 +56,7 @@ Estep_2pl <-
 
     #for individual i, add posterior to the e-tables depending on response
     for(item in 1:num_items) { #within a person, loop over items
-      x <- item.data[case,item]
+      x <- responses[case,item]
       etable[[item]][case,] <- c(posterior, x)
     }
 

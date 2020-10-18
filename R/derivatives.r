@@ -65,7 +65,7 @@ d_bernoulli <-
            p_item,
            etable,
            theta,
-           predictor.data,
+           predictors,
            cov,
            samp_size,
            num_items,
@@ -76,12 +76,12 @@ d_bernoulli <-
   } else if(parm == "a0"){
     eta_d <- matrix(rep(matrix(theta, nrow = 1, ncol = length(theta)), samp_size), nrow = samp_size, ncol = length(theta), byrow = TRUE)
   } else if(parm == "c1"){
-    eta_d <- matrix(rep(predictor.data[,cov], num_quadpts), ncol = num_quadpts, nrow = samp_size)
+    eta_d <- matrix(rep(predictors[,cov], num_quadpts), ncol = num_quadpts, nrow = samp_size)
   } else if(parm == "a1"){
-    eta_d <- matrix(rep(predictor.data[,cov], num_quadpts), ncol = num_quadpts, nrow = samp_size)*matrix(rep(matrix(theta, nrow = 1, ncol = length(theta)), samp_size), nrow = samp_size, ncol = length(theta), byrow = TRUE)
+    eta_d <- matrix(rep(predictors[,cov], num_quadpts), ncol = num_quadpts, nrow = samp_size)*matrix(rep(matrix(theta, nrow = 1, ncol = length(theta)), samp_size), nrow = samp_size, ncol = length(theta), byrow = TRUE)
   }
 
-  traceline <- bernoulli_traceline_cpp(p_item,theta,predictor.data,samp_size,num_quadpts)
+  traceline <- bernoulli_traceline_cpp(p_item,theta,predictors,samp_size,num_quadpts)
 
   d1 <- sum(traceline[[1]]*eta_d*etable[[2]], na.rm = TRUE) + sum(-traceline[[2]]*eta_d*etable[[1]], na.rm = TRUE)
   d2 <- sum(-traceline[[2]]*traceline[[1]]*eta_d**2*etable[[1]], na.rm = TRUE) + sum(-traceline[[2]]*traceline[[1]]*eta_d**2*etable[[2]], na.rm = TRUE)
@@ -95,7 +95,7 @@ d_categorical <-
            p_item,
            etable,
            theta,
-           predictor.data,
+           predictors,
            thr,
            cov,
            samp_size,
@@ -108,12 +108,12 @@ d_categorical <-
   } else if(parm == "a0"){
     eta_d <- matrix(rep(matrix(theta, nrow = 1, ncol = length(theta)), samp_size), nrow = samp_size, ncol = length(theta), byrow = TRUE)
   } else if(parm == "c1"){
-    eta_d <- matrix(rep(predictor.data[,cov], num_quadpts), ncol = num_quadpts, nrow = samp_size)
+    eta_d <- matrix(rep(predictors[,cov], num_quadpts), ncol = num_quadpts, nrow = samp_size)
   } else if(parm == "a1"){
-    eta_d <- matrix(rep(predictor.data[,cov], num_quadpts), ncol = num_quadpts, nrow = samp_size)*matrix(rep(matrix(theta, nrow = 1, ncol = length(theta)), samp_size), nrow = samp_size, ncol = length(theta), byrow = TRUE)
+    eta_d <- matrix(rep(predictors[,cov], num_quadpts), ncol = num_quadpts, nrow = samp_size)*matrix(rep(matrix(theta, nrow = 1, ncol = length(theta)), samp_size), nrow = samp_size, ncol = length(theta), byrow = TRUE)
   }
 
-  cum_traceline <- cumulative_traceline_pts(p_item,theta,predictor.data,samp_size,num_responses_item,num_quadpts)
+  cum_traceline <- cumulative_traceline_pts(p_item,theta,predictors,samp_size,num_responses_item,num_quadpts)
 
   #non-threshold derivatives
   if(is.null(thr)){
@@ -136,7 +136,7 @@ d_categorical <-
 
     #threshold derivatives
   } else {
-    cat_traceline <- categorical_traceline_pts(p_item,theta,predictor.data,samp_size,num_responses_item,num_quadpts)
+    cat_traceline <- categorical_traceline_pts(p_item,theta,predictors,samp_size,num_responses_item,num_quadpts)
     d1 <- sum(-etable[[thr]]*cum_traceline[[thr]]*(1-cum_traceline[[thr]])/cat_traceline[[thr]], na.rm = TRUE) +
       sum(etable[[thr+1]]*cum_traceline[[thr]]*(1-cum_traceline[[thr]])/cat_traceline[[thr+1]], na.rm = TRUE)
     d2 <- sum(etable[[thr]]/cat_traceline[[thr]]*(cum_traceline[[thr]]*(1-cum_traceline[[thr]])**2 - cum_traceline[[thr]]**2*(1-cum_traceline[[thr]]) + cum_traceline[[thr]]**2*(1-cum_traceline[[thr]])**2/cat_traceline[[thr]]), na.rm = TRUE) -
@@ -155,7 +155,7 @@ d_mu_gaussian <-
            etable,
            theta,
            responses_item,
-           predictor.data,
+           predictors,
            cov,
            samp_size,
            num_items,
@@ -166,15 +166,15 @@ d_mu_gaussian <-
   } else if(parm == "a0"){
     eta_d <- matrix(rep(matrix(theta, nrow = 1, ncol = length(theta)), samp_size), nrow = samp_size, ncol = length(theta), byrow = TRUE)
   } else if(parm == "c1"){
-    eta_d <- matrix(rep(predictor.data[,cov], num_quadpts), ncol = num_quadpts, nrow = samp_size)
+    eta_d <- matrix(rep(predictors[,cov], num_quadpts), ncol = num_quadpts, nrow = samp_size)
   } else if(parm == "a1"){
-    eta_d <- matrix(rep(predictor.data[,cov], num_quadpts), ncol = num_quadpts, nrow = samp_size)*matrix(rep(matrix(theta, nrow = 1, ncol = length(theta)), samp_size), nrow = samp_size, ncol = length(theta), byrow = TRUE)
+    eta_d <- matrix(rep(predictors[,cov], num_quadpts), ncol = num_quadpts, nrow = samp_size)*matrix(rep(matrix(theta, nrow = 1, ncol = length(theta)), samp_size), nrow = samp_size, ncol = length(theta), byrow = TRUE)
   }
 
 
   #get latent mean and variance vectors
-  mu <- sapply(theta,function(x){(p_item[grep("c0",names(p_item),fixed=T)] + predictor.data %*% p_item[grep("c1",names(p_item),fixed=T)]) + (p_item[grep("a0",names(p_item),fixed=T)] + predictor.data %*% p_item[grep("a1",names(p_item),fixed=T)])*x})
-  sigma <- sqrt(p_item[grep("s0",names(p_item))][1]*exp(predictor.data %*% p_item[grep("s1",names(p_item))]))
+  mu <- sapply(theta,function(x){(p_item[grep("c0",names(p_item),fixed=T)] + predictors %*% p_item[grep("c1",names(p_item),fixed=T)]) + (p_item[grep("a0",names(p_item),fixed=T)] + predictors %*% p_item[grep("a1",names(p_item),fixed=T)])*x})
+  sigma <- sqrt(p_item[grep("s0",names(p_item))][1]*exp(predictors %*% p_item[grep("s1",names(p_item))]))
 
 
   d1_trace <- t(sapply(1:samp_size, function(x){eta_d[x,]/sigma[x]**2*(responses_item[x]-mu[x,])}))
@@ -196,21 +196,21 @@ d_sigma_gaussian <-
            etable,
            theta,
            responses_item,
-           predictor.data,
+           predictors,
            cov,
            samp_size,
            num_items,
            num_quadpts) {
 
-  sigma <- sqrt(p_item[grep("s0",names(p_item))][1]*exp(predictor.data %*% p_item[grep("s1",names(p_item))]))
-  mu <- sapply(theta,function(x){(p_item[grep("c0",names(p_item),fixed=T)] + predictor.data %*% p_item[grep("c1",names(p_item),fixed=T)]) + (p_item[grep("a0",names(p_item),fixed=T)] + predictor.data %*% p_item[grep("a1",names(p_item),fixed=T)])*x})
+  sigma <- sqrt(p_item[grep("s0",names(p_item))][1]*exp(predictors %*% p_item[grep("s1",names(p_item))]))
+  mu <- sapply(theta,function(x){(p_item[grep("c0",names(p_item),fixed=T)] + predictors %*% p_item[grep("c1",names(p_item),fixed=T)]) + (p_item[grep("a0",names(p_item),fixed=T)] + predictors %*% p_item[grep("a1",names(p_item),fixed=T)])*x})
 
   if(parm == "s0"){
-    eta_d1 <- sapply(1:samp_size, function(x) exp(predictor.data[x,] %*% p_item[grep("s1",names(p_item))])/(2*sigma[x]))
-    eta_d2 <- sapply(1:samp_size, function(x) -exp(predictor.data[x,] %*% p_item[grep("s1",names(p_item))])**2/(4*sigma[x]**3))
+    eta_d1 <- sapply(1:samp_size, function(x) exp(predictors[x,] %*% p_item[grep("s1",names(p_item))])/(2*sigma[x]))
+    eta_d2 <- sapply(1:samp_size, function(x) -exp(predictors[x,] %*% p_item[grep("s1",names(p_item))])**2/(4*sigma[x]**3))
   } else if(parm == "s1"){
-    eta_d1 <- sapply(1:samp_size, function(x) sigma[x]*predictor.data[x,cov]/2)
-    eta_d2 <- sapply(1:samp_size, function(x) sigma[x]*predictor.data[x,cov]**2/4)
+    eta_d1 <- sapply(1:samp_size, function(x) sigma[x]*predictors[x,cov]/2)
+    eta_d2 <- sapply(1:samp_size, function(x) sigma[x]*predictors[x,cov]**2/4)
   }
 
 

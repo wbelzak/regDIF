@@ -33,3 +33,11 @@ d_bernoulli_est <- function(parm, p_item, etable1, etable2, theta, predictors, c
     .Call(`_regDIF_d_bernoulli_est`, parm, p_item, etable1, etable2, theta, predictors, cov, samp_size, num_items, num_quadpts)
 }
 
+em_step2 <- function(p, theta, responses, predictors, mean_predictors, var_predictors, samp_size, num_items, num_responses, num_quadpts) {
+    .Call(`_regDIF_em_step2`, p, theta, responses, predictors, mean_predictors, var_predictors, samp_size, num_items, num_responses, num_quadpts)
+}
+
+em_step <- function(p, theta, responses, predictors, mean_predictors, var_predictors, itemtypes, penalty, tau, pen, alpha, gamma, anchor, rasch, samp_size, num_items, num_responses, num_quadpts, num_predictors) {
+    .Call(`_regDIF_em_step`, p, theta, responses, predictors, mean_predictors, var_predictors, itemtypes, penalty, tau, pen, alpha, gamma, anchor, rasch, samp_size, num_items, num_responses, num_quadpts, num_predictors)
+}
+

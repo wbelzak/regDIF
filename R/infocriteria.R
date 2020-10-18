@@ -5,8 +5,8 @@
 information_criteria <-
   function(elist,
            p,
-           item.data,
-           predictor.data,
+           responses,
+           predictors,
            mean_predictors,
            var_predictors,
            theta,
@@ -33,13 +33,13 @@ information_criteria <-
 
     #compute negative log-likelihood values
     if(num_responses[item] == 1){
-      itemtrace <- gaussian_traceline_pts(p[[item]],theta,item.data[,item],predictor.data,samp_size,num_quadpts)
+      itemtrace <- gaussian_traceline_pts(p[[item]],theta,responses[,item],predictors,samp_size,num_quadpts)
       ll_dif_item <- -1*sum(etable[[1]]*log(itemtrace[[1]]), na.rm = TRUE)
     } else if (num_responses[item] == 2){
-      itemtrace <- bernoulli_traceline_pts(p[[item]],theta,predictor.data,samp_size,num_quadpts)
+      itemtrace <- bernoulli_traceline_pts(p[[item]],theta,predictors,samp_size,num_quadpts)
       ll_dif_item <- -1*(sum(etable[[1]]*log(itemtrace[[1]]), na.rm = TRUE) + sum(etable[[2]]*log(itemtrace[[2]]), na.rm = TRUE))
     } else if (num_responses[item] > 2){
-      itemtrace <- categorical_traceline_pts(p[[item]],theta,predictor.data,samp_size,num_responses[item],num_quadpts)
+      itemtrace <- categorical_traceline_pts(p[[item]],theta,predictors,samp_size,num_responses[item],num_quadpts)
       ll_dif_item <- 0
       for(resp in 1:num_responses[item]){
       if(all(itemtrace[[resp]] == 0)){

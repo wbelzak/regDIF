@@ -33,8 +33,8 @@ regDIF(item.data,
 
 \item{penalty}{Character value indicating the penalty function to use. Supports:
 \itemize{
-   \item{\code{"mcp"} - The minimax concave penalty (MCP) which controls DIF selection through \eqn{\tau} (tau) and estimator bias through \eqn{\gamma} (gamma).}
-   \item{\code{"lasso"} - The least absolute selection and shrinkage operator (LASSO) which controls DIF selection through \eqn{\tau} (tau).}}}
+   \item{\code{"mcp"} - The minimax concave penalty (MCP) which controls DIF selection through \eqn{\tau} (tau) and estimator bias through \eqn{\gamma} (gamma).}}
+   \item{\code{"lasso"} - The least absolute selection and shrinkage operator (LASSO) which controls DIF selection through \eqn{\tau} (tau).}}
 
 \item{ntau}{Numeric value indicating how many tau values to fit. Default is 100.}
 

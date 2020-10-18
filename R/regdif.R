@@ -5,7 +5,7 @@
 #' @usage
 #' regDIF(item.data,
 #'        predictor.data,
-#'        item.type = c("bernoulli","categorical","gaussian"),
+#'        family = c("bernoulli","categorical","gaussian"),
 #'        penalty = c("lasso","mcp"),
 #'        ntau = 100,
 #'        tau.max = 2,
@@ -21,7 +21,7 @@
 #'
 #' @param item.data Matrix or dataframe of item responses. See below for supported distributions.
 #' @param predictor.data Matrix or dataframe of DIF and/or impact predictors. See below for option to specify different predictors for impact model.
-#' @param item.type Character value or vector indicating the item response distributions via \code{y}. For scales where item responses are of one type only, the user may input one character value indicating the type (e.g., \code{"categorical"}). For mixed item types, the user must specify a vector of characters in the order that corresponds to the response matrix via \code{y}; e.g., \code{c(rep("categorical",2)}\code{, "bernoulli"}\code{, rep("gaussian",3))}. Supports:
+#' @param family Character value or vector indicating the item response distributions via \code{y}. For scales where item responses are of one type only, the user may input one character value indicating the type (e.g., \code{"categorical"}). For mixed item types, the user must specify a vector of characters in the order that corresponds to the response matrix via \code{y}; e.g., \code{c(rep("categorical",2)}\code{, "bernoulli"}\code{, rep("gaussian",3))}. Supports:
 #' \itemize{
 #'    \item{\code{"bernoulli"} - Bernoulli item response via logistic link function (i.e., 1PL or 2PL model, see rasch option below for 1PL). Must be numeric/integer (2 unique values), factor (2 levels), or logical.}
 #'    \item{\code{"categorical"} - Categorical item response via ordered logistic link function (i.e., Graded Response Model). Must be numeric/integer or factor.}
@@ -54,7 +54,7 @@
 #' head(ida)
 #' item.data <- ida[,1:6]
 #' predictor.data <- ida[,7:9]
-#' fit <- regDIF(item.data, predictor.data, item.type = "bernoulli", penalty = "lasso")
+#' fit <- regDIF(item.data, predictor.data, family = "bernoulli", penalty = "lasso")
 #' fit
 #'
 #' }
@@ -67,8 +67,8 @@
 
 regDIF <- function(item.data,
                    predictor.data,
-                   item.type = c("bernoulli","categorical","gaussian"),
-                   penalty = c("mcp","lasso"),
+                   family = c("bernoulli","categorical","gaussian"),
+                   penalty = c("lasso","mcp"),
                    ntau = 100,
                    tau.max = 2,
                    alpha = 1,
@@ -81,7 +81,7 @@ regDIF <- function(item.data,
                    quadpts = 15,
                    control = list()){
 
-  # item.type <- "bernoulli";penalty="lasso";ntau=100;tau.max=2;alpha=1;gamma=3;tau=NULL;anchor=1;rasch=F;impact.data=list(mean = NULL, var = NULL);standardize=F;quadpts=15;control = list()
+  # family <- "bernoulli";penalty="lasso";ntau=100;tau.max=2;alpha=1;gamma=3;tau=NULL;anchor=1;rasch=F;impact.data=list(mean = NULL, var = NULL);standardize=F;quadpts=15;control = list()
 
   #obtain larger tau if necessary
   need_larger_tau <- TRUE #only true to start
@@ -102,7 +102,7 @@ regDIF <- function(item.data,
 
     #preprocess data
     call <- match.call()
-    data_scrub <- preprocess(item.data,predictor.data,item.type,penalty,ntau,tau.max,tau,anchor,rasch,impact.data,standardize,quadpts,control,call)
+    data_scrub <- preprocess(item.data,predictor.data,family,penalty,ntau,tau.max,tau,anchor,rasch,impact.data,standardize,quadpts,control,call)
 
     #Run Reg-DIF by looping through tau
     for(pen in 1:length(data_scrub$tau)){

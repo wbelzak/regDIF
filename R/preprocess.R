@@ -5,7 +5,7 @@
 preprocess <-
   function(item.data,
            predictor.data,
-           item.type,
+           family,
            penalty,
            ntau,
            tau.max,
@@ -19,8 +19,8 @@ preprocess <-
            call){
 
   #data
-
-  item.type <- item.type
+  predictors <- predictor.data
+  itemtypes <- family
 
   #impact data (if different)
   if(is.null(impact.data$mean)){mean_predictors <- predictor.data} else{mean_predictors <- impact.data$mean}
@@ -28,7 +28,7 @@ preprocess <-
 
   #preprocess warnings
   # if(penalty == "mcp")
-  if(!(any(item.type == "bernoulli") | any(item.type == "categorical") | any(item.type == "gaussian"))) stop("Item response types must be distributed 'bernoulli', 'categorical', or 'gaussian'.")
+  if(!(any(itemtypes == "bernoulli") | any(itemtypes == "categorical") | any(itemtypes == "gaussian"))) stop("Item response types must be distributed 'bernoulli', 'categorical', or 'gaussian'.")
   if(any(tau < 0)) stop("tau values must be non-negative.", call. = TRUE)
   if(length(tau) > 1 & all(diff(tau) >= 0)) stop("tau values must be in descending order (e.g., tau = c(-2,-1,0)).")
   if(is.null(anchor) & length(tau) == 1){if(tau == 0) stop("Anchor item must be specified with tau = 0.", call. = TRUE)}
@@ -53,18 +53,22 @@ preprocess <-
   num_items <- dim(item.data)[2]
   num_predictors <- dim(predictor.data)[2]
 
-  #get number of item.type for number of items
-  if(length(item.type) == 1){
-    item.type <- rep(item.type, num_items)
+  #turn data into numeric if not already
+  if(any(!sapply(item.data,function(x)is.numeric(x)))){item.data <- sapply(item.data,function(x)as.numeric(x))}
+  if(any(!sapply(predictor.data,function(x)is.numeric(x)))){predictor.data <- sapply(predictor.data,function(x)as.numeric(x))}
+
+  #get number of itemtypes for number of items
+  if(length(itemtypes) == 1){
+    itemtypes <- rep(itemtypes, num_items)
   }
 
   #get item response types
   num_item.data <- rep(1,num_items)
-  if(any(item.type == "bernoulli" | item.type == "categorical")){
-    item.data[,which(item.type == "bernoulli" | item.type == "categorical")] <-
-      apply(item.data[,which(item.type == "bernoulli" | item.type == "categorical")], 2, function(x) as.numeric(as.factor(x)))
-    num_item.data[which(item.type == "bernoulli" | item.type == "categorical")] <-
-      apply(item.data[,which(item.type == "bernoulli" | item.type == "categorical")], 2, function(x) length(unique(na.omit(x))))
+  if(any(itemtypes == "bernoulli" | itemtypes == "categorical")){
+    item.data[,which(itemtypes == "bernoulli" | itemtypes == "categorical")] <-
+      apply(item.data[,which(itemtypes == "bernoulli" | itemtypes == "categorical")], 2, function(x) as.numeric(as.factor(x)))
+    num_item.data[which(itemtypes == "bernoulli" | itemtypes == "categorical")] <-
+      apply(item.data[,which(itemtypes == "bernoulli" | itemtypes == "categorical")], 2, function(x) length(unique(na.omit(x))))
   }
 
   #standardize predictors
@@ -94,7 +98,7 @@ preprocess <-
   p[[(num_items+2)]] <- rep(0,ncol(var_predictors))
   names(p[[(num_items+1)]]) <- paste0(rep(paste0('g',1:ncol(mean_predictors))))
   names(p[[(num_items+2)]]) <- paste0(rep(paste0('b',1:ncol(var_predictors))))
-  if(any(item.type == "gaussian")){
+  if(any(itemtypes == "gaussian")){
     num_base_parms <- length(c(unlist(p)[grep('c0',names(unlist(p)))],unlist(p)[grep('a0',names(unlist(p)))],unlist(p)[grep('s0',names(unlist(p)))]))
     num_dif_parms <- length(c(unlist(p)[grep('c1',names(unlist(p)))],unlist(p)[grep('a1',names(unlist(p)))],unlist(p)[grep('s1',names(unlist(p)))]))
   } else{
@@ -115,7 +119,7 @@ preprocess <-
               predictor.data = predictor.data,
               mean_predictors = mean_predictors,
               var_predictors = var_predictors,
-              item.type = item.type,
+              itemtypes = itemtypes,
               final.control = final.control,
               tau = tau,
               num_item.data = num_item.data,

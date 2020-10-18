@@ -34,21 +34,21 @@ categorical_traceline_pts <-
 
 
   #for item response 1
-  traceline[[1]] <- sapply(theta,function(x){1-1/(1+exp(-((p_active[grep("c0",names(p_active),fixed=T)][1] + predictor.data %*% p_active[grep("c1",names(p_active),fixed=T)]) + (p_active[grep("a0",names(p_active),fixed=T)] + predictor.data %*% p_active[grep("a1",names(p_active),fixed=T)])*x)))})
+  traceline[[1]] <- apply(theta, 2, function(x){1-1/(1+exp(-((p_active[grep("c0",names(p_active),fixed=T)][1] + predictor.data %*% p_active[grep("c1",names(p_active),fixed=T)]) + (p_active[grep("a0",names(p_active),fixed=T)] + predictor.data %*% p_active[grep("a1",names(p_active),fixed=T)])*x)))})
   #for item response 2
   if(num_responses_item > 2){
-  traceline[[2]] <- sapply(theta,function(x){1/(1+exp(-((p_active[grep("c0",names(p_active),fixed=T)][1] + predictor.data %*% p_active[grep("c1",names(p_active),fixed=T)]) + (p_active[grep("a0",names(p_active),fixed=T)] + predictor.data %*% p_active[grep("a1",names(p_active),fixed=T)])*x)))}) -
-                    sapply(theta,function(x){1/(1+exp(-((p_active[grep("c0",names(p_active),fixed=T)][1] - p_active[grep("c0",names(p_active),fixed=T)][2] + predictor.data %*% p_active[grep("c1",names(p_active),fixed=T)]) + (p_active[grep("a0",names(p_active),fixed=T)] + predictor.data %*% p_active[grep("a1",names(p_active),fixed=T)])*x)))})
+  traceline[[2]] <- apply(theta, 2, function(x){1/(1+exp(-((p_active[grep("c0",names(p_active),fixed=T)][1] + predictor.data %*% p_active[grep("c1",names(p_active),fixed=T)]) + (p_active[grep("a0",names(p_active),fixed=T)] + predictor.data %*% p_active[grep("a1",names(p_active),fixed=T)])*x)))}) -
+    apply(theta, 2, function(x){1/(1+exp(-((p_active[grep("c0",names(p_active),fixed=T)][1] - p_active[grep("c0",names(p_active),fixed=T)][2] + predictor.data %*% p_active[grep("c1",names(p_active),fixed=T)]) + (p_active[grep("a0",names(p_active),fixed=T)] + predictor.data %*% p_active[grep("a1",names(p_active),fixed=T)])*x)))})
     #for item responses 3 to J-1 (cycle through thresholds)
     if(num_responses_item > 3){
       for(thr in 3:(num_responses_item-1)){
-        traceline[[thr]] <- sapply(theta,function(x){1/(1+exp(-((p_active[grep("c0",names(p_active),fixed=T)][1] - p_active[grep("c0",names(p_active),fixed=T)][thr-1] + predictor.data %*% p_active[grep("c1",names(p_active),fixed=T)]) + (p_active[grep("a0",names(p_active),fixed=T)] + predictor.data %*% p_active[grep("a1",names(p_active),fixed=T)])*x)))}) -
-                            sapply(theta,function(x){1/(1+exp(-((p_active[grep("c0",names(p_active),fixed=T)][1] - p_active[grep("c0",names(p_active),fixed=T)][thr] + predictor.data %*% p_active[grep("c1",names(p_active),fixed=T)]) + (p_active[grep("a0",names(p_active),fixed=T)] + predictor.data %*% p_active[grep("a1",names(p_active),fixed=T)])*x)))})
+        traceline[[thr]] <- apply(theta, 2, function(x){1/(1+exp(-((p_active[grep("c0",names(p_active),fixed=T)][1] - p_active[grep("c0",names(p_active),fixed=T)][thr-1] + predictor.data %*% p_active[grep("c1",names(p_active),fixed=T)]) + (p_active[grep("a0",names(p_active),fixed=T)] + predictor.data %*% p_active[grep("a1",names(p_active),fixed=T)])*x)))}) -
+          apply(theta, 2, function(x){1/(1+exp(-((p_active[grep("c0",names(p_active),fixed=T)][1] - p_active[grep("c0",names(p_active),fixed=T)][thr] + predictor.data %*% p_active[grep("c1",names(p_active),fixed=T)]) + (p_active[grep("a0",names(p_active),fixed=T)] + predictor.data %*% p_active[grep("a1",names(p_active),fixed=T)])*x)))})
       }
     }
   }
   #for item response J
-  traceline[[num_responses_item]] <- sapply(theta,function(x){1/(1+exp(-((p_active[grep("c0",names(p_active),fixed=T)][1] - p_active[grep("c0",names(p_active),fixed=T)][num_responses_item-1] + predictor.data %*% p_active[grep("c1",names(p_active),fixed=T)]) + (p_active[grep("a0",names(p_active),fixed=T)] + predictor.data %*% p_active[grep("a1",names(p_active),fixed=T)])*x)))})
+  traceline[[num_responses_item]] <- apply(theta, 2, function(x){1/(1+exp(-((p_active[grep("c0",names(p_active),fixed=T)][1] - p_active[grep("c0",names(p_active),fixed=T)][num_responses_item-1] + predictor.data %*% p_active[grep("c1",names(p_active),fixed=T)]) + (p_active[grep("a0",names(p_active),fixed=T)] + predictor.data %*% p_active[grep("a1",names(p_active),fixed=T)])*x)))})
 
   return(traceline)
 
@@ -66,11 +66,11 @@ cumulative_traceline_pts <-
   traceline <- replicate(n=(num_responses_item-1), matrix(0,nrow=samp_size,ncol=num_quadpts), simplify = F)
 
   #for item response 1
-  traceline[[1]] <- sapply(theta,function(x){1/(1+exp(-((p_active[grep("c0",names(p_active),fixed=T)][1] + predictor.data %*% p_active[grep("c1",names(p_active),fixed=T)]) + (p_active[grep("a0",names(p_active),fixed=T)] + predictor.data %*% p_active[grep("a1",names(p_active),fixed=T)])*x)))})
+  traceline[[1]] <- apply(theta, 2, function(x){1/(1+exp(-((p_active[grep("c0",names(p_active),fixed=T)][1] + predictor.data %*% p_active[grep("c1",names(p_active),fixed=T)]) + (p_active[grep("a0",names(p_active),fixed=T)] + predictor.data %*% p_active[grep("a1",names(p_active),fixed=T)])*x)))})
   #for item response 2 to J
   if(num_responses_item > 2){
     for(thr in 2:(num_responses_item-1)){
-      traceline[[thr]] <- sapply(theta,function(x){1/(1+exp(-((p_active[grep("c0",names(p_active),fixed=T)][1] - p_active[grep("c0",names(p_active),fixed=T)][thr] + predictor.data %*% p_active[grep("c1",names(p_active),fixed=T)]) + (p_active[grep("a0",names(p_active),fixed=T)] + predictor.data %*% p_active[grep("a1",names(p_active),fixed=T)])*x)))})
+      traceline[[thr]] <- apply(theta, 2, function(x){1/(1+exp(-((p_active[grep("c0",names(p_active),fixed=T)][1] - p_active[grep("c0",names(p_active),fixed=T)][thr] + predictor.data %*% p_active[grep("c1",names(p_active),fixed=T)]) + (p_active[grep("a0",names(p_active),fixed=T)] + predictor.data %*% p_active[grep("a1",names(p_active),fixed=T)])*x)))})
     }
   }
 
@@ -87,7 +87,7 @@ gaussian_traceline_pts <-
            num_quadpts) {
 
   # responses_item <- scale(responses_item)
-  mu <- sapply(theta,function(x){(p_active[grep("c0",names(p_active),fixed=T)] + predictor.data %*% p_active[grep("c1",names(p_active),fixed=T)]) + (p_active[grep("a0",names(p_active),fixed=T)] + predictor.data %*% p_active[grep("a1",names(p_active),fixed=T)])*x})
+  mu <- apply(theta, 2, function(x){(p_active[grep("c0",names(p_active),fixed=T)] + predictor.data %*% p_active[grep("c1",names(p_active),fixed=T)]) + (p_active[grep("a0",names(p_active),fixed=T)] + predictor.data %*% p_active[grep("a1",names(p_active),fixed=T)])*x})
   sigma <- sqrt(p_active[grep("s0",names(p_active))][1]*exp(predictor.data %*% p_active[grep("s1",names(p_active))]))
 
   traceline <- t(sapply(1:samp_size,function(x) dnorm(responses_item[x],mu[x,],sigma[x])))

@@ -4,8 +4,8 @@
 \alias{regDIF}
 \title{Regularized Differential Item Functioning}
 \usage{
-regDIF(item.data,
-       predictor.data,
+regDIF(x,
+       y,
        family = c("bernoulli","categorical","gaussian"),
        penalty = c("lasso","mcp"),
        nlambda = 100,
@@ -15,15 +15,15 @@ regDIF(item.data,
        lambda = NULL,
        anchor = NULL,
        rasch = FALSE,
-       impact.data = list(mean = NULL, var = NULL),
+       impact.x = list(mean = NULL, var = NULL),
        standardize = TRUE,
-       quadpts = 15,
+       quadpts = 81,
        control = list())
 }
 \arguments{
-\item{item.data}{Matrix or dataframe of item responses. See below for supported distributions.}
+\item{x}{Matrix or dataframe of DIF and/or impact predictors. See below for option to specify different predictors for impact model.}
 
-\item{predictor.data}{Matrix or dataframe of DIF and/or impact predictors. See below for option to specify different predictors for impact model.}
+\item{y}{Matrix or dataframe of item responses. See below for supported distributions.}
 
 \item{family}{Character value or vector indicating the item response distributions via \code{y}. For scales where item responses are of one type only, the user may input one character value indicating the type (e.g., \code{"categorical"}). For mixed item types, the user must specify a vector of characters in the order that corresponds to the response matrix via \code{y}; e.g., \code{c(rep("categorical",2)}\code{, "bernoulli"}\code{, rep("gaussian",3))}. Supports:
 \itemize{
@@ -50,11 +50,11 @@ regDIF(item.data,
 
 \item{rasch}{Logical value indicating whether to constrain item slopes to 1 (i.e., equal slopes). If \code{TRUE}, no slope DIF will be evaluated. Default is \code{FALSE}.}
 
-\item{impact.data}{Optional list of matrices or data frames with predictors for mean and variance impact. Allows for different sets of predictors on the mean and variance impact equations compared to the item response DIF equations.}
+\item{impact.x}{Optional list of matrices or data frames with predictors for mean and variance impact. Allows for different sets of predictors on the mean and variance impact equations compared to the item response DIF equations.}
 
 \item{standardize}{Logical value indicating whether to standardize DIF and impact covariates for regularization. Default is \code{TRUE}, as it is recommended that all covariates be on the same scale.}
 
-\item{quadpts}{Numeric value indicating the number of quadrature points to be used in approximating the latent variable distribution during estimation. Default is \code{15}.}
+\item{quadpts}{Numeric value indicating the number of quadrature points to be used in approximating the latent variable distribution during estimation. Default is \code{81}. Not recommended to be below 10 for accurate estimation.}
 
 \item{control}{Optional list of optimization parameters. May be:
 \describe{
@@ -72,9 +72,9 @@ Performs regularization of DIF effects in item response theory and confirmatory 
 
 library(regDIF)
 head(ida)
-item.data <- ida[,1:6]
-predictor.data <- ida[,7:9]
-fit <- regDIF(item.data, predictor.data, family = "bernoulli", penalty = "lasso")
+x <- ida[,7:9]
+y <- ida[,1:6]
+fit <- regDIF(x, y, family = "bernoulli", penalty = "lasso")
 fit
 
 }

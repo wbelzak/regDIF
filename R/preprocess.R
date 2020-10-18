@@ -8,7 +8,7 @@ preprocess <-
            item.type,
            penalty,
            ntau,
-           tau.max,
+           tau_max,
            tau,
            anchor,
            rasch,
@@ -37,7 +37,7 @@ preprocess <-
 
   #tau
   if(is.null(tau)){
-    tau <- seq(tau.max**(1/3),0,length.out = ntau)**3
+    tau <- seq(tau_max**(1/3),0,length.out = ntau)**3
   }
 
   #speeds up computation

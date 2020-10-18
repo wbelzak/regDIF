@@ -91,7 +91,7 @@ regDIF <- function(item.data,
     #increase tau.max if all penalized parameters have NOT been removed from model (unless specifying anchor item)
     if(need_larger_tau == FALSE) break
     if(tau_times > 0) {
-      tau.max <- tau.max*1.5
+      tau_max <- tau_max*1.5
       tau[1] <- tau[1]*1.5
     }
     #if too many tau.max values have been tried, stop.
@@ -108,7 +108,7 @@ regDIF <- function(item.data,
     for(pen in 1:length(data_scrub$tau)){
 
       #obtain regDIF estimates
-      estimates <- em_estimation(data_scrub$p,data_scrub$item.data,data_scrub$predictor.data,data_scrub$mean_predictors,data_scrub$var_predictors,data_scrub$item.type,penalty,data_scrub$tau,alpha,gamma,pen,anchor,rasch,data_scrub$final.control,data_scrub$samp_size,data_scrub$num_items,data_scrub$num_responses,data_scrub$num_predictors,quadpts)
+      estimates <- em_estimation(data_scrub$p,data_scrub$item.data,data_scrub$predictor.data,data_scrub$mean_predictors,data_scrub$var_predictors,data_scrub$itemtypes,penalty,data_scrub$tau,alpha,gamma,pen,anchor,rasch,data_scrub$final.control,data_scrub$samp_size,data_scrub$num_items,data_scrub$num_responses,data_scrub$num_predictors,quadpts)
 
       #stop if tau.max is too small on first run
       p2 <- unlist(estimates[[1]])

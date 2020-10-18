@@ -9,7 +9,7 @@
 \arguments{
 \item{object}{Fitted regDIF model object.}
 
-\item{method}{Fit statistic to use for displaying minimum lambda model.}
+\item{method}{Fit statistic to use for displaying minimum tau model.}
 
 \item{...}{Additional arguments to be passed through \code{summary}.}
 }

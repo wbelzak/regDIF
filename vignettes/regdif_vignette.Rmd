@@ -17,9 +17,9 @@ This vignette introduces regDIF to the general user by providing common use case
 ```{r,eval=T,message=F,echo=F}
 library(regDIF)
 head(ida)
-x <- ida[,7:9]
-y <- ida[,1:6]
-fit <- regDIF(x, y, family = "bernoulli", penalty = "lasso", lambda = 2)
+item.data <- ida[,1:6]
+predictor.data <- ida[,7:9]
+fit <- regDIF(item.data = item.data, predictor.data = predictor.data, family = "bernoulli", penalty = "lasso", lambda = 2)
 summary(fit)
 ```
 

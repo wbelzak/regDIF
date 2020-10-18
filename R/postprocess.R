@@ -8,10 +8,9 @@ postprocess <-
            predictors,
            mean_predictors,
            var_predictors,
-           y,
-           x,
-           impact.x,
-           theta,
+           item.data,
+           predictor.data,
+           impact.data,
            lambda,
            alpha,
            pen,
@@ -31,30 +30,30 @@ postprocess <-
   infocrit <- estimates[[2]]
 
   #Organize impact parameters
-  if(is.null(impact.x$mean)){ #mean
-    if(is.null(colnames(x)) | length(colnames(x)) == 0){
+  if(is.null(impact.data$mean)){ #mean
+    if(is.null(colnames(predictor.data)) | length(colnames(predictor.data)) == 0){
       mean_names <- paste0('mean.cov',1:ncol(mean_predictors))
     } else{
-      mean_names <- paste0('mean.',colnames(x))
+      mean_names <- paste0('mean.',colnames(predictor.data))
     }
   } else{
-    if(is.null(colnames(impact.x$mean)) | length(colnames(impact.x$mean)) == 0){
+    if(is.null(colnames(impact.data$mean)) | length(colnames(impact.data$mean)) == 0){
       mean_names <- paste0('mean.cov',1:ncol(mean_predictors))
     } else{
-      mean_names <- paste0('mean.',colnames(impact.x$mean))
+      mean_names <- paste0('mean.',colnames(impact.data$mean))
     }
   }
-  if(is.null(impact.x$var)){
-    if(is.null(colnames(x)) | length(colnames(x)) == 0){
+  if(is.null(impact.data$var)){
+    if(is.null(colnames(predictor.data)) | length(colnames(predictor.data)) == 0){
       var_names <- paste0('var.cov',1:ncol(var_predictors))
     } else{
-      var_names <- paste0('var.',colnames(x))
+      var_names <- paste0('var.',colnames(predictor.data))
     }
   } else{
-    if(is.null(colnames(x)) | length(colnames(x)) == 0){
+    if(is.null(colnames(predictor.data)) | length(colnames(predictor.data)) == 0){
       var_names <- paste0('var.cov',1:ncol(var_predictors))
     } else{
-      var_names <- paste0('var.',colnames(impact.x$var))
+      var_names <- paste0('var.',colnames(impact.data$var))
     }
   }
 
@@ -65,10 +64,10 @@ postprocess <-
   p2 <- unlist(p)
   all_items_parms_base <- NULL
   all_items_names_base <- NULL
-  if(is.null(colnames(y)) | length(colnames(y)) == 0){
+  if(is.null(colnames(item.data)) | length(colnames(item.data)) == 0){
     item_names <- paste0("item",1:num_items)
   } else{
-    item_names <- colnames(y)
+    item_names <- colnames(item.data)
   }
 
   for(item in 1:num_items){
@@ -91,10 +90,10 @@ postprocess <-
   #Organize item dif parameters
   all_items_parms_dif <- NULL
   all_items_names_dif <- NULL
-  if(is.null(colnames(x)) | length(colnames(x)) == 0){
+  if(is.null(colnames(predictor.data)) | length(colnames(predictor.data)) == 0){
     cov_names <- paste0("cov",1:num_predictors)
   } else{
-    cov_names <- colnames(x)
+    cov_names <- colnames(predictor.data)
   }
 
   for(item in 1:num_items){

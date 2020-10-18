@@ -127,7 +127,7 @@ regDIF <- function(item.data,
       }
 
       #postprocess data
-      data_final <- postprocess(estimates,data_scrub$responses,data_scrub$predictors,data_scrub$mean_predictors,data_scrub$var_predictors,item.data,predictor.data,impact.data,data_scrub$tau,alpha,pen,anchor,data_scrub$final.control,data_scrub$final,data_scrub$samp_size,data_scrub$num_responses,data_scrub$num_predictors,data_scrub$num_items,data_scrub$num_quadpts)
+      data_final <- postprocess(estimates,data_scrub$item.data,data_scrub$predictor.data,data_scrub$mean_predictors,data_scrub$var_predictors,impact.data,data_scrub$tau,alpha,pen,anchor,data_scrub$final.control,data_scrub$final,data_scrub$samp_size,data_scrub$num_responses,data_scrub$num_predictors,data_scrub$num_items,data_scrub$num_quadpts)
 
       #update parameter estimates for next tau value
       data_scrub$p <- estimates[[1]]

@@ -137,55 +137,6 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// em_step2
-arma::mat em_step2(List p, const arma::vec& theta, const arma::mat& responses, const arma::mat& predictors, const arma::mat& mean_predictors, const arma::mat& var_predictors, int samp_size, int num_items, const arma::vec& num_responses, int num_quadpts);
-RcppExport SEXP _regDIF_em_step2(SEXP pSEXP, SEXP thetaSEXP, SEXP responsesSEXP, SEXP predictorsSEXP, SEXP mean_predictorsSEXP, SEXP var_predictorsSEXP, SEXP samp_sizeSEXP, SEXP num_itemsSEXP, SEXP num_responsesSEXP, SEXP num_quadptsSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< List >::type p(pSEXP);
-    Rcpp::traits::input_parameter< const arma::vec& >::type theta(thetaSEXP);
-    Rcpp::traits::input_parameter< const arma::mat& >::type responses(responsesSEXP);
-    Rcpp::traits::input_parameter< const arma::mat& >::type predictors(predictorsSEXP);
-    Rcpp::traits::input_parameter< const arma::mat& >::type mean_predictors(mean_predictorsSEXP);
-    Rcpp::traits::input_parameter< const arma::mat& >::type var_predictors(var_predictorsSEXP);
-    Rcpp::traits::input_parameter< int >::type samp_size(samp_sizeSEXP);
-    Rcpp::traits::input_parameter< int >::type num_items(num_itemsSEXP);
-    Rcpp::traits::input_parameter< const arma::vec& >::type num_responses(num_responsesSEXP);
-    Rcpp::traits::input_parameter< int >::type num_quadpts(num_quadptsSEXP);
-    rcpp_result_gen = Rcpp::wrap(em_step2(p, theta, responses, predictors, mean_predictors, var_predictors, samp_size, num_items, num_responses, num_quadpts));
-    return rcpp_result_gen;
-END_RCPP
-}
-// em_step
-List em_step(List p, arma::vec theta, arma::mat responses, arma::mat predictors, arma::mat mean_predictors, arma::mat var_predictors, StringVector itemtypes, StringVector penalty, arma::vec tau, int pen, double alpha, double gamma, arma::vec anchor, bool rasch, int samp_size, int num_items, arma::vec num_responses, int num_quadpts, int num_predictors);
-RcppExport SEXP _regDIF_em_step(SEXP pSEXP, SEXP thetaSEXP, SEXP responsesSEXP, SEXP predictorsSEXP, SEXP mean_predictorsSEXP, SEXP var_predictorsSEXP, SEXP itemtypesSEXP, SEXP penaltySEXP, SEXP tauSEXP, SEXP penSEXP, SEXP alphaSEXP, SEXP gammaSEXP, SEXP anchorSEXP, SEXP raschSEXP, SEXP samp_sizeSEXP, SEXP num_itemsSEXP, SEXP num_responsesSEXP, SEXP num_quadptsSEXP, SEXP num_predictorsSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< List >::type p(pSEXP);
-    Rcpp::traits::input_parameter< arma::vec >::type theta(thetaSEXP);
-    Rcpp::traits::input_parameter< arma::mat >::type responses(responsesSEXP);
-    Rcpp::traits::input_parameter< arma::mat >::type predictors(predictorsSEXP);
-    Rcpp::traits::input_parameter< arma::mat >::type mean_predictors(mean_predictorsSEXP);
-    Rcpp::traits::input_parameter< arma::mat >::type var_predictors(var_predictorsSEXP);
-    Rcpp::traits::input_parameter< StringVector >::type itemtypes(itemtypesSEXP);
-    Rcpp::traits::input_parameter< StringVector >::type penalty(penaltySEXP);
-    Rcpp::traits::input_parameter< arma::vec >::type tau(tauSEXP);
-    Rcpp::traits::input_parameter< int >::type pen(penSEXP);
-    Rcpp::traits::input_parameter< double >::type alpha(alphaSEXP);
-    Rcpp::traits::input_parameter< double >::type gamma(gammaSEXP);
-    Rcpp::traits::input_parameter< arma::vec >::type anchor(anchorSEXP);
-    Rcpp::traits::input_parameter< bool >::type rasch(raschSEXP);
-    Rcpp::traits::input_parameter< int >::type samp_size(samp_sizeSEXP);
-    Rcpp::traits::input_parameter< int >::type num_items(num_itemsSEXP);
-    Rcpp::traits::input_parameter< arma::vec >::type num_responses(num_responsesSEXP);
-    Rcpp::traits::input_parameter< int >::type num_quadpts(num_quadptsSEXP);
-    Rcpp::traits::input_parameter< int >::type num_predictors(num_predictorsSEXP);
-    rcpp_result_gen = Rcpp::wrap(em_step(p, theta, responses, predictors, mean_predictors, var_predictors, itemtypes, penalty, tau, pen, alpha, gamma, anchor, rasch, samp_size, num_items, num_responses, num_quadpts, num_predictors));
-    return rcpp_result_gen;
-END_RCPP
-}
 
 static const R_CallMethodDef CallEntries[] = {
     {"_regDIF_soft_thresh_est", (DL_FUNC) &_regDIF_soft_thresh_est, 3},
@@ -196,8 +147,6 @@ static const R_CallMethodDef CallEntries[] = {
     {"_regDIF_d_alpha_est", (DL_FUNC) &_regDIF_d_alpha_est, 10},
     {"_regDIF_d_phi_est", (DL_FUNC) &_regDIF_d_phi_est, 10},
     {"_regDIF_d_bernoulli_est", (DL_FUNC) &_regDIF_d_bernoulli_est, 10},
-    {"_regDIF_em_step2", (DL_FUNC) &_regDIF_em_step2, 10},
-    {"_regDIF_em_step", (DL_FUNC) &_regDIF_em_step, 19},
     {NULL, NULL, 0}
 };
 

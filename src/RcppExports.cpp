@@ -7,29 +7,29 @@
 using namespace Rcpp;
 
 // soft_thresh_est
-double soft_thresh_est(double z, double alpha, double tau);
-RcppExport SEXP _regDIF_soft_thresh_est(SEXP zSEXP, SEXP alphaSEXP, SEXP tauSEXP) {
+double soft_thresh_est(double z, double alpha, double lambda);
+RcppExport SEXP _regDIF_soft_thresh_est(SEXP zSEXP, SEXP alphaSEXP, SEXP lambdaSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< double >::type z(zSEXP);
     Rcpp::traits::input_parameter< double >::type alpha(alphaSEXP);
-    Rcpp::traits::input_parameter< double >::type tau(tauSEXP);
-    rcpp_result_gen = Rcpp::wrap(soft_thresh_est(z, alpha, tau));
+    Rcpp::traits::input_parameter< double >::type lambda(lambdaSEXP);
+    rcpp_result_gen = Rcpp::wrap(soft_thresh_est(z, alpha, lambda));
     return rcpp_result_gen;
 END_RCPP
 }
 // firm_thresh_est
-double firm_thresh_est(double z, double alpha, double tau, double gamma);
-RcppExport SEXP _regDIF_firm_thresh_est(SEXP zSEXP, SEXP alphaSEXP, SEXP tauSEXP, SEXP gammaSEXP) {
+double firm_thresh_est(double z, double alpha, double lambda, double gamma);
+RcppExport SEXP _regDIF_firm_thresh_est(SEXP zSEXP, SEXP alphaSEXP, SEXP lambdaSEXP, SEXP gammaSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< double >::type z(zSEXP);
     Rcpp::traits::input_parameter< double >::type alpha(alphaSEXP);
-    Rcpp::traits::input_parameter< double >::type tau(tauSEXP);
+    Rcpp::traits::input_parameter< double >::type lambda(lambdaSEXP);
     Rcpp::traits::input_parameter< double >::type gamma(gammaSEXP);
-    rcpp_result_gen = Rcpp::wrap(firm_thresh_est(z, alpha, tau, gamma));
+    rcpp_result_gen = Rcpp::wrap(firm_thresh_est(z, alpha, lambda, gamma));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -158,8 +158,8 @@ BEGIN_RCPP
 END_RCPP
 }
 // em_step
-List em_step(List p, arma::vec theta, arma::mat responses, arma::mat predictors, arma::mat mean_predictors, arma::mat var_predictors, StringVector itemtypes, StringVector penalty, arma::vec tau, int pen, double alpha, double gamma, arma::vec anchor, bool rasch, int samp_size, int num_items, arma::vec num_responses, int num_quadpts, int num_predictors);
-RcppExport SEXP _regDIF_em_step(SEXP pSEXP, SEXP thetaSEXP, SEXP responsesSEXP, SEXP predictorsSEXP, SEXP mean_predictorsSEXP, SEXP var_predictorsSEXP, SEXP itemtypesSEXP, SEXP penaltySEXP, SEXP tauSEXP, SEXP penSEXP, SEXP alphaSEXP, SEXP gammaSEXP, SEXP anchorSEXP, SEXP raschSEXP, SEXP samp_sizeSEXP, SEXP num_itemsSEXP, SEXP num_responsesSEXP, SEXP num_quadptsSEXP, SEXP num_predictorsSEXP) {
+List em_step(List p, arma::vec theta, arma::mat responses, arma::mat predictors, arma::mat mean_predictors, arma::mat var_predictors, StringVector itemtypes, StringVector penalty, arma::vec lambda, int pen, double alpha, double gamma, arma::vec anchor, bool rasch, int samp_size, int num_items, arma::vec num_responses, int num_quadpts, int num_predictors);
+RcppExport SEXP _regDIF_em_step(SEXP pSEXP, SEXP thetaSEXP, SEXP responsesSEXP, SEXP predictorsSEXP, SEXP mean_predictorsSEXP, SEXP var_predictorsSEXP, SEXP itemtypesSEXP, SEXP penaltySEXP, SEXP lambdaSEXP, SEXP penSEXP, SEXP alphaSEXP, SEXP gammaSEXP, SEXP anchorSEXP, SEXP raschSEXP, SEXP samp_sizeSEXP, SEXP num_itemsSEXP, SEXP num_responsesSEXP, SEXP num_quadptsSEXP, SEXP num_predictorsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -171,7 +171,7 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< arma::mat >::type var_predictors(var_predictorsSEXP);
     Rcpp::traits::input_parameter< StringVector >::type itemtypes(itemtypesSEXP);
     Rcpp::traits::input_parameter< StringVector >::type penalty(penaltySEXP);
-    Rcpp::traits::input_parameter< arma::vec >::type tau(tauSEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type lambda(lambdaSEXP);
     Rcpp::traits::input_parameter< int >::type pen(penSEXP);
     Rcpp::traits::input_parameter< double >::type alpha(alphaSEXP);
     Rcpp::traits::input_parameter< double >::type gamma(gammaSEXP);
@@ -182,7 +182,7 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< arma::vec >::type num_responses(num_responsesSEXP);
     Rcpp::traits::input_parameter< int >::type num_quadpts(num_quadptsSEXP);
     Rcpp::traits::input_parameter< int >::type num_predictors(num_predictorsSEXP);
-    rcpp_result_gen = Rcpp::wrap(em_step(p, theta, responses, predictors, mean_predictors, var_predictors, itemtypes, penalty, tau, pen, alpha, gamma, anchor, rasch, samp_size, num_items, num_responses, num_quadpts, num_predictors));
+    rcpp_result_gen = Rcpp::wrap(em_step(p, theta, responses, predictors, mean_predictors, var_predictors, itemtypes, penalty, lambda, pen, alpha, gamma, anchor, rasch, samp_size, num_items, num_responses, num_quadpts, num_predictors));
     return rcpp_result_gen;
 END_RCPP
 }

@@ -10,7 +10,7 @@ information_criteria <-
            mean_predictors,
            var_predictors,
            theta,
-           tau,
+           lambda,
            gamma,
            penalty,
            samp_size,
@@ -53,9 +53,9 @@ information_criteria <-
     }
     #subtract out penalty and add negative log-likelihood over all items
     # if(penalty == "lasso"){
-    #   current_pen <- gamma*(1/gamma)*tau*sum(c(abs(p_item[grep("c1_itm",names(p_item))]), abs(p_item[grep("a1_itm",names(p_item))])), na.rm = TRUE)
+    #   current_pen <- gamma*(1/gamma)*lambda*sum(c(abs(p_item[grep("c1_itm",names(p_item))]), abs(p_item[grep("a1_itm",names(p_item))])), na.rm = TRUE)
     # } else if(penalty == "mcp"){
-    #   current_pen <- (tau*sum(c(abs(p_item[grep("c1_itm",names(p_item))]), abs(p_item[grep("a1_itm",names(p_item))])), na.rm = TRUE))
+    #   current_pen <- (lambda*sum(c(abs(p_item[grep("c1_itm",names(p_item))]), abs(p_item[grep("a1_itm",names(p_item))])), na.rm = TRUE))
     # }
     # ll_dif <- ll_dif + ll_dif_item - current_pen #Q function we want to minimize
     ll_dif <- ll_dif + ll_dif_item

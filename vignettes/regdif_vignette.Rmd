@@ -19,7 +19,7 @@ library(regDIF)
 head(ida)
 item.data <- ida[,1:6]
 predictor.data <- ida[,7:9]
-fit <- regDIF(item.data = item.data, predictor.data = predictor.data, item.type = "bernoulli", penalty = "lasso", tau = 2)
+fit <- regDIF(item.data = item.data, predictor.data = predictor.data, family = "bernoulli", penalty = "lasso", tau = 2)
 summary(fit)
 ```
 
@@ -33,7 +33,7 @@ summary(fit)
 #                     x8 ~ c(b,b)*1
 #                     speed ~ c(0,NA)*1'
 # fit_holzswine_lavaan <- cfa(model = holzswine_model, data = HolzingerSwineford1939, group = "school")
-# fit_holzswine_regDIF <- regDIF(school_predictor, speed_responses, item.type = "gaussian", penalty = "lasso", tau = 0, anchor = 2, standardize = F, quadpts = 101)
+# fit_holzswine_regDIF <- regDIF(school_predictor, speed_responses, family = "gaussian", penalty = "lasso", tau = 0, anchor = 2, standardize = F, quadpts = 101)
 # summary(fit_holzswine_lavaan)
 # summary(fit_holzswine_regDIF)
 ```

@@ -3,8 +3,8 @@
 ##############
 
 preprocess <-
-  function(item.data,
-           predictor.data,
+  function(x,
+           y,
            family,
            penalty,
            nlambda,
@@ -12,20 +12,20 @@ preprocess <-
            lambda,
            anchor,
            rasch,
-           impact.data,
+           impact.x,
            standardize,
            quadpts,
            control,
            call){
 
   #data
-  responses <- item.data
-  predictors <- predictor.data
+  responses <- y
+  predictors <- x
   itemtypes <- family
 
   #impact data (if different)
-  if(is.null(impact.data$mean)){mean_predictors <- predictors} else{mean_predictors <- impact.data$mean}
-  if(is.null(impact.data$var)){var_predictors <- predictors} else{var_predictors <- impact.data$var}
+  if(is.null(impact.x$mean)){mean_predictors <- predictors} else{mean_predictors <- impact.x$mean}
+  if(is.null(impact.x$var)){var_predictors <- predictors} else{var_predictors <- impact.x$var}
 
   #preprocess warnings
   # if(penalty == "mcp")
@@ -52,7 +52,11 @@ preprocess <-
   var_predictors <- as.matrix(sapply(var_predictors,as.numeric))
   samp_size <- dim(responses)[1]
   num_items <- dim(responses)[2]
+  num_quadpts <- quadpts
   num_predictors <- dim(predictors)[2]
+
+  #get latent variable values (i.e., predictor values) for quadrature and tracelines
+  theta <- seq(-10, 10, length.out = num_quadpts)
 
   #turn data into numeric if not already
   if(any(!sapply(responses,function(x)is.numeric(x)))){responses <- sapply(responses,function(x)as.numeric(x))}
@@ -123,9 +127,11 @@ preprocess <-
               itemtypes = itemtypes,
               final.control = final.control,
               lambda = lambda,
+              theta = theta,
               num_responses = num_responses,
               num_predictors = num_predictors,
               samp_size = samp_size,
-              num_items = num_items))
+              num_items = num_items,
+              num_quadpts = num_quadpts))
 
 }

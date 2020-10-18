@@ -2,28 +2,21 @@
 # 2PL Tracelines #
 ##################
 
-# p_active <- p[[item]];predictors <- responses[,item]
-
 bernoulli_traceline_pts <-
   function(p_active,
            theta,
            predictors,
-           alpha,
-           phi,
            samp_size,
            num_quadpts) {
 
-    c0_parms <- grepl("c0",names(p_active),fixed=T)
-    c1_parms <- grepl("c1",names(p_active),fixed=T)
-    a0_parms <- grepl("a0",names(p_active),fixed=T)
-    a1_parms <- grepl("a1",names(p_active),fixed=T)
-
-    traceline0 <- apply(theta, 2, function(x){1-1/(1+exp(-((p_active[c0_parms] + predictors %*% p_active[c1_parms]) + (p_active[a0_parms] + predictors %*% p_active[a1_parms])*x)))})
+    traceline0 <- sapply(theta,function(x){1-1/(1+exp(-((p_active[grep("c0",names(p_active),fixed=T)][1] + predictors %*% p_active[grep("c1",names(p_active),fixed=T)]) + (p_active[grep("a0",names(p_active),fixed=T)] + predictors %*% p_active[grep("a1",names(p_active),fixed=T)])*x)))})
     traceline1 <- -traceline0 + 1
 
     return(list(traceline0,traceline1))
 
   }
+
+
 
 categorical_traceline_pts <-
   function(p_active,
@@ -35,7 +28,6 @@ categorical_traceline_pts <-
 
   #space for category traceline (y = c category)
   traceline <- replicate(n=num_responses_item, matrix(0,nrow=samp_size,ncol=num_quadpts), simplify = F)
-
 
   #for item response 1
   traceline[[1]] <- sapply(theta,function(x){1-1/(1+exp(-((p_active[grep("c0",names(p_active),fixed=T)][1] + predictors %*% p_active[grep("c1",names(p_active),fixed=T)]) + (p_active[grep("a0",names(p_active),fixed=T)] + predictors %*% p_active[grep("a1",names(p_active),fixed=T)])*x)))})

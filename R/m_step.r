@@ -9,6 +9,7 @@ Mstep_2pl_dif <-
            mean_predictors,
            var_predictors,
            elist,
+           theta,
            itemtypes,
            penalty,
            lambda,
@@ -29,14 +30,14 @@ Mstep_2pl_dif <-
 
   #impact mean updates
   for(cov in 0:(ncol(mean_predictors)-1)){
-    anl_deriv <- d_alpha_est(p[[num_items+1]],p[[num_items+2]],etable_all,elist$theta,mean_predictors,var_predictors,cov=cov,samp_size,num_items,num_quadpts)
+    anl_deriv <- d_alpha_est(p[[num_items+1]],p[[num_items+2]],etable_all,theta,mean_predictors,var_predictors,cov=cov,samp_size,num_items,num_quadpts)
     p_new <- p_impact[grep(paste0("g"),names(p_impact),fixed=T)][cov+1] - anl_deriv[[1]]/anl_deriv[[2]]
     p_impact <- replace(p_impact,names(p_new),p_new)
   }
 
   #impact variance updates
   for(cov in 0:(ncol(var_predictors)-1)){
-    anl_deriv <- d_phi_est(p[[num_items+1]],p[[num_items+2]],etable_all,elist$theta,mean_predictors,var_predictors,cov=cov,samp_size,num_items,num_quadpts)
+    anl_deriv <- d_phi_est(p[[num_items+1]],p[[num_items+2]],etable_all,theta,mean_predictors,var_predictors,cov=cov,samp_size,num_items,num_quadpts)
     p_new <- p_impact[grep(paste0("b"),names(p_impact),fixed=T)][cov+1] - anl_deriv[[1]]/anl_deriv[[2]]
     p_impact <- replace(p_impact,names(p_new),p_new)
   }
@@ -78,13 +79,13 @@ Mstep_2pl_dif <-
     if(itemtypes[item] == "bernoulli"){
 
       #intercept updates
-      anl_deriv <- d_bernoulli_est("c0",p_item,etable[[1]],etable[[2]],elist$theta,predictors,cov=0,samp_size,num_items,num_quadpts)
+      anl_deriv <- d_bernoulli_est("c0",p_item,etable[[1]],etable[[2]],theta,predictors,cov=0,samp_size,num_items,num_quadpts)
       p_new <- p_item[grep(paste0("c0_itm",item,"_"),names(p_item),fixed=T)][1] - anl_deriv[[1]]/anl_deriv[[2]]
       p_item <- replace(p_item,names(p_new),p_new)
 
       #slope updates
       if(rasch == FALSE){
-        anl_deriv <- d_bernoulli_est("a0",p_item,etable[[1]],etable[[2]],elist$theta,predictors,cov=0,samp_size,num_items,num_quadpts)
+        anl_deriv <- d_bernoulli_est("a0",p_item,etable[[1]],etable[[2]],theta,predictors,cov=0,samp_size,num_items,num_quadpts)
         p_new <- p_item[grep(paste0("a0_itm",item,"_"),names(p_item),fixed=T)] - anl_deriv[[1]]/anl_deriv[[2]]
         p_item <- replace(p_item,names(p_new),p_new)
       }
@@ -102,7 +103,7 @@ Mstep_2pl_dif <-
             next
           }
 
-          anl_deriv <- d_bernoulli_est("c1",p_item,etable[[1]],etable[[2]],elist$theta,predictors,cov,samp_size,num_items,num_quadpts)
+          anl_deriv <- d_bernoulli_est("c1",p_item,etable[[1]],etable[[2]],theta,predictors,cov,samp_size,num_items,num_quadpts)
           z <- p_item[grep(paste0("c1_itm",item,"_cov",cov+1),names(p_item),fixed=T)] - anl_deriv[[1]]/anl_deriv[[2]]
           p_new <- ifelse(penalty == "lasso",soft_thresh_est(z,alpha,lambda),firm_thresh_est(z,alpha,lambda,gamma))
           names(p_new) <- names(z)
@@ -118,7 +119,7 @@ Mstep_2pl_dif <-
           }
 
           if(rasch == FALSE){
-            anl_deriv <- d_bernoulli_est("a1",p_item,etable[[1]],etable[[2]],elist$theta,predictors,cov,samp_size,num_items,num_quadpts)
+            anl_deriv <- d_bernoulli_est("a1",p_item,etable[[1]],etable[[2]],theta,predictors,cov,samp_size,num_items,num_quadpts)
             z <- p_item[grep(paste0("a1_itm",item,"_cov",cov+1),names(p_item),fixed=T)] - anl_deriv[[1]]/anl_deriv[[2]]
             p_new <- ifelse(penalty == "lasso",soft_thresh_est(z,alpha,lambda),firm_thresh_est(z,alpha,lambda,gamma))
             names(p_new) <- names(z)

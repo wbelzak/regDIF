@@ -48,13 +48,13 @@ BEGIN_RCPP
 END_RCPP
 }
 // bernoulli_traceline_est
-arma::mat bernoulli_traceline_est(arma::vec p_item, arma::mat theta, arma::mat predictors, int samp_size, int num_quadpts);
+arma::mat bernoulli_traceline_est(arma::vec p_item, arma::vec theta, arma::mat predictors, int samp_size, int num_quadpts);
 RcppExport SEXP _regDIF_bernoulli_traceline_est(SEXP p_itemSEXP, SEXP thetaSEXP, SEXP predictorsSEXP, SEXP samp_sizeSEXP, SEXP num_quadptsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< arma::vec >::type p_item(p_itemSEXP);
-    Rcpp::traits::input_parameter< arma::mat >::type theta(thetaSEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type theta(thetaSEXP);
     Rcpp::traits::input_parameter< arma::mat >::type predictors(predictorsSEXP);
     Rcpp::traits::input_parameter< int >::type samp_size(samp_sizeSEXP);
     Rcpp::traits::input_parameter< int >::type num_quadpts(num_quadptsSEXP);
@@ -78,7 +78,7 @@ BEGIN_RCPP
 END_RCPP
 }
 // d_alpha_est
-List d_alpha_est(arma::vec p_alpha, arma::vec p_phi, arma::mat etable_all, arma::mat theta, arma::mat mean_predictors, arma::mat var_predictors, int cov, int samp_size, int num_items, int num_quadpts);
+List d_alpha_est(arma::vec p_alpha, arma::vec p_phi, arma::mat etable_all, arma::vec theta, arma::mat mean_predictors, arma::mat var_predictors, int cov, int samp_size, int num_items, int num_quadpts);
 RcppExport SEXP _regDIF_d_alpha_est(SEXP p_alphaSEXP, SEXP p_phiSEXP, SEXP etable_allSEXP, SEXP thetaSEXP, SEXP mean_predictorsSEXP, SEXP var_predictorsSEXP, SEXP covSEXP, SEXP samp_sizeSEXP, SEXP num_itemsSEXP, SEXP num_quadptsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
@@ -86,7 +86,7 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< arma::vec >::type p_alpha(p_alphaSEXP);
     Rcpp::traits::input_parameter< arma::vec >::type p_phi(p_phiSEXP);
     Rcpp::traits::input_parameter< arma::mat >::type etable_all(etable_allSEXP);
-    Rcpp::traits::input_parameter< arma::mat >::type theta(thetaSEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type theta(thetaSEXP);
     Rcpp::traits::input_parameter< arma::mat >::type mean_predictors(mean_predictorsSEXP);
     Rcpp::traits::input_parameter< arma::mat >::type var_predictors(var_predictorsSEXP);
     Rcpp::traits::input_parameter< int >::type cov(covSEXP);
@@ -98,7 +98,7 @@ BEGIN_RCPP
 END_RCPP
 }
 // d_phi_est
-List d_phi_est(arma::vec p_alpha, arma::vec p_phi, arma::mat etable_all, arma::mat theta, arma::mat mean_predictors, arma::mat var_predictors, int cov, int samp_size, int num_items, int num_quadpts);
+List d_phi_est(arma::vec p_alpha, arma::vec p_phi, arma::mat etable_all, arma::vec theta, arma::mat mean_predictors, arma::mat var_predictors, int cov, int samp_size, int num_items, int num_quadpts);
 RcppExport SEXP _regDIF_d_phi_est(SEXP p_alphaSEXP, SEXP p_phiSEXP, SEXP etable_allSEXP, SEXP thetaSEXP, SEXP mean_predictorsSEXP, SEXP var_predictorsSEXP, SEXP covSEXP, SEXP samp_sizeSEXP, SEXP num_itemsSEXP, SEXP num_quadptsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
@@ -106,7 +106,7 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< arma::vec >::type p_alpha(p_alphaSEXP);
     Rcpp::traits::input_parameter< arma::vec >::type p_phi(p_phiSEXP);
     Rcpp::traits::input_parameter< arma::mat >::type etable_all(etable_allSEXP);
-    Rcpp::traits::input_parameter< arma::mat >::type theta(thetaSEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type theta(thetaSEXP);
     Rcpp::traits::input_parameter< arma::mat >::type mean_predictors(mean_predictorsSEXP);
     Rcpp::traits::input_parameter< arma::mat >::type var_predictors(var_predictorsSEXP);
     Rcpp::traits::input_parameter< int >::type cov(covSEXP);
@@ -118,7 +118,7 @@ BEGIN_RCPP
 END_RCPP
 }
 // d_bernoulli_est
-List d_bernoulli_est(std::string parm, arma::vec p_item, arma::mat etable1, arma::mat etable2, arma::mat theta, arma::mat predictors, int cov, int samp_size, int num_items, int num_quadpts);
+List d_bernoulli_est(std::string parm, arma::vec p_item, arma::mat etable1, arma::mat etable2, arma::vec theta, arma::mat predictors, int cov, int samp_size, int num_items, int num_quadpts);
 RcppExport SEXP _regDIF_d_bernoulli_est(SEXP parmSEXP, SEXP p_itemSEXP, SEXP etable1SEXP, SEXP etable2SEXP, SEXP thetaSEXP, SEXP predictorsSEXP, SEXP covSEXP, SEXP samp_sizeSEXP, SEXP num_itemsSEXP, SEXP num_quadptsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
@@ -127,7 +127,7 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< arma::vec >::type p_item(p_itemSEXP);
     Rcpp::traits::input_parameter< arma::mat >::type etable1(etable1SEXP);
     Rcpp::traits::input_parameter< arma::mat >::type etable2(etable2SEXP);
-    Rcpp::traits::input_parameter< arma::mat >::type theta(thetaSEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type theta(thetaSEXP);
     Rcpp::traits::input_parameter< arma::mat >::type predictors(predictorsSEXP);
     Rcpp::traits::input_parameter< int >::type cov(covSEXP);
     Rcpp::traits::input_parameter< int >::type samp_size(samp_sizeSEXP);

@@ -31,7 +31,7 @@ Estep_2pl <-
     if(num_responses[item] == 1){
       itemtrace[[item]] <- gaussian_traceline_pts(p[[item]],theta,item.data[,item],predictor.data,samp_size,num_quadpts)
     } else if (num_responses[item] == 2){
-      itemtrace[[item]] <- bernoulli_traceline_pts(p[[item]],theta,predictor.data,alpha,phi,samp_size,num_quadpts)
+      itemtrace[[item]] <- bernoulli_traceline_pts(p[[item]],theta,predictor.data,samp_size,num_quadpts)
     } else if (num_responses[item] > 2){
       itemtrace[[item]] <- categorical_traceline_pts(p[[item]],theta,predictor.data,samp_size,num_responses[item],num_quadpts)
     }

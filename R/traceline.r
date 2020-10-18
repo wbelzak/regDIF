@@ -6,8 +6,6 @@ bernoulli_traceline_pts <-
   function(p_active,
            theta,
            predictor.data,
-           alpha,
-           phi,
            samp_size,
            num_quadpts) {
 

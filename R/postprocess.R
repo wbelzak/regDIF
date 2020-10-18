@@ -4,12 +4,10 @@
 
 postprocess <-
   function(estimates,
-           responses,
-           predictors,
-           mean_predictors,
-           var_predictors,
            item.data,
            predictor.data,
+           mean_predictors,
+           var_predictors,
            impact.data,
            tau,
            alpha,
@@ -23,7 +21,7 @@ postprocess <-
            num_items,
            num_quadpts) {
 
-    # responses <- data_scrub$responses;predictors <- data_scrub$predictors;mean_predictors <- data_scrub$mean_predictors;var_predictors <- data_scrub$var_predictors;theta <- data_scrub$theta;item.type <- data_scrub$item.type;tau <- data_scrub$tau; final.control <- data_scrub$final.control;final <- data_scrub$final;samp_size <- data_scrub$samp_size;num_items <- data_scrub$num_items;num_responses <- data_scrub$num_responses;num_predictors <- data_scrub$num_predictors;num_quadpts <- data_scrub$num_quadpts
+    # item.data <- data_scrub$item.data;predictor.data <- data_scrub$predictor.data;mean_predictors <- data_scrub$mean_predictors;var_predictors <- data_scrub$var_predictors;theta <- data_scrub$theta;item.type <- data_scrub$item.type;tau <- data_scrub$tau; final.control <- data_scrub$final.control;final <- data_scrub$final;samp_size <- data_scrub$samp_size;num_items <- data_scrub$num_items;num_responses <- data_scrub$num_responses;num_predictors <- data_scrub$num_predictors;num_quadpts <- data_scrub$num_quadpts
 
   #get estimates and information criteria
   p <- estimates[[1]]

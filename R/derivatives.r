@@ -106,11 +106,11 @@ d_categorical <-
   if(parm == "c0"){
     eta_d <- matrix(1, nrow = samp_size, ncol = num_quadpts)
   } else if(parm == "a0"){
-    eta_d <- matrix(rep(matrix(theta, nrow = 1, ncol = length(theta)), samp_size), nrow = samp_size, ncol = length(theta), byrow = TRUE)
+    eta_d <- theta
   } else if(parm == "c1"){
     eta_d <- matrix(rep(predictor.data[,cov], num_quadpts), ncol = num_quadpts, nrow = samp_size)
   } else if(parm == "a1"){
-    eta_d <- matrix(rep(predictor.data[,cov], num_quadpts), ncol = num_quadpts, nrow = samp_size)*matrix(rep(matrix(theta, nrow = 1, ncol = length(theta)), samp_size), nrow = samp_size, ncol = length(theta), byrow = TRUE)
+    eta_d <- matrix(rep(predictor.data[,cov], num_quadpts), ncol = num_quadpts, nrow = samp_size)*theta
   }
 
   cum_traceline <- cumulative_traceline_pts(p_item,theta,predictor.data,samp_size,num_responses_item,num_quadpts)

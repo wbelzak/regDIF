@@ -81,7 +81,7 @@ regDIF <- function(item.data,
                    quadpts = 15,
                    control = list()){
 
-  # item.type <- "bernoulli";penalty="lasso";ntau=100;tau.max=2;alpha=1;gamma=3;tau=NULL;anchor=1;rasch=F;impact.data=list(mean = NULL, var = NULL);standardize=F;quadpts=15;control = list()
+  # item.type <- "categorical";penalty="lasso";ntau=100;tau.max=2;alpha=1;gamma=3;tau=NULL;anchor=1;rasch=F;impact.data=list(mean = NULL, var = NULL);standardize=T;quadpts=15;control = list()
 
   #obtain larger tau if necessary
   need_larger_tau <- TRUE #only true to start

@@ -56,8 +56,7 @@ Estep_2pl <-
 
     #for individual i, add posterior to the e-tables depending on response
     for(item in 1:num_items) { #within a person, loop over items
-      x <- item.data[case,item]
-      etable[[item]][case,] <- c(posterior, x)
+      etable[[item]][case,] <- c(posterior, item.data[case,item])
     }
 
   } #end loop over N

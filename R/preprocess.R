@@ -24,7 +24,8 @@ preprocess <-
 
   #preprocess warnings
   # if(penalty == "mcp")
-  if(!(any(item.type == "bernoulli") | any(item.type == "categorical") | any(item.type == "gaussian"))) stop("Item response types must be distributed 'bernoulli', 'categorical', or 'gaussian'.")
+  if(any(item.type == "continuous")) stop("Continuous (Gaussian) item responses are not currently supported.")
+  if(!(any(item.type == "binary") | any(item.type == "ordinal"))) stop("Item response types must either be 'binary' (Bernoulli) or 'ordinal' (ordered categorical).")
   if(any(tau < 0)) stop("Tau values must be non-negative.", call. = TRUE)
   if(length(tau) > 1 & all(diff(tau) >= 0)) stop("Tau values must be in descending order (e.g., tau = c(-2,-1,0)).")
   if(is.null(anchor) & length(tau) == 1){if(tau == 0) stop("Anchor item must be specified with tau = 0.", call. = TRUE)}
@@ -41,8 +42,8 @@ preprocess <-
   }
 
   #speeds up computation
-  item.data <- as.matrix(vapply(item.data,as.numeric,numeric(nrow(item.data))))
-  predictor.data <- as.matrix(vapply(predictor.data,as.numeric,numeric(nrow(predictor.data))))
+  item.data <- as.matrix(sapply(item.data,as.numeric))
+  predictor.data <- as.matrix(sapply(predictor.data,as.numeric))
   mean_predictors <- as.matrix(sapply(mean_predictors,as.numeric))
   var_predictors <- as.matrix(sapply(var_predictors,as.numeric))
   samp_size <- dim(item.data)[1]
@@ -56,11 +57,11 @@ preprocess <-
 
   #get item response types
   num_responses <- rep(1,num_items)
-  if(any(item.type == "bernoulli" | item.type == "categorical")){
-    item.data[,which(item.type == "bernoulli" | item.type == "categorical")] <-
-      apply(item.data[,which(item.type == "bernoulli" | item.type == "categorical")], 2, function(x) as.numeric(as.factor(x)))
-    num_responses[which(item.type == "bernoulli" | item.type == "categorical")] <-
-      apply(item.data[,which(item.type == "bernoulli" | item.type == "categorical")], 2, function(x) length(unique(na.omit(x))))
+  if(any(item.type == "binary" | item.type == "ordinal")){
+    item.data[,which(item.type == "binary" | item.type == "ordinal")] <-
+      apply(item.data[,which(item.type == "binary" | item.type == "ordinal")], 2, function(x) as.numeric(as.factor(x)))
+    num_responses[which(item.type == "binary" | item.type == "ordinal")] <-
+      apply(item.data[,which(item.type == "binary" | item.type == "ordinal")], 2, function(x) length(unique(na.omit(x))))
   }
 
   #standardize predictors
@@ -90,7 +91,7 @@ preprocess <-
   p[[(num_items+2)]] <- rep(0,ncol(var_predictors))
   names(p[[(num_items+1)]]) <- paste0(rep(paste0('g',1:ncol(mean_predictors))))
   names(p[[(num_items+2)]]) <- paste0(rep(paste0('b',1:ncol(var_predictors))))
-  if(any(item.type == "gaussian")){
+  if(any(item.type == "continuous")){
     num_base_parms <- length(c(unlist(p)[grep('c0',names(unlist(p)))],unlist(p)[grep('a0',names(unlist(p)))],unlist(p)[grep('s0',names(unlist(p)))]))
     num_dif_parms <- length(c(unlist(p)[grep('c1',names(unlist(p)))],unlist(p)[grep('a1',names(unlist(p)))],unlist(p)[grep('s1',names(unlist(p)))]))
   } else{

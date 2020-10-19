@@ -6,7 +6,7 @@
 \usage{
 regDIF(item.data,
        predictor.data,
-       item.type = c("bernoulli","categorical","gaussian"),
+       item.type = c("binary","ordinal","continuous"),
        penalty = c("mcp","lasso"),
        ntau = 100,
        tau.max = 2,
@@ -27,9 +27,9 @@ regDIF(item.data,
 
 \item{item.type}{Character value or vector indicating the item response distributions via \code{y}. For scales where item responses are of one type only, the user may input one character value indicating the type (e.g., \code{"categorical"}). For mixed item types, the user must specify a vector of characters in the order that corresponds to the response matrix via \code{y}; e.g., \code{c(rep("categorical",2)}\code{, "bernoulli"}\code{, rep("gaussian",3))}. Supports:
 \itemize{
-   \item{\code{"bernoulli"} - Bernoulli item response via logistic link function (i.e., 1PL or 2PL model, see rasch option below for 1PL). Must be numeric/integer (2 unique values), factor (2 levels), or logical.}
-   \item{\code{"categorical"} - Categorical item response via ordered logistic link function (i.e., Graded Response Model). Must be numeric/integer or factor.}
-   \item{\code{"gaussian"} - Gaussian item response via identity link function (i.e., Confirmatory Factor Analysis). Must be numeric/integer.}}}
+   \item{\code{"binary"} - Bernoulli item response via logistic link function (i.e., 1PL or 2PL model, see rasch option below for 1PL). Must be numeric/integer (2 unique values), factor (2 levels), or logical.}
+   \item{\code{"ordinal"} - Categorical item response via ordered logistic link function (i.e., Graded Response Model). Must be numeric/integer or factor.}
+   \item{\code{"continuous"} - Not currently supported. Gaussian item response via identity link function (i.e., Confirmatory Factor Analysis). Must be numeric/integer.}}}
 
 \item{penalty}{Character value indicating the penalty function to use. Supports:
 \itemize{
@@ -74,7 +74,7 @@ library(regDIF)
 head(ida)
 item.data <- ida[,1:6]
 predictor.data <- ida[,7:9]
-fit <- regDIF(item.data, predictor.data, item.type = "bernoulli", penalty = "lasso")
+fit <- regDIF(item.data, predictor.data, item.type = "binary", penalty = "lasso")
 fit
 
 }

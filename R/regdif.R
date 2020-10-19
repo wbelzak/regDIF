@@ -5,7 +5,7 @@
 #' @usage
 #' regDIF(item.data,
 #'        predictor.data,
-#'        item.type = c("bernoulli","categorical","gaussian"),
+#'        item.type = c("binary","ordinal","continuous"),
 #'        penalty = c("mcp","lasso"),
 #'        ntau = 100,
 #'        tau.max = 2,
@@ -23,9 +23,9 @@
 #' @param predictor.data Matrix or dataframe of DIF and/or impact predictors. See below for option to specify different predictors for impact model.
 #' @param item.type Character value or vector indicating the item response distributions via \code{y}. For scales where item responses are of one type only, the user may input one character value indicating the type (e.g., \code{"categorical"}). For mixed item types, the user must specify a vector of characters in the order that corresponds to the response matrix via \code{y}; e.g., \code{c(rep("categorical",2)}\code{, "bernoulli"}\code{, rep("gaussian",3))}. Supports:
 #' \itemize{
-#'    \item{\code{"bernoulli"} - Bernoulli item response via logistic link function (i.e., 1PL or 2PL model, see rasch option below for 1PL). Must be numeric/integer (2 unique values), factor (2 levels), or logical.}
-#'    \item{\code{"categorical"} - Categorical item response via ordered logistic link function (i.e., Graded Response Model). Must be numeric/integer or factor.}
-#'    \item{\code{"gaussian"} - Gaussian item response via identity link function (i.e., Confirmatory Factor Analysis). Must be numeric/integer.}}
+#'    \item{\code{"binary"} - Bernoulli item response via logistic link function (i.e., 1PL or 2PL model, see rasch option below for 1PL). Must be numeric/integer (2 unique values), factor (2 levels), or logical.}
+#'    \item{\code{"ordinal"} - Categorical item response via ordered logistic link function (i.e., Graded Response Model). Must be numeric/integer or factor.}
+#'    \item{\code{"continuous"} - Not currently supported. Gaussian item response via identity link function (i.e., Confirmatory Factor Analysis). Must be numeric/integer.}}
 #' @param penalty Character value indicating the penalty function to use. Supports:
 #' \itemize{
 #'    \item{\code{"mcp"} - The minimax concave penalty (MCP) which controls DIF selection through \eqn{\tau} (tau) and estimator bias through \eqn{\gamma} (gamma).}
@@ -54,7 +54,7 @@
 #' head(ida)
 #' item.data <- ida[,1:6]
 #' predictor.data <- ida[,7:9]
-#' fit <- regDIF(item.data, predictor.data, item.type = "bernoulli", penalty = "lasso")
+#' fit <- regDIF(item.data, predictor.data, item.type = "binary", penalty = "lasso")
 #' fit
 #'
 #' }
@@ -67,7 +67,7 @@
 
 regDIF <- function(item.data,
                    predictor.data,
-                   item.type = c("bernoulli","categorical","gaussian"),
+                   item.type = c("binary","ordinal","continuous"),
                    penalty = c("mcp","lasso"),
                    ntau = 100,
                    tau.max = 2,
@@ -81,7 +81,7 @@ regDIF <- function(item.data,
                    quadpts = 15,
                    control = list()){
 
-  # item.type <- "categorical";penalty="lasso";ntau=100;tau.max=2;alpha=1;gamma=3;tau=NULL;anchor=1;rasch=F;impact.data=list(mean = NULL, var = NULL);standardize=T;quadpts=15;control = list()
+  # item.type <- "continuous";penalty="lasso";ntau=100;tau.max=2;alpha=1;gamma=3;tau=0;anchor=1;rasch=F;impact.data=list(mean = NULL, var = NULL);standardize=F;quadpts=21;control = list()
 
   #obtain larger tau if necessary
   need_larger_tau <- TRUE #only true to start
@@ -113,7 +113,7 @@ regDIF <- function(item.data,
       #stop if tau.max is too small on first run
       p2 <- unlist(estimates[[1]])
       dif_parms <- p2[grep(paste0("cov"),names(p2))]
-      if(any(data_scrub$itemtypes == "gaussian")) dif_parms <- dif_parms[-grep("s1",names(dif_parms))]
+      if(any(data_scrub$itemtypes == "continuous")) dif_parms <- dif_parms[-grep("s1",names(dif_parms))]
       if(is.null(anchor) & #no anchor
          pen == 1 & #first penalty value
          sum(abs(dif_parms)) > 0 & #not all DIF effects are zero

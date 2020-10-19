@@ -20,7 +20,7 @@ d_alpha <-
 
   eta_d <- matrix(rep(mean_predictors[,cov], num_quadpts), ncol = num_quadpts, nrow = samp_size)
 
-  d1_trace <- t(sapply(1:samp_size, function(x){eta_d[x,]/phi[x]*(theta-alpha[x])}))
+  d1_trace <- t(sapply(1:samp_size, function(x){eta_d[x,]/phi[x]*(theta[x,]-alpha[x])}))
   d2_trace <- t(sapply(1:samp_size, function(x){-eta_d[x,]**2/phi[x]}))
 
   d1 <- sum(etable_all*d1_trace, na.rm = TRUE)
@@ -49,8 +49,8 @@ d_phi <-
   eta_d1 <- .5*sqrt(phi)*var_predictors[,cov]
   eta_d2 <- .25*sqrt(phi)*var_predictors[,cov]**2
 
-  d1_trace <- t(sapply(1:samp_size, function(x) {eta_d1[x]*((theta-alpha[x])**2/phi[x]**(3/2) - 1/sqrt(phi[x]))}))
-  d2_trace <- t(sapply(1:samp_size, function(x) {-2*eta_d2[x]*(phi[x]**(-3/2)*(theta-alpha[x])**2)}))
+  d1_trace <- t(sapply(1:samp_size, function(x) {eta_d1[x]*((theta[x,]-alpha[x])**2/phi[x]**(3/2) - 1/sqrt(phi[x]))}))
+  d2_trace <- t(sapply(1:samp_size, function(x) {-2*eta_d2[x]*(phi[x]**(-3/2)*(theta[x,]-alpha[x])**2)}))
 
   d1 <- sum(etable_all*d1_trace, na.rm = TRUE)
   d2 <- sum(etable_all*d2_trace, na.rm = TRUE)
@@ -164,16 +164,16 @@ d_mu_gaussian <-
   if(parm == "c0"){
     eta_d <- matrix(1, nrow = samp_size, ncol = num_quadpts)
   } else if(parm == "a0"){
-    eta_d <- matrix(rep(matrix(theta, nrow = 1, ncol = length(theta)), samp_size), nrow = samp_size, ncol = length(theta), byrow = TRUE)
+    eta_d <- theta
   } else if(parm == "c1"){
     eta_d <- matrix(rep(predictor.data[,cov], num_quadpts), ncol = num_quadpts, nrow = samp_size)
   } else if(parm == "a1"){
-    eta_d <- matrix(rep(predictor.data[,cov], num_quadpts), ncol = num_quadpts, nrow = samp_size)*matrix(rep(matrix(theta, nrow = 1, ncol = length(theta)), samp_size), nrow = samp_size, ncol = length(theta), byrow = TRUE)
+    eta_d <- matrix(rep(predictor.data[,cov], num_quadpts), ncol = num_quadpts, nrow = samp_size)*theta
   }
 
 
   #get latent mean and variance vectors
-  mu <- sapply(theta,function(x){(p_item[grep("c0",names(p_item),fixed=T)] + predictor.data %*% p_item[grep("c1",names(p_item),fixed=T)]) + (p_item[grep("a0",names(p_item),fixed=T)] + predictor.data %*% p_item[grep("a1",names(p_item),fixed=T)])*x})
+  mu <- apply(theta, 2, function(x){(p_item[grep("c0",names(p_item),fixed=T)] + predictor.data %*% p_item[grep("c1",names(p_item),fixed=T)]) + (p_item[grep("a0",names(p_item),fixed=T)] + predictor.data %*% p_item[grep("a1",names(p_item),fixed=T)])*x})
   sigma <- sqrt(p_item[grep("s0",names(p_item))][1]*exp(predictor.data %*% p_item[grep("s1",names(p_item))]))
 
 
@@ -203,7 +203,7 @@ d_sigma_gaussian <-
            num_quadpts) {
 
   sigma <- sqrt(p_item[grep("s0",names(p_item))][1]*exp(predictor.data %*% p_item[grep("s1",names(p_item))]))
-  mu <- sapply(theta,function(x){(p_item[grep("c0",names(p_item),fixed=T)] + predictor.data %*% p_item[grep("c1",names(p_item),fixed=T)]) + (p_item[grep("a0",names(p_item),fixed=T)] + predictor.data %*% p_item[grep("a1",names(p_item),fixed=T)])*x})
+  mu <- apply(theta, 2, function(x){(p_item[grep("c0",names(p_item),fixed=T)] + predictor.data %*% p_item[grep("c1",names(p_item),fixed=T)]) + (p_item[grep("a0",names(p_item),fixed=T)] + predictor.data %*% p_item[grep("a1",names(p_item),fixed=T)])*x})
 
   if(parm == "s0"){
     eta_d1 <- sapply(1:samp_size, function(x) exp(predictor.data[x,] %*% p_item[grep("s1",names(p_item))])/(2*sigma[x]))

@@ -10,7 +10,7 @@ An R package that performs regularization of differential item functioning (DIF)
 ## Features
 
 * Handles multiple continuous and categorical DIF covariates. 
-* Supports Bernoulli, categorical, and Gaussian item response distributions. 
+* Supports binary and ordinal item responses. 
 * Includes LASSO, ridge, MCP, and elastic net penalty functions for regularization.
 
 ## Examples

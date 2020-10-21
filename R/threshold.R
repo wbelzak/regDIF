@@ -2,19 +2,20 @@
 # Thresholding #
 ################
 
-#lasso penalty
+# Lasso penalty.
 soft_threshold <-
   function(z,
            alpha,
            lambda) {
 
-  p_new <- sign(z)*max(abs(z/(1+lambda*(1-alpha))) - (lambda*alpha)/(1+lambda*(1-alpha)), 0)
+  p_new <- sign(z)*max(abs(z/(1+lambda*(1-alpha))) -
+                         (lambda*alpha)/(1+lambda*(1-alpha)), 0)
 
   return(p_new)
 
 }
 
-#mcp penalty
+# Mcp penalty.
 firm_threshold <-
   function(z,
            alpha,

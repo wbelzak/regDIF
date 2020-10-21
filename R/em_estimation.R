@@ -22,29 +22,54 @@ em_estimation <- function(p,
                           num_predictors,
                           quadpts) {
 
-   # p <- data_scrub$p; item.data <- data_scrub$item.data;predictor.data <- data_scrub$predictor.data;mean_predictors <- data_scrub$mean_predictors;var_predictors <- data_scrub$var_predictors;item.type <- data_scrub$item.type;tau <- data_scrub$tau; final.control <- data_scrub$final.control;samp_size <- data_scrub$samp_size;num_items <- data_scrub$num_items;num_responses <- data_scrub$num_responses;num_predictors <- data_scrub$num_predictors;num_quadpts <- data_scrub$num_quadpts
-  #Maximization settings
+  # Maximization settings.
   lastp <- p
   eps <- Inf
   iter = 0
   num_quadpts <- quadpts
 
-  #loop until convergence or maximum number of iterations
+  # Loop until convergence or maximum number of iterations.
   while(eps > final.control$tol & iter < final.control$maxit){
 
-    #E-step: Evaluate Q function with current parameter estimates p
-    elist <- Estep_2pl(p,item.data,predictor.data,mean_predictors,var_predictors,samp_size,num_items,num_responses,num_quadpts)
+    # E-step: Evaluate Q function with current parameter estimates p.
+    elist <- Estep_2pl(p,
+                       item.data,
+                       predictor.data,
+                       mean_predictors,
+                       var_predictors,
+                       samp_size,
+                       num_items,
+                       num_responses,
+                       num_quadpts)
 
-    #M-step: Optimize parameters
-    p <- Mstep_2pl_dif(p,item.data,predictor.data,mean_predictors,var_predictors,elist,item.type,penalty,tau[pen],alpha,gamma,anchor,rasch,samp_size,num_responses,num_items,num_quadpts,num_predictors)
+    # M-step: Optimize parameters.
+    p <- Mstep_2pl_dif(p,
+                       item.data,
+                       predictor.data,
+                       mean_predictors,
+                       var_predictors,
+                       elist,
+                       item.type,
+                       penalty,
+                       tau[pen],
+                       alpha,
+                       gamma,
+                       anchor,
+                       rasch,
+                       samp_size,
+                       num_responses,
+                       num_items,
+                       num_quadpts,
+                       num_predictors)
 
-    #Update and check for convergence: Calculate the difference in parameter estimates from current to previous
+    # Update and check for convergence: Calculate the difference
+    # in parameter estimates from current to previous.
     eps = sqrt(sum((unlist(p)-unlist(lastp))^2))
 
-    #Update parameter list
+    # Update parameter list.
     lastp <- p
 
-    #update the iteration number
+    # Update the iteration number.
     iter = iter + 1
     if(iter == final.control$maxit) warning("EM iteration limit reached without convergence")
 
@@ -52,10 +77,23 @@ em_estimation <- function(p,
 
     utils::flush.console()
 
-  } #End EM once converged or reached iteration limit
+  }
 
-  #get information criteria
-  infocrit <- information_criteria(elist,p,item.data,predictor.data,mean_predictors,var_predictors,elist$theta,tau[pen],gamma,penalty,samp_size,num_responses,num_items,num_quadpts)
+  # Get information criteria.
+  infocrit <- information_criteria(elist,
+                                   p,
+                                   item.data,
+                                   predictor.data,
+                                   mean_predictors,
+                                   var_predictors,
+                                   elist$theta,
+                                   tau[pen],
+                                   gamma,
+                                   penalty,
+                                   samp_size,
+                                   num_responses,
+                                   num_items,
+                                   num_quadpts)
 
   return(list(p,infocrit))
 

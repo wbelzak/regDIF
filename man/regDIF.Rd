@@ -21,51 +21,97 @@ regDIF(item.data,
        control = list())
 }
 \arguments{
-\item{item.data}{Matrix or dataframe of item responses. See below for supported distributions.}
+\item{item.data}{Matrix or dataframe of item responses. See below for
+supported distributions.}
 
-\item{predictor.data}{Matrix or dataframe of DIF and/or impact predictors. See below for option to specify different predictors for impact model.}
+\item{predictor.data}{Matrix or dataframe of DIF and/or impact predictors.
+See below for option to specify different predictors for impact model.}
 
-\item{item.type}{Character value or vector indicating the item response distributions via \code{y}. For scales where item responses are of one type only, the user may input one character value indicating the type (e.g., \code{"categorical"}). For mixed item types, the user must specify a vector of characters in the order that corresponds to the response matrix via \code{y}; e.g., \code{c(rep("categorical",2)}\code{, "bernoulli"}\code{, rep("gaussian",3))}. Supports:
+\item{item.type}{Character value or vector indicating the item response
+distributions via \code{y}. For scales where item responses are of one type
+only, the user may input one character value indicating the type (e.g.,
+\code{"categorical"}). For mixed item types, the user must specify a vector
+of characters in the order that corresponds to the response matrix via
+\code{y}; e.g., \code{c(rep("categorical",2)}\code{, "bernoulli"}\code{,
+rep("gaussian",3))}. Supports:
 \itemize{
-   \item{\code{"binary"} - Bernoulli item response via logistic link function (i.e., 1PL or 2PL model, see rasch option below for 1PL). Must be numeric/integer (2 unique values), factor (2 levels), or logical.}
-   \item{\code{"ordinal"} - Categorical item response via ordered logistic link function (i.e., Graded Response Model). Must be numeric/integer or factor.}
-   \item{\code{"continuous"} - Not currently supported. Gaussian item response via identity link function (i.e., Confirmatory Factor Analysis). Must be numeric/integer.}}}
+   \item{\code{"binary"} - Bernoulli item response via logistic link
+   function (i.e., 1PL or 2PL model, see rasch option below for 1PL). Must
+   be numeric/integer (2 unique values), factor (2 levels), or logical.}
+   \item{\code{"ordinal"} - Categorical item response via ordered logistic
+   link function (i.e., Graded Response Model). Must be numeric/integer or
+   factor.}
+   \item{\code{"continuous"} - Not currently supported. Gaussian item
+   response via identity link function (i.e., Confirmatory Factor Analysis).
+   Must be numeric/integer.}}}
 
-\item{penalty}{Character value indicating the penalty function to use. Supports:
+\item{penalty}{Character value indicating the penalty function to use.
+Supports:
 \itemize{
-   \item{\code{"mcp"} - The minimax concave penalty (MCP) which controls DIF selection through \eqn{\tau} (tau) and estimator bias through \eqn{\gamma} (gamma).}
-   \item{\code{"lasso"} - The least absolute selection and shrinkage operator (LASSO) which controls DIF selection through \eqn{\tau} (tau).}}}
+   \item{\code{"mcp"} - The minimax concave penalty (MCP) which controls
+   DIF selection through \eqn{\tau} (tau) and estimator bias through
+   \eqn{\gamma} (gamma).}
+   \item{\code{"lasso"} - The least absolute selection and shrinkage
+   operator (LASSO) which controls DIF selection through \eqn{\tau} (tau).}}}
 
-\item{ntau}{Numeric value indicating how many tau values to fit. Default is 100.}
+\item{ntau}{Numeric value indicating how many tau values to fit. Default is
+100.}
 
-\item{tau.max}{Numberic value indicating the maximum tau parameter to use for internal construction of tau vector. Default is 3. Must be large enough to shrink all DIF effects to zero to begin with.}
+\item{tau.max}{Numberic value indicating the maximum tau parameter to use
+for internal construction of tau vector. Default is 3. Must be large enough
+to shrink all DIF effects to zero to begin with.}
 
-\item{alpha}{Numeric value indicating the alpha parameter in the elastic net penalty function. Alpha controls the degree to which LASSO or ridge is used during regularization. Default is 1, which is equivalent to LASSO. For ridge, set alpha to 0. NOTE: If using MCP penalty, alpha may not be exactly 0.}
+\item{alpha}{Numeric value indicating the alpha parameter in the elastic net
+penalty function. Alpha controls the degree to which LASSO or ridge is used
+during regularization. Default is 1, which is equivalent to LASSO. For ridge,
+set alpha to 0. NOTE: If using MCP penalty, alpha may not be exactly 0.}
 
-\item{gamma}{Numeric value indicating the gamma parameter in the MCP function. Gamma controls the degree of tapering of DIF effects as tau decreases. Larger gamma leads to faster tapering (less bias but possibly more unstable optimization), whereas smaller gamma leads to slower tapering (more bias but more stable optimization). Default is 3. Must be greater than 1.}
+\item{gamma}{Numeric value indicating the gamma parameter in the MCP
+function. Gamma controls the degree of tapering of DIF effects as tau
+decreases. Larger gamma leads to faster tapering (less bias but possibly
+more unstable optimization), whereas smaller gamma leads to slower tapering
+(more bias but more stable optimization). Default is 3. Must be greater
+than 1.}
 
-\item{tau}{Optional numeric vector of tau values \eqn{\ge} 0. If tau is supplied, this overrides the automatic construction of tau values via \code{ntau}. Must be non-negative and in descending order, from largest to smallest values (e.g., \code{seq(1,0,-.01)}.}
+\item{tau}{Optional numeric vector of tau values \eqn{\ge} 0. If tau is
+supplied, this overrides the automatic construction of tau values via
+\code{ntau}. Must be non-negative and in descending order, from largest
+to smallest values (e.g., \code{seq(1,0,-.01)}.}
 
-\item{anchor}{Optional numeric value or vector indicating which item response(s) are anchors (e.g., \code{anchor = 1}). Default is \code{NULL}, meaning at least one DIF effect per covariate will be fixed to zero as tau approaches 0 (required to identify the model).}
+\item{anchor}{Optional numeric value or vector indicating which item
+response(s) are anchors (e.g., \code{anchor = 1}). Default is \code{NULL},
+meaning at least one DIF effect per covariate will be fixed to zero as
+tau approaches 0 (required to identify the model).}
 
-\item{rasch}{Logical value indicating whether to constrain item slopes to 1 (i.e., equal slopes). If \code{TRUE}, no slope DIF will be evaluated. Default is \code{FALSE}.}
+\item{rasch}{Logical value indicating whether to constrain item slopes
+to 1 (i.e., equal slopes). If \code{TRUE}, no slope DIF will be evaluated.
+Default is \code{FALSE}.}
 
-\item{impact.data}{Optional list of matrices or data frames with predictors for mean and variance impact. Allows for different sets of predictors on the mean and variance impact equations compared to the item response DIF equations.}
+\item{impact.data}{Optional list of matrices or data frames with predictors
+for mean and variance impact. Allows for different sets of predictors on
+the mean and variance impact equations compared to the item response DIF
+equations.}
 
-\item{standardize}{Logical value indicating whether to standardize DIF and impact covariates for regularization. Default is \code{TRUE}, as it is recommended that all covariates be on the same scale.}
+\item{standardize}{Logical value indicating whether to standardize DIF and
+impact covariates for regularization. Default is \code{TRUE}, as it is
+recommended that all covariates be on the same scale.}
 
-\item{quadpts}{Numeric value indicating the number of quadrature points to be used in approximating the latent variable distribution during estimation. Uses adaptive quadrature. Default is \code{15}.}
+\item{quadpts}{Numeric value indicating the number of quadrature points to
+be used in approximating the latent variable distribution during estimation.
+Uses adaptive quadrature. Default is \code{15}.}
 
 \item{control}{Optional list of optimization parameters. May be:
 \describe{
-   \item{tol}{Convergence threshold of EM algorithm. Default is \code{10^-5}.}
-   \item{maxiter}{Maximum number of EM iterations. Default is \code{10000}.}}}
+   \item{tol}{Convergence threshold of EM algorithm. Default is
+   \code{10^-5}.}
+   \item{maxiter}{Maximum number of EM iterations. Default is
+   \code{10000}.}}}
 }
 \value{
 Function returns an object of class \code{regDIF}
 }
 \description{
-Performs regularization of DIF effects in item response theory and confirmatory factor analysis models via penalized expectation-maximization.
+Identify DIF in item response theory models using regularization.
 }
 \examples{
 \dontrun{
@@ -74,7 +120,8 @@ library(regDIF)
 head(ida)
 item.data <- ida[,1:6]
 predictor.data <- ida[,7:9]
-fit <- regDIF(item.data, predictor.data, item.type = "binary", penalty = "lasso")
+fit <- regDIF(item.data, predictor.data, item.type = "binary", penalty =
+"lasso")
 fit
 
 }

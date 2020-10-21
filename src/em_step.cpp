@@ -59,7 +59,8 @@ arma::vec dnormCpp(
   static const double pi = 3.14159265;
 
   for(int q = 0; q < num_quadpts; q++){
-    posterior[q] = 1/sqrt(2*pi*phi_impact)*exp(-pow((theta[q] - alpha_impact),2)/(2*phi_impact));
+    posterior[q] = 1 / sqrt(2*pi*phi_impact)*exp(-pow((theta[q] -
+      alpha_impact),2) / (2*phi_impact));
   }
 
   return posterior;
@@ -89,7 +90,8 @@ arma::mat bernoulli_traceline_est(
 
   // Loop through quadrature points
   for(int q = 0; q < num_quadpts; ++q){
-    traceline.col(q) = 1/(1 + exp(-(p_c0 + predictors * p_c1 + (p_a0 + predictors * p_a1) % theta.col(q))));
+    traceline.col(q) = 1 / (1 + exp(-(p_c0 + predictors * p_c1 +
+      (p_a0 + predictors * p_a1) % theta.col(q))));
   }
 
   return traceline;
@@ -117,7 +119,8 @@ List bernoulli_traceline_cpp(
 
   // Loop through quadrature points
   for(int q = 0; q < num_quadpts; ++q){
-    traceline1.col(q) = 1/(1 + exp(-(p_c0 + predictors * p_c1 + (p_a0 + predictors * p_a1) % theta.col(q))));
+    traceline1.col(q) = 1/(1 + exp(-(p_c0 + predictors * p_c1 +
+      (p_a0 + predictors * p_a1) % theta.col(q))));
   }
   traceline0 = 1 - traceline1;
 
@@ -161,7 +164,8 @@ List d_alpha_est(
   arma::mat d1_trace = arma::zeros(samp_size,num_quadpts);
   arma::mat d2_trace = arma::zeros(samp_size,num_quadpts);
   for(int i = 0; i < samp_size; i++){
-    d1_trace.row(i) = eta_d.row(i)/phi_impact[i] % (theta.row(i) - alpha_impact[i]);
+    d1_trace.row(i) = eta_d.row(i)/phi_impact[i] % (theta.row(i) -
+      alpha_impact[i]);
     d2_trace.row(i) = -pow(eta_d.row(i),2)/phi_impact[i];
   }
 
@@ -200,8 +204,10 @@ List d_phi_est(
   arma::mat d1_trace = arma::zeros(samp_size,num_quadpts);
   arma::mat d2_trace = arma::zeros(samp_size,num_quadpts);
   for(int i = 0; i < samp_size; i++){
-    d1_trace.row(i) = eta_d1[i] * (pow((theta.row(i) - alpha_impact[i]),2) / pow(phi_impact[i],(3.0/2)) - 1/sqrt(phi_impact[i]));
-    d2_trace.row(i) = -2 * eta_d2[i] * (pow(phi_impact[i],(-3.0/2)) * pow((theta.row(i) - alpha_impact[i]),2));
+    d1_trace.row(i) = eta_d1[i] * (pow((theta.row(i) - alpha_impact[i]),2) /
+      pow(phi_impact[i],(3.0/2)) - 1 / sqrt(phi_impact[i]));
+    d2_trace.row(i) = -2 * eta_d2[i] * (pow(phi_impact[i],(-3.0/2)) *
+      pow((theta.row(i) - alpha_impact[i]),2));
   }
 
   List dlist(2);
@@ -246,11 +252,17 @@ List d_bernoulli_est(
     }
   }
 
-  arma::mat traceline = bernoulli_traceline_est(p_item,theta,predictors,samp_size,num_quadpts);
+  arma::mat traceline = bernoulli_traceline_est(p_item,
+                                                theta,
+                                                predictors,
+                                                samp_size,
+                                                num_quadpts);
 
   List dlist(2);
-  dlist[0] = sum(sum((1-traceline) % eta_d % etable2)) + sum(sum(-traceline % eta_d % etable1));
-  dlist[1] = sum(sum(-traceline % (1-traceline) % pow(eta_d,2) % etable1)) + sum(sum(-traceline % (1-traceline) % pow(eta_d,2) % etable2));
+  dlist[0] = sum(sum((1-traceline) % eta_d % etable2)) +
+    sum(sum(-traceline % eta_d % etable1));
+  dlist[1] = sum(sum(-traceline % (1-traceline) % pow(eta_d,2) % etable1)) +
+    sum(sum(-traceline % (1-traceline) % pow(eta_d,2) % etable2));
 
   return(dlist);
 

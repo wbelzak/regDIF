@@ -10,17 +10,17 @@
 
 print.regDIF <-
   function(x, ...) {
-    ## print to screen with line break
+    # Print to screen with line break.
     cat("Call:\n")
-    ## print the model formula we fit
+    # Print the model formula we fit.
     print(x$call)
-    ## create table to display results
+    # Create table to display results.
     table <- data.frame(
       "Tau" = x$tau,
       "AIC" = x$aic,
       "BIC" = x$bic
     )
     cat("\nRegDIF Results:\n")
-    ## print the results table
+    # Print the results table.
     print(table)
   }

@@ -13,7 +13,8 @@
 
 \item{method}{Fit statistic to use for identifying DIF effects in plot.}
 
-\item{legend.seed}{Random seed to sample line colors and line types for DIF effects in plot.}
+\item{legend.seed}{Random seed to sample line colors and line types for
+DIF effects in plot.}
 
 \item{...}{Additional arguments to be passed through to \code{plot}.}
 }

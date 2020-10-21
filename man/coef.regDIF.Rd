@@ -9,9 +9,15 @@
 \arguments{
 \item{object}{Fitted regDIF model object.}
 
-\item{tau}{Optional character or numeric indicating the tau(s) at which the model coefficients are returned. For character value, may be \code{"tau.min"}, which returns model coefficients for the value of tau at which the minimum fit statistic is identified. For numeric, the value(s) provided corresponds to the value(s) of tau.}
+\item{tau}{Optional character or numeric indicating the tau(s) at
+which the model coefficients are returned. For character value, may be
+\code{"tau.min"}, which returns model coefficients for the value of tau
+at which the minimum fit statistic is identified. For numeric, the value(s)
+provided corresponds to the value(s) of tau.}
 
-\item{method}{Character value indicating the model fit statistic to be used for determining \code{"tau.min"}. Default is \code{"bic"}. May also be \code{"aic"}.}
+\item{method}{Character value indicating the model fit statistic to be used
+for determining \code{"tau.min"}. Default is \code{"bic"}. May also be
+\code{"aic"}.}
 
 \item{...}{Additional arguments to be passed through to \code{coef}.}
 }

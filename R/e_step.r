@@ -13,7 +13,8 @@
 #' @param num_quadpts Number of quadrature points used for approximating the
 #' latent variable.
 #'
-#' @NoRd
+#' @keywords internal
+#'
 Estep <-
   function(p,
            item.data,

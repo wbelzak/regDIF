@@ -24,7 +24,8 @@
 #' @param control Optional list of optimization parameters.
 #' @param call Defined from regDIF.
 #'
-#' @NoRd
+#' @keywords internal
+#'
 preprocess <-
   function(item.data,
            predictor.data,

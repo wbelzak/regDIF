@@ -13,7 +13,8 @@
 #' @param num_quadpts Number of quadrature points used for approximating the
 #' latent variable.
 #'
-#' @NoRd
+#' @keywords internal
+#'
 d_alpha <-
   function(p_impact,
            etable_all,
@@ -64,7 +65,8 @@ d_alpha <-
 #' @param num_quadpts Number of quadrature points used for approximating the
 #' latent variable.
 #'
-#' @NoRd
+#' @keywords internal
+#'
 d_phi <-
   function(p_impact,
            etable_all,
@@ -113,7 +115,8 @@ d_phi <-
 #' @param num_quadpts Number of quadrature points used for approximating the
 #' latent variable.
 #'
-#' @NoRd
+#' @keywords internal
+#'
 d_bernoulli <-
   function(parm,
            p_item,
@@ -168,7 +171,8 @@ d_bernoulli <-
 #' @param num_quadpts Number of quadrature points used for approximating the
 #' latent variable.
 #'
-#' @NoRd
+#' @keywords internal
+#'
 d_categorical <-
   function(parm,
            p_item,
@@ -283,7 +287,8 @@ d_categorical <-
 #' @param num_quadpts Number of quadrature points used for approximating the
 #' latent variable.
 #'
-#' @NoRd
+#' @keywords internal
+#'
 d_mu_gaussian <-
   function(parm,
            p_item,
@@ -357,7 +362,8 @@ d_mu_gaussian <-
 #' @param num_quadpts Number of quadrature points used for approximating the
 #' latent variable.
 #'
-#' @NoRd
+#' @keywords internal
+#'
 d_sigma_gaussian <-
   function(parm,
            p_item,

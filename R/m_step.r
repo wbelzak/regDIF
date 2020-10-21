@@ -28,7 +28,8 @@
 #' latent variable.
 #' @param num_predictors Number of predictors.
 #'
-#' @NoRd
+#' @keywords internal
+#'
 Mstep <-
   function(p,
            item.data,

@@ -23,7 +23,8 @@
 #' @param num_quadpts Number of quadrature points used for approximating the
 #' latent variable.
 #'
-#' @NoRd
+#' @keywords internal
+#'
 postprocess <-
   function(estimates,
            item.data,

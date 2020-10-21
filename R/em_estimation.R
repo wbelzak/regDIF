@@ -29,7 +29,8 @@
 #' @param control Optional list of optimization parameters.
 #' @param call Defined from regDIF.
 #'
-#' @NoRd
+#' @keywords internal
+#'
 em_estimation <- function(p,
                           item.data,
                           predictor.data,

@@ -7,7 +7,8 @@
 #' @param num_quadpts Number of quadrature points used for approximating the
 #' latent variable.
 #'
-#' @NoRd
+#' @keywords internal
+#'
 bernoulli_traceline_pts <-
   function(p_active,
            theta,
@@ -47,7 +48,8 @@ bernoulli_traceline_pts <-
 #' @param num_quadpts Number of quadrature points used for approximating the
 #' latent variable.
 #'
-#' @NoRd
+#' @keywords internal
+#'
 categorical_traceline_pts <-
   function(p_active,
            theta,
@@ -164,7 +166,8 @@ categorical_traceline_pts <-
 #' @param num_quadpts Number of quadrature points used for approximating the
 #' latent variable.
 #'
-#' @NoRd
+#' @keywords internal
+#'
 cumulative_traceline_pts <-
   function(p_active,
            theta,
@@ -229,7 +232,8 @@ cumulative_traceline_pts <-
 #' @param num_quadpts Number of quadrature points used for approximating the
 #' latent variable.
 #'
-#' @NoRd
+#' @keywords internal
+#'
 gaussian_traceline_pts <-
   function(p_active,
            theta,

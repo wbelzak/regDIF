@@ -28,7 +28,7 @@ supported distributions.}
 See below for option to specify different predictors for impact model.}
 
 \item{item.type}{Character value or vector indicating the item response
-distributions via \code{y}. For scales where item responses are of one type
+distributions. For scales where item responses are of one type
 only, the user may input one character value indicating the type (e.g.,
 \code{"categorical"}). For mixed item types, the user must specify a vector
 of characters in the order that corresponds to the response matrix via

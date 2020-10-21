@@ -20,7 +20,8 @@
 #' @param num_quadpts Number of quadrature points used for approximating the
 #' latent variable.
 #'
-#' @NoRd
+#' @keywords internal
+#'
 information_criteria <-
   function(elist,
            p,

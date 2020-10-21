@@ -14,7 +14,6 @@ information_criteria(
   theta,
   tau,
   gamma,
-  penalty,
   samp_size,
   num_responses,
   num_items,
@@ -43,8 +42,6 @@ variance impact equation.}
 
 \item{gamma}{Numeric value indicating the gamma parameter in the MCP
 function.}
-
-\item{penalty}{Character value indicating the penalty function to use.}
 
 \item{samp_size}{Sample size in dataset.}
 

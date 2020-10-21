@@ -4,13 +4,8 @@
 #' @param Matrix or dataframe of DIF and/or impact predictors.
 #' @param item.type Character value or vector indicating the item response
 #' distributions.
-#' @param penalty Character value indicating the penalty function to use.
-#' @param ntau Numeric value of how many to tau values to fit.
-#' @param tau.max Numberic value indicating the maximum tau parameter.
-#' @param alpha Numeric value indicating the alpha parameter in the elastic net
-#' penalty function.
-#' @param gamma Numeric value indicating the gamma parameter in the MCP
-#' function.
+#' @param num.tau Numeric value of how many to tau values to fit.
+#' @param max.tau Numberic value indicating the maximum tau parameter.
 #' @param tau Optional numeric vector of tau values.
 #' @param anchor Optional numeric value or vector indicating which item
 #' response(s) are anchors (e.g., \code{anchor = 1}).
@@ -30,9 +25,8 @@ preprocess <-
   function(item.data,
            predictor.data,
            item.type,
-           penalty,
-           ntau,
-           tau.max,
+           num.tau,
+           max.tau,
            tau,
            anchor,
            rasch,
@@ -56,13 +50,16 @@ preprocess <-
   }
 
   # Pre-process warnings.
-  if(any(item.type == "continuous")) {
+  if(any(item.type == "cfa")) {
     stop(paste0("Continuous (Gaussian) item responses are not currently ",
                 "supported."))
   }
-  if(!(any(item.type == "binary") | any(item.type == "ordinal"))) {
-    stop(paste0("Item response types must either be 'binary' (Bernoulli) or ",
-                "'ordinal' (ordered categorical)."))
+  if(!(any(item.type == "rasch") |
+       any(item.type == "2pl") |
+       any(item.type == "graded") |
+       any(is.null(item.type)))) {
+    stop(paste0("Item response types must either be rasch, 2pl, or ",
+                "graded."))
   }
   if(any(tau < 0)) {
     stop("Tau values must be non-negative.", call. = TRUE)
@@ -70,8 +67,11 @@ preprocess <-
   if(length(tau) > 1 & all(diff(tau) >= 0)) {
     stop("Tau values must be in descending order (e.g., tau = c(-2,-1,0)).")
   }
-  if(is.null(anchor) & length(tau) == 1 & tau == 0) {
-    stop("Anchor item must be specified with tau = 0.", call. = TRUE)
+  if(is.null(anchor) & length(tau) == 1) {
+    if(tau == 0) {
+      stop("Anchor item must be specified with tau = 0.", call. = TRUE)
+    }
+
   }
   if(!is.null(anchor) & !is.numeric(anchor)) {
     stop("Anchor items must be numeric (e.g., anchor = 1).", call. = TRUE)
@@ -84,7 +84,7 @@ preprocess <-
 
   # Tau.
   if(is.null(tau)){
-    tau <- seq(tau.max**(1/3),0,length.out = ntau)**3
+    tau <- seq(max.tau**(1/3),0,length.out = num.tau)**3
   }
 
   # Speeds up computation.
@@ -96,20 +96,24 @@ preprocess <-
   num_items <- dim(item.data)[2]
   num_predictors <- dim(predictor.data)[2]
 
-  # Get number of item.type for number of items.
-  if(length(item.type) == 1){
+  # Get muliple characters of item.type for number of items.
+  if(length(item.type) == 1 | is.null(item.type)) {
+    if(is.null(item.type)) item.type <- "2pl"
     item.type <- rep(item.type, num_items)
   }
 
   # Get item response types.
   num_responses <- rep(1,num_items)
-  if(any(item.type == "binary" | item.type == "ordinal")){
-    item.data[,which(item.type == "binary" | item.type == "ordinal")] <-
-      apply(item.data[,which(item.type == "binary" | item.type == "ordinal")],
+  cat_items <- item.type == "rasch" |
+    item.type == "2pl" |
+    item.type == "graded"
+  if(any(cat_items)) {
+    item.data[,which(cat_items)] <-
+      apply(item.data[,which(cat_items)],
             2,
             function(x) as.numeric(as.factor(x)))
-    num_responses[which(item.type == "binary" | item.type == "ordinal")] <-
-      apply(item.data[,which(item.type == "binary" | item.type == "ordinal")],
+    num_responses[which(cat_items)] <-
+      apply(item.data[,which(cat_items)],
             2,
             function(x) length(unique(na.omit(x))))
   }
@@ -168,7 +172,7 @@ preprocess <-
   names(p[[(num_items+1)]]) <- paste0(rep(paste0('g',1:ncol(mean_predictors))))
   names(p[[(num_items+2)]]) <- paste0(rep(paste0('b',1:ncol(var_predictors))))
 
-  if(any(item.type == "continuous")){
+  if(any(item.type == "cfa")){
     num_base_parms <- length(c(unlist(p)[grep('c0',names(unlist(p)))],
                                unlist(p)[grep('a0',names(unlist(p)))],
                                unlist(p)[grep('s0',names(unlist(p)))]))

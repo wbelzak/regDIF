@@ -1,4 +1,4 @@
-#' Binary traceline values.
+#' Binary item tracelines.
 #'
 #' @param p_active Vector of item parameters.
 #' @param theta Matrix of adaptive theta values.
@@ -38,7 +38,7 @@ bernoulli_traceline_pts <-
 
   }
 
-#' Categorical traceline values (graded response).
+#' Ordinal item tracelines (graded response).
 #'
 #' @param p_active Vector of item parameters.
 #' @param theta Matrix of adaptive theta values.
@@ -156,7 +156,7 @@ categorical_traceline_pts <-
 
   }
 
-#' Cumulative traceline values.
+#' Ordinal tracelines (for derivatives).
 #'
 #' @param p_active Vector of item parameters.
 #' @param theta Matrix of adaptive theta values.
@@ -222,7 +222,7 @@ cumulative_traceline_pts <-
 
 }
 
-#' Continuous traceline values.
+#' Continuous tracelines.
 #'
 #' @param p_active Vector of item parameters.
 #' @param theta Matrix of adaptive theta values.

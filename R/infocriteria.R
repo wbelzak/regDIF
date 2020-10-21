@@ -13,7 +13,6 @@
 #' @param tau Optional numeric vector of tau values.
 #' @param gamma Numeric value indicating the gamma parameter in the MCP
 #' function.
-#' @param penalty Character value indicating the penalty function to use.
 #' @param samp_size Sample size in dataset.
 #' @param num_responses Number of responses for each item.
 #' @param num_items Number of items in dataset.
@@ -32,7 +31,6 @@ information_criteria <-
            theta,
            tau,
            gamma,
-           penalty,
            samp_size,
            num_responses,
            num_items,

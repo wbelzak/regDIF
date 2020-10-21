@@ -2,7 +2,7 @@
 % Please edit documentation in R/traceline.r
 \name{bernoulli_traceline_pts}
 \alias{bernoulli_traceline_pts}
-\title{Binary traceline values.}
+\title{Binary item tracelines.}
 \usage{
 bernoulli_traceline_pts(
   p_active,
@@ -25,6 +25,6 @@ bernoulli_traceline_pts(
 latent variable.}
 }
 \description{
-Binary traceline values.
+Binary item tracelines.
 }
 \keyword{internal}

@@ -3,13 +3,13 @@
 #' @param p List of parameters with starting values obtained from preprocess.
 #' @param item.data Matrix or dataframe of item responses.
 #' @param predictor.data Matrix or dataframe of DIF and/or impact predictors.
-#' @param item.type Character value or vector indicating the item response
-#' distributions.
 #' @param mean_predictors Possibly different matrix of predictors for the mean
 #' impact equation.
 #' @param var_predictors Possibly different matrix of predictors for the
 #' variance impact equation.
-#' @param penalty Character value indicating the penalty function to use.
+#' @param item.type Optional character value or vector indicating the type of
+#' item to be modeled.
+#' @param penalty.type Character value indicating the penalty function to use.
 #' @param ntau Numeric value of how many to tau values to fit.
 #' @param tau.max Numberic value indicating the maximum tau parameter.
 #' @param alpha Numeric value indicating the alpha parameter in the elastic net
@@ -37,13 +37,12 @@ em_estimation <- function(p,
                           mean_predictors,
                           var_predictors,
                           item.type,
-                          penalty,
+                          penalty.type,
                           tau,
                           alpha,
                           gamma,
                           pen,
                           anchor,
-                          rasch,
                           final.control,
                           samp_size,
                           num_items,
@@ -79,12 +78,11 @@ em_estimation <- function(p,
                var_predictors,
                elist,
                item.type,
-               penalty,
+               penalty.type,
                tau[pen],
                alpha,
                gamma,
                anchor,
-               rasch,
                samp_size,
                num_responses,
                num_items,
@@ -118,7 +116,6 @@ em_estimation <- function(p,
                                    elist$theta,
                                    tau[pen],
                                    gamma,
-                                   penalty,
                                    samp_size,
                                    num_responses,
                                    num_items,

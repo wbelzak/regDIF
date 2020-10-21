@@ -8,9 +8,8 @@ preprocess(
   item.data,
   predictor.data,
   item.type,
-  penalty,
-  ntau,
-  tau.max,
+  num.tau,
+  max.tau,
   tau,
   anchor,
   rasch,
@@ -27,11 +26,9 @@ preprocess(
 \item{item.type}{Character value or vector indicating the item response
 distributions.}
 
-\item{penalty}{Character value indicating the penalty function to use.}
+\item{num.tau}{Numeric value of how many to tau values to fit.}
 
-\item{ntau}{Numeric value of how many to tau values to fit.}
-
-\item{tau.max}{Numberic value indicating the maximum tau parameter.}
+\item{max.tau}{Numberic value indicating the maximum tau parameter.}
 
 \item{tau}{Optional numeric vector of tau values.}
 
@@ -54,12 +51,6 @@ impact covariates for regularization.}
 \item{call}{Defined from regDIF.}
 
 \item{Matrix}{or dataframe of DIF and/or impact predictors.}
-
-\item{alpha}{Numeric value indicating the alpha parameter in the elastic net
-penalty function.}
-
-\item{gamma}{Numeric value indicating the gamma parameter in the MCP
-function.}
 }
 \description{
 Pre-process data.

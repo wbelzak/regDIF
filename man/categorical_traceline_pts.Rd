@@ -2,7 +2,7 @@
 % Please edit documentation in R/traceline.r
 \name{categorical_traceline_pts}
 \alias{categorical_traceline_pts}
-\title{Categorical traceline values (graded response).}
+\title{Ordinal item tracelines (graded response).}
 \usage{
 categorical_traceline_pts(
   p_active,
@@ -28,6 +28,6 @@ categorical_traceline_pts(
 latent variable.}
 }
 \description{
-Categorical traceline values (graded response).
+Ordinal item tracelines (graded response).
 }
 \keyword{internal}

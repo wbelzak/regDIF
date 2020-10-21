@@ -6,15 +6,14 @@
 \usage{
 regDIF(item.data,
        predictor.data,
-       item.type = c("binary","ordinal","continuous"),
-       penalty = c("mcp","lasso"),
-       ntau = 100,
-       tau.max = 2,
+       item.type = NULL,
+       penalty.type = NULL,
+       tau = NULL,
+       num.tau = 100,
+       max.tau = 2,
        alpha = 1,
        gamma = 3,
-       tau = NULL,
        anchor = NULL,
-       rasch = FALSE,
        impact.data = list(mean = NULL, var = NULL),
        standardize = TRUE,
        quadpts = 15,
@@ -27,44 +26,51 @@ supported distributions.}
 \item{predictor.data}{Matrix or dataframe of DIF and/or impact predictors.
 See below for option to specify different predictors for impact model.}
 
-\item{item.type}{Character value or vector indicating the item response
-distributions. For scales where item responses are of one type
-only, the user may input one character value indicating the type (e.g.,
-\code{"categorical"}). For mixed item types, the user must specify a vector
-of characters in the order that corresponds to the response matrix via
-\code{y}; e.g., \code{c(rep("categorical",2)}\code{, "bernoulli"}\code{,
-rep("gaussian",3))}. Supports:
+\item{item.type}{Optional character value or vector indicating the type of
+item to be modeled. The default is NULL, corresponding to a 2PL or graded
+item type. Different item types may be specified for a single model
+by providing a vector equal in length to the number of items in item.data.
+The options include:
 \itemize{
-   \item{\code{"binary"} - Bernoulli item response via logistic link
-   function (i.e., 1PL or 2PL model, see rasch option below for 1PL). Must
-   be numeric/integer (2 unique values), factor (2 levels), or logical.}
-   \item{\code{"ordinal"} - Categorical item response via ordered logistic
-   link function (i.e., Graded Response Model). Must be numeric/integer or
-   factor.}
-   \item{\code{"continuous"} - Not currently supported. Gaussian item
-   response via identity link function (i.e., Confirmatory Factor Analysis).
-   Must be numeric/integer.}}}
+   \item{\code{"rasch"} - Slopes constrained to 1 and intercepts freely
+   estimated.}
+   \item{\code{"2pl"} - Slopes and intercepts freely estimated.}
+   \item{\code{"graded"} - Slopes, intercepts, and thresholds freely
+   estimated.}
+   \item{\code{"cfa"} - Not currently supported. Slopes and intercepts
+   freely estimated with continuous (Gaussian) item responses.}}}
 
-\item{penalty}{Character value indicating the penalty function to use.
-Supports:
+\item{penalty.type}{Optional character value indicating the penalty
+function to use. The default is NULL, corresponding to the LASSO function.
+The options include:
 \itemize{
-   \item{\code{"mcp"} - The minimax concave penalty (MCP) which controls
+   \item{\code{"mcp"} - The minimax concave penalty (MCP), which controls
    DIF selection through \eqn{\tau} (tau) and estimator bias through
    \eqn{\gamma} (gamma).}
    \item{\code{"lasso"} - The least absolute selection and shrinkage
-   operator (LASSO) which controls DIF selection through \eqn{\tau} (tau).}}}
+   operator (LASSO), which controls DIF selection through \eqn{\tau} (tau).}
+   \item{\code{"ridge"} - The ridge penalty, which shrinks DIF effects (but
+   does not select DIF) through \eqn{\tau} (tau).}
+   \item{\code{"elastic.net"} - The elastic net penalty, which selects DIF
+   effects using a combination of lasso and ridge penalties through
+   \eqn{\tau} (tau) and \eqn{\alpha} (alpha). Using this option }}}
 
-\item{ntau}{Numeric value indicating how many tau values to fit. Default is
-100.}
+\item{tau}{Optional numeric vector of tau values \eqn{\ge} 0. If tau is
+supplied, this overrides the automatic construction of tau values via
+\code{max.tau}. Must be non-negative and in descending order, from largest
+to smallest values (e.g., \code{seq(1,0,-.01)}.}
 
-\item{tau.max}{Numberic value indicating the maximum tau parameter to use
-for internal construction of tau vector. Default is 3. Must be large enough
+\item{num.tau}{Numeric value indicating how many tau values to fit. The
+default is 100.}
+
+\item{max.tau}{Numberic value indicating the maximum tau parameter to use
+for internal construction of tau vector. Default is 2. Must be large enough
 to shrink all DIF effects to zero to begin with.}
 
 \item{alpha}{Numeric value indicating the alpha parameter in the elastic net
 penalty function. Alpha controls the degree to which LASSO or ridge is used
-during regularization. Default is 1, which is equivalent to LASSO. For ridge,
-set alpha to 0. NOTE: If using MCP penalty, alpha may not be exactly 0.}
+during regularization. The default is 1, which is equivalent to LASSO.
+NOTE: If using MCP penalty, alpha may not be exactly 0.}
 
 \item{gamma}{Numeric value indicating the gamma parameter in the MCP
 function. Gamma controls the degree of tapering of DIF effects as tau
@@ -73,19 +79,10 @@ more unstable optimization), whereas smaller gamma leads to slower tapering
 (more bias but more stable optimization). Default is 3. Must be greater
 than 1.}
 
-\item{tau}{Optional numeric vector of tau values \eqn{\ge} 0. If tau is
-supplied, this overrides the automatic construction of tau values via
-\code{ntau}. Must be non-negative and in descending order, from largest
-to smallest values (e.g., \code{seq(1,0,-.01)}.}
-
 \item{anchor}{Optional numeric value or vector indicating which item
 response(s) are anchors (e.g., \code{anchor = 1}). Default is \code{NULL},
 meaning at least one DIF effect per covariate will be fixed to zero as
 tau approaches 0 (required to identify the model).}
-
-\item{rasch}{Logical value indicating whether to constrain item slopes
-to 1 (i.e., equal slopes). If \code{TRUE}, no slope DIF will be evaluated.
-Default is \code{FALSE}.}
 
 \item{impact.data}{Optional list of matrices or data frames with predictors
 for mean and variance impact. Allows for different sets of predictors on
@@ -120,9 +117,8 @@ library(regDIF)
 head(ida)
 item.data <- ida[,1:6]
 predictor.data <- ida[,7:9]
-fit <- regDIF(item.data, predictor.data, item.type = "binary", penalty =
-"lasso")
-fit
+fit <- regDIF(item.data, predictor.data)
+summary(fit)
 
 }
 

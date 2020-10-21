@@ -9,9 +9,9 @@
 #' variance impact equation.
 #' @param elist List of E-tables for item and impact equations, in addition to
 #' theta values.
-#' @param item.type Character value or vector indicating the item response
-#' distributions.
-#' @param penalty Character value indicating the penalty function to use.
+#' @param item.type Optional character value or vector indicating the type of
+#' item to be modeled.
+#' @param penalty.type Character value indicating the penalty function to use.
 #' @param tau Optional numeric vector of tau values.
 #' @param alpha Numeric value indicating the alpha parameter in the elastic net
 #' penalty function.
@@ -19,8 +19,6 @@
 #' function.
 #' @param anchor Optional numeric value or vector indicating which item
 #' response(s) are anchors (e.g., \code{anchor = 1}).
-#' @param rasch Logical value indicating whether to constrain item slopes
-#' to 1 (i.e., equal slopes).
 #' @param samp_size Sample size in dataset.
 #' @param num_responses Number of responses for each item.
 #' @param num_items Number of items in dataset.
@@ -38,12 +36,11 @@ Mstep <-
            var_predictors,
            elist,
            item.type,
-           penalty,
+           penalty.type,
            tau,
            alpha,
            gamma,
            anchor,
-           rasch,
            samp_size,
            num_responses,
            num_items,
@@ -106,7 +103,7 @@ Mstep <-
                         simplify = F)
 
     # Obtain E-tables for each response category.
-    if(item.type[item] == "binary" | item.type[item] == "ordinal") {
+    if(num_responses[item] > 1) {
       for(resp in 1:num_responses[item]) {
         etable[[resp]][which(
           !(etable[[resp]][, ncol(etable[[resp]])] == resp)), ] <- 0
@@ -118,7 +115,7 @@ Mstep <-
     etable <- lapply(etable, function(x) x[,1:num_quadpts])
 
     # Bernoulli responses.
-    if(item.type[item] == "binary") {
+    if(num_responses[item] == 2) {
 
       # Intercept updates.
       c0_parms <- grep(paste0("c0_itm",item,"_"),names(p_item),fixed=T)
@@ -136,7 +133,7 @@ Mstep <-
       p_item <- replace(p_item,names(p_new),p_new)
 
       # Slope updates.
-      if(rasch == FALSE) {
+      if(item.type[item] != "rasch") {
         a0_parms <- grep(paste0("a0_itm",item,"_"),names(p_item),fixed=T)
         anl_deriv <- d_bernoulli_est("a0",
                                      p_item,
@@ -182,7 +179,7 @@ Mstep <-
                                        num_items,
                                        num_quadpts)
           z <- p_item[c1_parms] - anl_deriv[[1]]/anl_deriv[[2]]
-          p_new <- ifelse(penalty == "lasso",
+          p_new <- ifelse(penalty.type == "lasso",
                           soft_thresh_est(z,alpha,tau),
                           firm_thresh_est(z,alpha,tau,gamma))
           names(p_new) <- names(z)
@@ -201,7 +198,7 @@ Mstep <-
             next
           }
 
-          if(rasch == FALSE) {
+          if(item.type[item] != "rasch") {
             a1_parms <-
               grep(paste0("a1_itm",item,"_cov",cov+1),names(p_item),fixed=T)
             anl_deriv <- d_bernoulli_est("a1",
@@ -215,9 +212,9 @@ Mstep <-
                                          num_items,
                                          num_quadpts)
             z <- p_item[a1_parms] - anl_deriv[[1]]/anl_deriv[[2]]
-            p_new <- ifelse(penalty == "lasso",
-                            soft_thresh_est(z,alpha,tau),
-                            firm_thresh_est(z,alpha,tau,gamma))
+            p_new <- ifelse(penalty.type == "mcp",
+                            firm_thresh_est(z,alpha,tau,gamma),
+                            soft_thresh_est(z,alpha,tau))
             names(p_new) <- names(z)
             p_item <- replace(p_item,names(p_new),p_new)
           }
@@ -226,7 +223,7 @@ Mstep <-
 
       }
 
-    } else if(item.type[item] == "ordinal") {
+    } else if(num_responses[item] > 2) {
 
       c0_parms <- grep(paste0("c0_itm",item,"_"),names(p_item),fixed=T)
 
@@ -265,7 +262,7 @@ Mstep <-
       }
 
       # Slope updates.
-      if(rasch == FALSE) {
+      if(item.type[item] != "rasch") {
         a0_parms <- grep(paste0("a0_itm",item,"_"),names(p_item),fixed=T)
         anl_deriv <- d_categorical("a0",
                                    p_item,
@@ -312,9 +309,9 @@ Mstep <-
                                      num_items,
                                      num_quadpts)
           z <- p_item[c1_parms] - anl_deriv[[1]]/anl_deriv[[2]]
-          p_new <- ifelse(penalty == "lasso",
-                          soft_thresh_est(z,alpha,tau),
-                          firm_thresh_est(z,alpha,tau,gamma))
+          p_new <- ifelse(penalty.type == "mcp",
+                          firm_thresh_est(z,alpha,tau,gamma),
+                          soft_thresh_est(z,alpha,tau))
           names(p_new) <- names(z)
           p_item <- replace(p_item,names(p_new),p_new)
         }
@@ -331,7 +328,7 @@ Mstep <-
             next
           }
 
-          if(rasch == FALSE) {
+          if(item.type[item] != "rasch") {
             a1_parms <-
               grep(paste0("a1_itm",item,"_cov",cov),names(p_item),fixed=T)
             anl_deriv <- d_categorical("a1",
@@ -346,9 +343,9 @@ Mstep <-
                                        num_items,
                                        num_quadpts)
             z <- p_item[a1_parms] - anl_deriv[[1]]/anl_deriv[[2]]
-            p_new <- ifelse(penalty == "lasso",
-                            soft_thresh_est(z,alpha,tau),
-                            firm_thresh_est(z,alpha,tau,gamma))
+            p_new <- ifelse(penalty.type == "mcp",
+                            firm_thresh_est(z,alpha,tau,gamma),
+                            soft_thresh_est(z,alpha,tau))
             names(p_new) <- names(z)
             p_item <- replace(p_item,names(p_new),p_new)
           }
@@ -357,7 +354,7 @@ Mstep <-
 
 
       # Gaussian responses.
-    } else if(item.type[item] == "continuous") {
+    } else if(num_responses[item] == 1) {
 
       # Intercept updates.
       c0_parms <- grep(paste0("c0_itm",item,"_"),names(p_item),fixed=T)
@@ -375,7 +372,7 @@ Mstep <-
       p_item <- replace(p_item,names(p_new),p_new)
 
       # Slope updates.
-      if(rasch == FALSE) {
+      if(item.type[item] != "rasch") {
         a0_parms <- grep(paste0("a0_itm",item,"_"),names(p_item),fixed=T)
         anl_deriv <- d_mu_gaussian("a0",
                                    p_item,
@@ -454,9 +451,9 @@ Mstep <-
                                      num_items,
                                      num_quadpts)
           z <- p_item[c1_parms] - anl_deriv[[1]]/anl_deriv[[2]]
-          p_new <- ifelse(penalty == "lasso",
-                          soft_thresh_est(z,alpha,tau),
-                          firm_thresh_est(z,alpha,tau,gamma))
+          p_new <- ifelse(penalty.type == "mcp",
+                          firm_thresh_est(z,alpha,tau,gamma),
+                          soft_thresh_est(z,alpha,tau))
           names(p_new) <- names(z)
           p_item <- replace(p_item,names(p_new),p_new)
         }
@@ -473,7 +470,7 @@ Mstep <-
             next
           }
 
-          if(rasch == FALSE){
+          if(item.type[item] != "rasch"){
             a1_parms <-
               grep(paste0("a1_itm",item,"_cov",cov),names(p_item),fixed=T)
             anl_deriv <- d_mu_gaussian("a1",
@@ -487,9 +484,9 @@ Mstep <-
                                        num_items,
                                        num_quadpts)
             z <- p_item[a1_parms] - anl_deriv[[1]]/anl_deriv[[2]]
-            p_new <- ifelse(penalty == "lasso",
-                            soft_thresh_est(z,alpha,tau),
-                            firm_thresh_est(z,alpha,tau,gamma))
+            p_new <- ifelse(penalty.type == "mcp",
+                            firm_thresh_est(z,alpha,tau,gamma),
+                            soft_thresh_est(z,alpha,tau))
             names(p_new) <- names(z)
             p_item <- replace(p_item,names(p_new),p_new)
           }

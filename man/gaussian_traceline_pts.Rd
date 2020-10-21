@@ -2,7 +2,7 @@
 % Please edit documentation in R/traceline.r
 \name{gaussian_traceline_pts}
 \alias{gaussian_traceline_pts}
-\title{Continuous traceline values.}
+\title{Continuous tracelines.}
 \usage{
 gaussian_traceline_pts(
   p_active,
@@ -28,6 +28,6 @@ gaussian_traceline_pts(
 latent variable.}
 }
 \description{
-Continuous traceline values.
+Continuous tracelines.
 }
 \keyword{internal}

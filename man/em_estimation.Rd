@@ -11,13 +11,12 @@ em_estimation(
   mean_predictors,
   var_predictors,
   item.type,
-  penalty,
+  penalty.type,
   tau,
   alpha,
   gamma,
   pen,
   anchor,
-  rasch,
   final.control,
   samp_size,
   num_items,
@@ -39,10 +38,10 @@ impact equation.}
 \item{var_predictors}{Possibly different matrix of predictors for the
 variance impact equation.}
 
-\item{item.type}{Character value or vector indicating the item response
-distributions.}
+\item{item.type}{Optional character value or vector indicating the type of
+item to be modeled.}
 
-\item{penalty}{Character value indicating the penalty function to use.}
+\item{penalty.type}{Character value indicating the penalty function to use.}
 
 \item{tau}{Optional numeric vector of tau values.}
 
@@ -55,14 +54,14 @@ function.}
 \item{anchor}{Optional numeric value or vector indicating which item
 response(s) are anchors (e.g., \code{anchor = 1}).}
 
-\item{rasch}{Logical value indicating whether to constrain item slopes
-to 1 (i.e., equal slopes).}
-
 \item{quadpts}{Numeric value indicating the number of quadrature points.}
 
 \item{ntau}{Numeric value of how many to tau values to fit.}
 
 \item{tau.max}{Numberic value indicating the maximum tau parameter.}
+
+\item{rasch}{Logical value indicating whether to constrain item slopes
+to 1 (i.e., equal slopes).}
 
 \item{impact.data}{Optional list of matrices or data frames with predictors
 for mean and variance impact.}

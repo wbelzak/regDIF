@@ -12,12 +12,11 @@ Mstep(
   var_predictors,
   elist,
   item.type,
-  penalty,
+  penalty.type,
   tau,
   alpha,
   gamma,
   anchor,
-  rasch,
   samp_size,
   num_responses,
   num_items,
@@ -41,10 +40,10 @@ variance impact equation.}
 \item{elist}{List of E-tables for item and impact equations, in addition to
 theta values.}
 
-\item{item.type}{Character value or vector indicating the item response
-distributions.}
+\item{item.type}{Optional character value or vector indicating the type of
+item to be modeled.}
 
-\item{penalty}{Character value indicating the penalty function to use.}
+\item{penalty.type}{Character value indicating the penalty function to use.}
 
 \item{tau}{Optional numeric vector of tau values.}
 
@@ -56,9 +55,6 @@ function.}
 
 \item{anchor}{Optional numeric value or vector indicating which item
 response(s) are anchors (e.g., \code{anchor = 1}).}
-
-\item{rasch}{Logical value indicating whether to constrain item slopes
-to 1 (i.e., equal slopes).}
 
 \item{samp_size}{Sample size in dataset.}
 

@@ -2,7 +2,7 @@
 % Please edit documentation in R/traceline.r
 \name{cumulative_traceline_pts}
 \alias{cumulative_traceline_pts}
-\title{Cumulative traceline values.}
+\title{Ordinal tracelines (for derivatives).}
 \usage{
 cumulative_traceline_pts(
   p_active,
@@ -28,6 +28,6 @@ cumulative_traceline_pts(
 latent variable.}
 }
 \description{
-Cumulative traceline values.
+Ordinal tracelines (for derivatives).
 }
 \keyword{internal}

@@ -1,8 +1,20 @@
-#####################################
-# E-step: Evaluating the Q function #
-#####################################
-
-Estep_2pl <-
+#' Expectation step.
+#'
+#' @param p List of parameters.
+#' @param item.data Matrix or dataframe of item responses.
+#' @param predictor.data Matrix or dataframe of DIF and/or impact predictors.
+#' @param mean_predictors Possibly different matrix of predictors for the mean
+#' impact equation.
+#' @param var_predictors Possibly different matrix of predictors for the
+#' variance impact equation.
+#' @param samp_size Sample size in dataset.
+#' @param num_items Number of items in dataset.
+#' @param num_responses Number of responses for each item.
+#' @param num_quadpts Number of quadrature points used for approximating the
+#' latent variable.
+#'
+#' @NoRd
+Estep <-
   function(p,
            item.data,
            predictor.data,

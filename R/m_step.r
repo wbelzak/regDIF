@@ -1,8 +1,35 @@
-##########
-# M-step #
-##########
-
-Mstep_2pl_dif <-
+#' Maximization step.
+#'
+#' @param p List of parameters.
+#' @param item.data Matrix or dataframe of item responses.
+#' @param predictor.data Matrix or dataframe of DIF and/or impact predictors.
+#' @param mean_predictors Possibly different matrix of predictors for the mean
+#' impact equation.
+#' @param var_predictors Possibly different matrix of predictors for the
+#' variance impact equation.
+#' @param elist List of E-tables for item and impact equations, in addition to
+#' theta values.
+#' @param item.type Character value or vector indicating the item response
+#' distributions.
+#' @param penalty Character value indicating the penalty function to use.
+#' @param tau Optional numeric vector of tau values.
+#' @param alpha Numeric value indicating the alpha parameter in the elastic net
+#' penalty function.
+#' @param gamma Numeric value indicating the gamma parameter in the MCP
+#' function.
+#' @param anchor Optional numeric value or vector indicating which item
+#' response(s) are anchors (e.g., \code{anchor = 1}).
+#' @param rasch Logical value indicating whether to constrain item slopes
+#' to 1 (i.e., equal slopes).
+#' @param samp_size Sample size in dataset.
+#' @param num_responses Number of responses for each item.
+#' @param num_items Number of items in dataset.
+#' @param num_quadpts Number of quadrature points used for approximating the
+#' latent variable.
+#' @param num_predictors Number of predictors.
+#'
+#' @NoRd
+Mstep <-
   function(p,
            item.data,
            predictor.data,
@@ -73,7 +100,9 @@ Mstep_2pl_dif <-
   for (item in 1:num_items) {
 
     # Get posterior probabilities.
-    etable <- replicate(n=num_responses[item], elist[[1]][[item]], simplify = F)
+    etable <- replicate(n=num_responses[item],
+                        elist[[1]][[item]],
+                        simplify = F)
 
     # Obtain E-tables for each response category.
     if(item.type[item] == "binary" | item.type[item] == "ordinal") {

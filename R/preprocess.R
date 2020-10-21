@@ -1,7 +1,30 @@
-##############
-# Preprocess #
-##############
-
+#' Pre-process data.
+#'
+#' @param item.data Matrix or dataframe of item responses.
+#' @param Matrix or dataframe of DIF and/or impact predictors.
+#' @param item.type Character value or vector indicating the item response
+#' distributions.
+#' @param penalty Character value indicating the penalty function to use.
+#' @param ntau Numeric value of how many to tau values to fit.
+#' @param tau.max Numberic value indicating the maximum tau parameter.
+#' @param alpha Numeric value indicating the alpha parameter in the elastic net
+#' penalty function.
+#' @param gamma Numeric value indicating the gamma parameter in the MCP
+#' function.
+#' @param tau Optional numeric vector of tau values.
+#' @param anchor Optional numeric value or vector indicating which item
+#' response(s) are anchors (e.g., \code{anchor = 1}).
+#' @param rasch Logical value indicating whether to constrain item slopes
+#' to 1 (i.e., equal slopes).
+#' @param impact.data Optional list of matrices or data frames with predictors
+#' for mean and variance impact.
+#' @param standardize Logical value indicating whether to standardize DIF and
+#' impact covariates for regularization.
+#' @param quadpts Numeric value indicating the number of quadrature points.
+#' @param control Optional list of optimization parameters.
+#' @param call Defined from regDIF.
+#'
+#' @NoRd
 preprocess <-
   function(item.data,
            predictor.data,

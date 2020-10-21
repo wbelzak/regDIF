@@ -1,8 +1,19 @@
-#######################
-# Partial Derivatives #
-#######################
-
-# Derivative for mean impact parameter.
+#' Partial derivatives for mean impact equation.
+#'
+#' @param p_active Vector of item parameters.
+#' @param etable_all E-table for impact.
+#' @param theta Matrix of adaptive theta values.
+#' @param mean_predictors Possibly different matrix of predictors for the mean
+#' impact equation.
+#' @param var_predictors Possibly different matrix of predictors for the
+#' variance impact equation.
+#' @param cov Covariate being maximized.
+#' @param samp_size Sample size in dataset.
+#' @param num_items Number of items in dataset.
+#' @param num_quadpts Number of quadrature points used for approximating the
+#' latent variable.
+#'
+#' @NoRd
 d_alpha <-
   function(p_impact,
            etable_all,
@@ -38,7 +49,22 @@ d_alpha <-
 
 }
 
-# Derivative for variance impact parameter.
+#' Partial derivatives for mean impact equation.
+#'
+#' @param p_active Vector of item parameters.
+#' @param etable_all E-table for impact.
+#' @param theta Matrix of adaptive theta values.
+#' @param mean_predictors Possibly different matrix of predictors for the mean
+#' impact equation.
+#' @param var_predictors Possibly different matrix of predictors for the
+#' variance impact equation.
+#' @param cov Covariate being maximized.
+#' @param samp_size Sample size in dataset.
+#' @param num_items Number of items in dataset.
+#' @param num_quadpts Number of quadrature points used for approximating the
+#' latent variable.
+#'
+#' @NoRd
 d_phi <-
   function(p_impact,
            etable_all,
@@ -74,7 +100,20 @@ d_phi <-
 
 }
 
-# Derivative for mu (mean) parameter.
+#' Partial derivatives for binary items.
+#'
+#' @param parm Item parameter being maximized.
+#' @param p_item Vector of item parameters.
+#' @param etable E-table for impact.
+#' @param theta Matrix of adaptive theta values.
+#' @param predictor.data Matrix or dataframe of DIF and/or impact predictors.
+#' @param cov Covariate being maximized.
+#' @param samp_size Sample size in dataset.
+#' @param num_items Number of items in dataset.
+#' @param num_quadpts Number of quadrature points used for approximating the
+#' latent variable.
+#'
+#' @NoRd
 d_bernoulli <-
   function(parm,
            p_item,
@@ -113,8 +152,23 @@ d_bernoulli <-
 
   dlist <- list(d1,d2)
 
-}
+  }
 
+#' Partial derivatives for ordinal items.
+#'
+#' @param parm Item parameter being maximized.
+#' @param p_item Vector of item parameters.
+#' @param etable E-table for impact.
+#' @param theta Matrix of adaptive theta values.
+#' @param predictor.data Matrix or dataframe of DIF and/or impact predictors.
+#' @param thr Threshold value being maximized.
+#' @param cov Covariate being maximized.
+#' @param samp_size Sample size in dataset.
+#' @param num_items Number of items in dataset.
+#' @param num_quadpts Number of quadrature points used for approximating the
+#' latent variable.
+#'
+#' @NoRd
 d_categorical <-
   function(parm,
            p_item,
@@ -215,7 +269,21 @@ d_categorical <-
 
 }
 
-
+#' Partial derivatives for mean parameter of continuous items.
+#'
+#' @param parm Item parameter being maximized.
+#' @param p_item Vector of item parameters.
+#' @param etable E-table for impact.
+#' @param theta Matrix of adaptive theta values.
+#' @param responses_item Vector of item responses.
+#' @param predictor.data Matrix or dataframe of DIF and/or impact predictors.
+#' @param cov Covariate being maximized.
+#' @param samp_size Sample size in dataset.
+#' @param num_items Number of items in dataset.
+#' @param num_quadpts Number of quadrature points used for approximating the
+#' latent variable.
+#'
+#' @NoRd
 d_mu_gaussian <-
   function(parm,
            p_item,
@@ -275,6 +343,21 @@ d_mu_gaussian <-
 
 }
 
+#' Partial derivatives for variance parameter of continuous items.
+#'
+#' @param parm Item parameter being maximized.
+#' @param p_item Vector of item parameters.
+#' @param etable E-table for impact.
+#' @param theta Matrix of adaptive theta values.
+#' @param responses_item Vector of item responses.
+#' @param predictor.data Matrix or dataframe of DIF and/or impact predictors.
+#' @param cov Covariate being maximized.
+#' @param samp_size Sample size in dataset.
+#' @param num_items Number of items in dataset.
+#' @param num_quadpts Number of quadrature points used for approximating the
+#' latent variable.
+#'
+#' @NoRd
 d_sigma_gaussian <-
   function(parm,
            p_item,

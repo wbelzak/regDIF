@@ -11,7 +11,6 @@
 #' @importFrom graphics abline legend lines plot
 #' @export
 #'
-
 plot.regDIF <-
   function(x, y = NULL, method = "bic", legend.seed = 123, ...) {
 

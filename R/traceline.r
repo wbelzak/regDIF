@@ -1,7 +1,13 @@
-##################
-# 2PL Tracelines #
-##################
-
+#' Binary traceline values.
+#'
+#' @param p_active Vector of item parameters.
+#' @param theta Matrix of adaptive theta values.
+#' @param predictor.data Matrix or dataframe of DIF and/or impact predictors.
+#' @param samp_size Sample size in dataset.
+#' @param num_quadpts Number of quadrature points used for approximating the
+#' latent variable.
+#'
+#' @NoRd
 bernoulli_traceline_pts <-
   function(p_active,
            theta,
@@ -31,6 +37,17 @@ bernoulli_traceline_pts <-
 
   }
 
+#' Categorical traceline values (graded response).
+#'
+#' @param p_active Vector of item parameters.
+#' @param theta Matrix of adaptive theta values.
+#' @param predictor.data Matrix or dataframe of DIF and/or impact predictors.
+#' @param samp_size Sample size in dataset.
+#' @param num_responses_item Number of responses for item.
+#' @param num_quadpts Number of quadrature points used for approximating the
+#' latent variable.
+#'
+#' @NoRd
 categorical_traceline_pts <-
   function(p_active,
            theta,
@@ -137,6 +154,17 @@ categorical_traceline_pts <-
 
   }
 
+#' Cumulative traceline values.
+#'
+#' @param p_active Vector of item parameters.
+#' @param theta Matrix of adaptive theta values.
+#' @param predictor.data Matrix or dataframe of DIF and/or impact predictors.
+#' @param samp_size Sample size in dataset.
+#' @param num_responses_item Number of responses for item.
+#' @param num_quadpts Number of quadrature points used for approximating the
+#' latent variable.
+#'
+#' @NoRd
 cumulative_traceline_pts <-
   function(p_active,
            theta,
@@ -191,6 +219,17 @@ cumulative_traceline_pts <-
 
 }
 
+#' Continuous traceline values.
+#'
+#' @param p_active Vector of item parameters.
+#' @param theta Matrix of adaptive theta values.
+#' @param responses_item Vector of item responses.
+#' @param predictor.data Matrix or dataframe of DIF and/or impact predictors.
+#' @param samp_size Sample size in dataset.
+#' @param num_quadpts Number of quadrature points used for approximating the
+#' latent variable.
+#'
+#' @NoRd
 gaussian_traceline_pts <-
   function(p_active,
            theta,

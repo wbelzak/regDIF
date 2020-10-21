@@ -1,7 +1,29 @@
-###############
-# Postprocess #
-###############
-
+#' Maximization step.
+#'
+#' @param estimates List of converged parameters.
+#' @param item.data Matrix or dataframe of item responses.
+#' @param predictor.data Matrix or dataframe of DIF and/or impact predictors.
+#' @param mean_predictors Possibly different matrix of predictors for the mean
+#' impact equation.
+#' @param var_predictors Possibly different matrix of predictors for the
+#' variance impact equation.
+#' @param impact.data Optional list of matrices or data frames with predictors
+#' for mean and variance impact.
+#' @param tau Optional numeric vector of tau values.
+#' @param alpha Numeric value indicating the alpha parameter in the elastic net
+#' penalty function.
+#' @param pen Tuning parameter index.
+#' @param anchor Anchor item(s).
+#' @param final.control List of final control parameters.
+#' @param final.control List of user-defined control parameters.
+#' @param samp_size Sample size in dataset.
+#' @param num_responses Number of responses for each item.
+#' @param num_predictors Number of predictors.
+#' @param num_items Number of items in dataset.
+#' @param num_quadpts Number of quadrature points used for approximating the
+#' latent variable.
+#'
+#' @NoRd
 postprocess <-
   function(estimates,
            item.data,

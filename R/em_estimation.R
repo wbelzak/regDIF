@@ -1,7 +1,35 @@
-######################
-# Reg-DIF Estimation #
-######################
-
+#' Penalized expectation-maximization algorithm.
+#'
+#' @param p List of parameters with starting values obtained from preprocess.
+#' @param item.data Matrix or dataframe of item responses.
+#' @param predictor.data Matrix or dataframe of DIF and/or impact predictors.
+#' @param item.type Character value or vector indicating the item response
+#' distributions.
+#' @param mean_predictors Possibly different matrix of predictors for the mean
+#' impact equation.
+#' @param var_predictors Possibly different matrix of predictors for the
+#' variance impact equation.
+#' @param penalty Character value indicating the penalty function to use.
+#' @param ntau Numeric value of how many to tau values to fit.
+#' @param tau.max Numberic value indicating the maximum tau parameter.
+#' @param alpha Numeric value indicating the alpha parameter in the elastic net
+#' penalty function.
+#' @param gamma Numeric value indicating the gamma parameter in the MCP
+#' function.
+#' @param tau Optional numeric vector of tau values.
+#' @param anchor Optional numeric value or vector indicating which item
+#' response(s) are anchors (e.g., \code{anchor = 1}).
+#' @param rasch Logical value indicating whether to constrain item slopes
+#' to 1 (i.e., equal slopes).
+#' @param impact.data Optional list of matrices or data frames with predictors
+#' for mean and variance impact.
+#' @param standardize Logical value indicating whether to standardize DIF and
+#' impact covariates for regularization.
+#' @param quadpts Numeric value indicating the number of quadrature points.
+#' @param control Optional list of optimization parameters.
+#' @param call Defined from regDIF.
+#'
+#' @NoRd
 em_estimation <- function(p,
                           item.data,
                           predictor.data,
@@ -32,35 +60,35 @@ em_estimation <- function(p,
   while(eps > final.control$tol & iter < final.control$maxit){
 
     # E-step: Evaluate Q function with current parameter estimates p.
-    elist <- Estep_2pl(p,
-                       item.data,
-                       predictor.data,
-                       mean_predictors,
-                       var_predictors,
-                       samp_size,
-                       num_items,
-                       num_responses,
-                       num_quadpts)
+    elist <- Estep(p,
+                   item.data,
+                   predictor.data,
+                   mean_predictors,
+                   var_predictors,
+                   samp_size,
+                   num_items,
+                   num_responses,
+                   num_quadpts)
 
     # M-step: Optimize parameters.
-    p <- Mstep_2pl_dif(p,
-                       item.data,
-                       predictor.data,
-                       mean_predictors,
-                       var_predictors,
-                       elist,
-                       item.type,
-                       penalty,
-                       tau[pen],
-                       alpha,
-                       gamma,
-                       anchor,
-                       rasch,
-                       samp_size,
-                       num_responses,
-                       num_items,
-                       num_quadpts,
-                       num_predictors)
+    p <- Mstep(p,
+               item.data,
+               predictor.data,
+               mean_predictors,
+               var_predictors,
+               elist,
+               item.type,
+               penalty,
+               tau[pen],
+               alpha,
+               gamma,
+               anchor,
+               rasch,
+               samp_size,
+               num_responses,
+               num_items,
+               num_quadpts,
+               num_predictors)
 
     # Update and check for convergence: Calculate the difference
     # in parameter estimates from current to previous.

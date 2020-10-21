@@ -1,7 +1,26 @@
-########################
-# Information Criteria #
-########################
-
+#' Maximization step.
+#'
+#' @param elist List of E-tables for item and impact equations, in addition to
+#' theta values.
+#' @param p List of parameters.
+#' @param item.data Matrix or dataframe of item responses.
+#' @param predictor.data Matrix or dataframe of DIF and/or impact predictors.
+#' @param mean_predictors Possibly different matrix of predictors for the mean
+#' impact equation.
+#' @param var_predictors Possibly different matrix of predictors for the
+#' variance impact equation.
+#' @param theta Matrix of adaptive theta values.
+#' @param tau Optional numeric vector of tau values.
+#' @param gamma Numeric value indicating the gamma parameter in the MCP
+#' function.
+#' @param penalty Character value indicating the penalty function to use.
+#' @param samp_size Sample size in dataset.
+#' @param num_responses Number of responses for each item.
+#' @param num_items Number of items in dataset.
+#' @param num_quadpts Number of quadrature points used for approximating the
+#' latent variable.
+#'
+#' @NoRd
 information_criteria <-
   function(elist,
            p,

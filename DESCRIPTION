@@ -1,6 +1,6 @@
 Package: regDIF
 Title: Regularized Differential Item Functioning
-Version: 0.0.1
+Version: 0.1.0
 Author: William Belzak
 Maintainer: William Belzak <wbelzak@live.unc.edu>
 Description: Performs regularization of differential item functioning (DIF) in item response theory (IRT) and confirmatory factor analysis (CFA) models using a penalized expectation-maximization algorithm.

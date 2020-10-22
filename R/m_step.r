@@ -57,7 +57,7 @@ Mstep <-
   var_parms <- grep(paste0("b"),names(p_impact),fixed=T)
 
   for(cov in 0:(ncol(mean_predictors)-1)) {
-    anl_deriv <- d_alpha_est(p[[num_items+1]],
+    anl_deriv <- d_alpha_cpp(p[[num_items+1]],
                              p[[num_items+2]],
                              etable_all,
                              elist$theta,
@@ -73,7 +73,7 @@ Mstep <-
 
   # Impact variance updates.
   for(cov in 0:(ncol(var_predictors)-1)) {
-    anl_deriv <- d_phi_est(p[[num_items+1]],
+    anl_deriv <- d_phi_cpp(p[[num_items+1]],
                            p[[num_items+2]],
                            etable_all,
                            elist$theta,
@@ -119,7 +119,7 @@ Mstep <-
 
       # Intercept updates.
       c0_parms <- grep(paste0("c0_itm",item,"_"),names(p_item),fixed=T)
-      anl_deriv <- d_bernoulli_est("c0",
+      anl_deriv <- d_bernoulli_cpp("c0",
                                    p_item,
                                    etable[[1]],
                                    etable[[2]],
@@ -135,7 +135,7 @@ Mstep <-
       # Slope updates.
       if(item.type[item] != "rasch") {
         a0_parms <- grep(paste0("a0_itm",item,"_"),names(p_item),fixed=T)
-        anl_deriv <- d_bernoulli_est("a0",
+        anl_deriv <- d_bernoulli_cpp("a0",
                                      p_item,
                                      etable[[1]],
                                      etable[[2]],
@@ -168,7 +168,7 @@ Mstep <-
 
           c1_parms <-
             grep(paste0("c1_itm",item,"_cov",cov+1),names(p_item),fixed=T)
-          anl_deriv <- d_bernoulli_est("c1",
+          anl_deriv <- d_bernoulli_cpp("c1",
                                        p_item,
                                        etable[[1]],
                                        etable[[2]],
@@ -201,7 +201,7 @@ Mstep <-
           if(item.type[item] != "rasch") {
             a1_parms <-
               grep(paste0("a1_itm",item,"_cov",cov+1),names(p_item),fixed=T)
-            anl_deriv <- d_bernoulli_est("a1",
+            anl_deriv <- d_bernoulli_cpp("a1",
                                          p_item,
                                          etable[[1]],
                                          etable[[2]],

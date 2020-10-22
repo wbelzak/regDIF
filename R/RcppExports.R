@@ -13,23 +13,35 @@ dnormCpp <- function(theta, alpha_impact, phi_impact, num_quadpts) {
     .Call(`_regDIF_dnormCpp`, theta, alpha_impact, phi_impact, num_quadpts)
 }
 
-bernoulli_traceline_est <- function(p_item, theta, predictors, samp_size, num_quadpts) {
-    .Call(`_regDIF_bernoulli_traceline_est`, p_item, theta, predictors, samp_size, num_quadpts)
+bernoulli_traceline_deriv <- function(p_item, theta, predictors, samp_size, num_quadpts) {
+    .Call(`_regDIF_bernoulli_traceline_deriv`, p_item, theta, predictors, samp_size, num_quadpts)
 }
 
 bernoulli_traceline_cpp <- function(p_item, theta, predictors, samp_size, num_quadpts) {
     .Call(`_regDIF_bernoulli_traceline_cpp`, p_item, theta, predictors, samp_size, num_quadpts)
 }
 
-d_alpha_est <- function(p_alpha, p_phi, etable_all, theta, mean_predictors, var_predictors, cov, samp_size, num_items, num_quadpts) {
-    .Call(`_regDIF_d_alpha_est`, p_alpha, p_phi, etable_all, theta, mean_predictors, var_predictors, cov, samp_size, num_items, num_quadpts)
+categorical_traceline_cpp <- function(p_item, theta, predictors, samp_size, num_responses_item, num_quadpts) {
+    .Call(`_regDIF_categorical_traceline_cpp`, p_item, theta, predictors, samp_size, num_responses_item, num_quadpts)
 }
 
-d_phi_est <- function(p_alpha, p_phi, etable_all, theta, mean_predictors, var_predictors, cov, samp_size, num_items, num_quadpts) {
-    .Call(`_regDIF_d_phi_est`, p_alpha, p_phi, etable_all, theta, mean_predictors, var_predictors, cov, samp_size, num_items, num_quadpts)
+cumulative_traceline_cpp <- function(p_item, theta, predictors, samp_size, num_responses_item, num_quadpts) {
+    .Call(`_regDIF_cumulative_traceline_cpp`, p_item, theta, predictors, samp_size, num_responses_item, num_quadpts)
 }
 
-d_bernoulli_est <- function(parm, p_item, etable1, etable2, theta, predictors, cov, samp_size, num_items, num_quadpts) {
-    .Call(`_regDIF_d_bernoulli_est`, parm, p_item, etable1, etable2, theta, predictors, cov, samp_size, num_items, num_quadpts)
+d_alpha_cpp <- function(p_alpha, p_phi, etable_all, theta, mean_predictors, var_predictors, cov, samp_size, num_items, num_quadpts) {
+    .Call(`_regDIF_d_alpha_cpp`, p_alpha, p_phi, etable_all, theta, mean_predictors, var_predictors, cov, samp_size, num_items, num_quadpts)
+}
+
+d_phi_cpp <- function(p_alpha, p_phi, etable_all, theta, mean_predictors, var_predictors, cov, samp_size, num_items, num_quadpts) {
+    .Call(`_regDIF_d_phi_cpp`, p_alpha, p_phi, etable_all, theta, mean_predictors, var_predictors, cov, samp_size, num_items, num_quadpts)
+}
+
+d_bernoulli_cpp <- function(parm, p_item, etable1, etable2, theta, predictors, cov, samp_size, num_items, num_quadpts) {
+    .Call(`_regDIF_d_bernoulli_cpp`, parm, p_item, etable1, etable2, theta, predictors, cov, samp_size, num_items, num_quadpts)
+}
+
+d_categorical_cpp <- function(parm, p_item, etable, theta, predictors, thr, cov, samp_size, num_responses_item, num_items, num_quadpts) {
+    .Call(`_regDIF_d_categorical_cpp`, parm, p_item, etable, theta, predictors, thr, cov, samp_size, num_responses_item, num_items, num_quadpts)
 }
 

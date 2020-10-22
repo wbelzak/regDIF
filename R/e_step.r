@@ -51,13 +51,13 @@ Estep <-
                                                   samp_size,
                                                   num_quadpts)
     } else if (num_responses[item] == 2) {
-      itemtrace[[item]] <- bernoulli_traceline_pts(p[[item]],
+      itemtrace[[item]] <- bernoulli_traceline_cpp(p[[item]],
                                                    theta,
                                                    predictor.data,
                                                    samp_size,
                                                    num_quadpts)
     } else if (num_responses[item] > 2) {
-      itemtrace[[item]] <- categorical_traceline_pts(p[[item]],
+      itemtrace[[item]] <- categorical_traceline_cpp(p[[item]],
                                                      theta,
                                                      predictor.data,
                                                      samp_size,

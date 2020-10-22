@@ -9,8 +9,6 @@
 #' @param tau Optional numeric vector of tau values.
 #' @param anchor Optional numeric value or vector indicating which item
 #' response(s) are anchors (e.g., \code{anchor = 1}).
-#' @param rasch Logical value indicating whether to constrain item slopes
-#' to 1 (i.e., equal slopes).
 #' @param impact.data Optional list of matrices or data frames with predictors
 #' for mean and variance impact.
 #' @param standardize Logical value indicating whether to standardize DIF and
@@ -29,7 +27,6 @@ preprocess <-
            max.tau,
            tau,
            anchor,
-           rasch,
            impact.data,
            standardize,
            quadpts,

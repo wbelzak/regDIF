@@ -11,15 +11,18 @@ vignette: >
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-This vignette introduces regDIF to the general user by providing common use cases.
+This vignette introduces regDIF to the general user by providing common use
+cases.
 
-## LASSO regularization for evaluating DIF in 2PL-IRT model, large tau parameter --> no DIF effects
+## LASSO regularization for evaluating DIF in 2PL-IRT model.
+
+With a large tau parameter, there should be no DIF effects.
 ```{r,eval=T,message=F,echo=F}
 library(regDIF)
 head(ida)
 item.data <- ida[,1:6]
 predictor.data <- ida[,7:9]
-fit <- regDIF(item.data = item.data, predictor.data = predictor.data, item.type = "binary", penalty = "lasso", tau = 2)
+fit <- regDIF(item.data = item.data, predictor.data = predictor.data, tau = 2)
 summary(fit)
 ```
 

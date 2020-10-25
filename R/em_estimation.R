@@ -98,9 +98,12 @@ em_estimation <- function(p,
 
     # Update the iteration number.
     iter = iter + 1
-    if(iter == final.control$maxit) warning("EM iteration limit reached without convergence")
+    if(iter == final.control$maxit) {
+      warning("EM iteration limit reached without convergence")
+    }
 
-    cat('\r',sprintf("Models Completed: %d of %d  Iteration: %d  Change: %f", pen-1, length(tau), iter, round(eps,6))) #print information about optimization
+    cat('\r', sprintf("Models Completed: %d of %d  Iteration: %d  Change: %f",
+                     pen-1, length(tau), iter, round(eps,6)))
 
     utils::flush.console()
 

@@ -227,35 +227,35 @@ Mstep <-
 
       c0_parms <- grep(paste0("c0_itm",item,"_"),names(p_item),fixed=T)
 
-      # Intercept updates.
-      anl_deriv <- d_categorical("c0",
-                                 p_item,
-                                 etable,
-                                 elist$theta,
-                                 predictor.data,
-                                 thr=NULL,
-                                 cov=NULL,
-                                 samp_size,
-                                 num_responses[[item]],
-                                 num_items,
-                                 num_quadpts)
+      # Intercept updates (thr and cov are -1 for c++ function, i.e., NULL).
+      anl_deriv <- d_categorical_cpp("c0",
+                                     p_item,
+                                     etable,
+                                     elist$theta,
+                                     predictor.data,
+                                     thr=-1,
+                                     cov=-1,
+                                     samp_size,
+                                     num_responses[[item]],
+                                     num_items,
+                                     num_quadpts)
       p_new <- p_item[c0_parms][1] - anl_deriv[[1]]/anl_deriv[[2]]
       p_item <- replace(p_item,names(p_new),p_new)
 
       # Threshold updates.
       if(num_responses[item] > 2) {
         for(thr in 2:(num_responses[item]-1)) {
-          anl_deriv <- d_categorical("c0",
-                                     p_item,
-                                     etable,
-                                     elist$theta,
-                                     predictor.data,
-                                     thr=thr,
-                                     cov=NULL,
-                                     samp_size,
-                                     num_responses[[item]],
-                                     num_items,
-                                     num_quadpts)
+          anl_deriv <- d_categorical_cpp("c0",
+                                         p_item,
+                                         etable,
+                                         elist$theta,
+                                         predictor.data,
+                                         thr=thr,
+                                         cov=-1,
+                                         samp_size,
+                                         num_responses[[item]],
+                                         num_items,
+                                         num_quadpts)
           p_new <- p_item[c0_parms][thr] - anl_deriv[[1]]/anl_deriv[[2]]
           p_item <- replace(p_item,names(p_new),p_new)
         }
@@ -264,17 +264,17 @@ Mstep <-
       # Slope updates.
       if(item.type[item] != "rasch") {
         a0_parms <- grep(paste0("a0_itm",item,"_"),names(p_item),fixed=T)
-        anl_deriv <- d_categorical("a0",
-                                   p_item,
-                                   etable,
-                                   elist$theta,
-                                   predictor.data,
-                                   thr=NULL,
-                                   cov=NULL,
-                                   samp_size,
-                                   num_responses[[item]],
-                                   num_items,
-                                   num_quadpts)
+        anl_deriv <- d_categorical_cpp("a0",
+                                       p_item,
+                                       etable,
+                                       elist$theta,
+                                       predictor.data,
+                                       thr=-1,
+                                       cov=-1,
+                                       samp_size,
+                                       num_responses[[item]],
+                                       num_items,
+                                       num_quadpts)
         p_new <- p_item[a0_parms] - anl_deriv[[1]]/anl_deriv[[2]]
         p_item <- replace(p_item,names(p_new),p_new)
       }
@@ -290,24 +290,24 @@ Mstep <-
           # for each item parameter.
           if(is.null(anchor) &
              sum(p2[grep(paste0("c1(.*?)cov",cov),names(p2))] != 0) >
-             (num_items - 2) &
+             (num_items - 2) &&
              alpha == 1){
             next
           }
 
           c1_parms <-
             grep(paste0("c1_itm",item,"_cov",cov),names(p_item),fixed=T)
-          anl_deriv <- d_categorical("c1",
-                                     p_item,
-                                     etable,
-                                     elist$theta,
-                                     predictor.data,
-                                     thr=NULL,
-                                     cov,
-                                     samp_size,
-                                     num_responses[[item]],
-                                     num_items,
-                                     num_quadpts)
+          anl_deriv <- d_categorical_cpp("c1",
+                                         p_item,
+                                         etable,
+                                         elist$theta,
+                                         predictor.data,
+                                         thr=-1,
+                                         cov-1,
+                                         samp_size,
+                                         num_responses[[item]],
+                                         num_items,
+                                         num_quadpts)
           z <- p_item[c1_parms] - anl_deriv[[1]]/anl_deriv[[2]]
           p_new <- ifelse(penalty.type == "mcp",
                           firm_thresh_est(z,alpha,tau,gamma),
@@ -331,17 +331,17 @@ Mstep <-
           if(item.type[item] != "rasch") {
             a1_parms <-
               grep(paste0("a1_itm",item,"_cov",cov),names(p_item),fixed=T)
-            anl_deriv <- d_categorical("a1",
-                                       p_item,
-                                       etable,
-                                       elist$theta,
-                                       predictor.data,
-                                       thr=NULL,
-                                       cov,
-                                       samp_size,
-                                       num_responses[[item]],
-                                       num_items,
-                                       num_quadpts)
+            anl_deriv <- d_categorical_cpp("a1",
+                                           p_item,
+                                           etable,
+                                           elist$theta,
+                                           predictor.data,
+                                           thr=-1,
+                                           cov-1,
+                                           samp_size,
+                                           num_responses[[item]],
+                                           num_items,
+                                           num_quadpts)
             z <- p_item[a1_parms] - anl_deriv[[1]]/anl_deriv[[2]]
             p_new <- ifelse(penalty.type == "mcp",
                             firm_thresh_est(z,alpha,tau,gamma),

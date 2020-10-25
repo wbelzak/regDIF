@@ -124,7 +124,8 @@ categorical_traceline_pts <-
           apply(theta,
                 2,
                 function(x) {
-                  1 / (1 + exp(-((p_active[c0_parms][thr] +
+                  1 / (1 + exp(-((p_active[c0_parms][1] -
+                                    p_active[c0_parms][thr] +
                                     predictor.data %*% p_active[c1_parms]) +
                                    (p_active[a0_parms] +
                                       predictor.data %*% p_active[a1_parms])*x)

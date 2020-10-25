@@ -198,7 +198,7 @@ List categorical_traceline_cpp(
         next_response.col(q) =
           1 / (1 + exp(-(p_c0_int - p_c0_thr(r-2,0) + predictors * p_c1 +
           (p_a0 + predictors * p_a1) % theta.col(q)))) -
-          1 / (1 + exp(-(p_c0_thr(r-1,0) + predictors * p_c1 +
+          1 / (1 + exp(-(p_c0_int - p_c0_thr(r-1,0) + predictors * p_c1 +
           (p_a0 + predictors * p_a1) % theta.col(q))));
       }
 
@@ -441,6 +441,7 @@ List d_categorical_cpp(
   arma::mat d2 = arma::zeros(samp_size,num_quadpts);
   double d1_sum;
   double d2_sum;
+
   if(thr < 0) {
     arma::mat etable_first = etable[0];
     arma::mat etable_last = etable[num_responses_item - 1];
@@ -469,6 +470,38 @@ List d_categorical_cpp(
         cum_traceline_next_minus1 -
         cum_traceline_next);
     }
+
+    d1_sum = arma::accu(d1);
+    d2_sum = arma::accu(d2);
+
+  } else {
+    List cat_traceline = categorical_traceline_cpp(p_item,
+                                                   theta,
+                                                   predictors,
+                                                   samp_size,
+                                                   num_responses_item,
+                                                   num_quadpts);
+
+    arma::mat etable_current_thr = etable[thr-1];
+    arma::mat etable_next_thr = etable[thr];
+    arma::mat cum_traceline_current_thr = cum_traceline[thr-1];
+    arma::mat cat_traceline_current_thr = cat_traceline[thr-1];
+    arma::mat cat_traceline_next_thr = cat_traceline[thr];
+
+    arma::mat d1 = (-1 * etable_current_thr % cum_traceline_current_thr %
+      (1 - cum_traceline_current_thr) / cat_traceline_current_thr) +
+      (etable_next_thr % cum_traceline_current_thr %
+      (1 - cum_traceline_current_thr) / cat_traceline_next_thr);
+    arma::mat d2 = etable_current_thr / cat_traceline_current_thr %
+      (cum_traceline_current_thr % pow(1 - cum_traceline_current_thr, 2) -
+      pow(cum_traceline_current_thr,2) % (1 - cum_traceline_current_thr) +
+      pow(cum_traceline_current_thr,2) % pow(1 - cum_traceline_current_thr,2) /
+        cat_traceline_current_thr) -
+          etable_next_thr / cat_traceline_next_thr %
+          (cum_traceline_current_thr % pow(1 - cum_traceline_current_thr,2) -
+          pow(cum_traceline_current_thr,2) % (1 - cum_traceline_current_thr) -
+          pow(cum_traceline_current_thr,2) %
+          pow(1 - cum_traceline_current_thr,2) / cat_traceline_next_thr);
 
     d1_sum = arma::accu(d1);
     d2_sum = arma::accu(d2);

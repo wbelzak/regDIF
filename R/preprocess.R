@@ -47,13 +47,14 @@ preprocess <-
   }
 
   # Pre-process warnings.
-  if(any(item.type == "cfa")) {
-    stop(paste0("Continuous (Gaussian) item responses are not currently ",
-                "supported."))
-  }
+  # if(any(item.type == "cfa")) {
+  #   stop(paste0("Continuous (Gaussian) item responses are not currently ",
+  #               "supported."))
+  # }
   if(!(any(item.type == "rasch") |
        any(item.type == "2pl") |
        any(item.type == "graded") |
+       any(item.type == "cfa") |
        any(is.null(item.type)))) {
     stop(paste0("Item response types must either be rasch, 2pl, or ",
                 "graded."))

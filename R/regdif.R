@@ -15,11 +15,12 @@
 #'        anchor = NULL,
 #'        impact.data = list(mean = NULL, var = NULL),
 #'        standardize = TRUE,
+#'        adaptive.quad = TRUE,
 #'        quadpts = 15,
 #'        control = list())
 #'
 #' @param item.data Matrix or dataframe of item responses. See below for
-#' supported distributions.
+#' supported item types.
 #' @param predictor.data Matrix or dataframe of DIF and/or impact predictors.
 #' See below for option to specify different predictors for impact model.
 #' @param item.type Optional character value or vector indicating the type of
@@ -39,16 +40,11 @@
 #' function to use. The default is NULL, corresponding to the LASSO function.
 #' The options include:
 #' \itemize{
-#'    \item{\code{"mcp"} - The minimax concave penalty (MCP), which controls
-#'    DIF selection through \eqn{\tau} (tau) and estimator bias through
-#'    \eqn{\gamma} (gamma).}
 #'    \item{\code{"lasso"} - The least absolute selection and shrinkage
 #'    operator (LASSO), which controls DIF selection through \eqn{\tau} (tau).}
-#'    \item{\code{"ridge"} - The ridge penalty, which shrinks DIF effects (but
-#'    does not select DIF) through \eqn{\tau} (tau).}
-#'    \item{\code{"elastic.net"} - The elastic net penalty, which selects DIF
-#'    effects using a combination of lasso and ridge penalties through
-#'    \eqn{\tau} (tau) and \eqn{\alpha} (alpha). Using this option }}
+#'    \item{\code{"mcp"} - The minimax concave penalty (MCP), which controls
+#'    DIF selection through \eqn{\tau} (tau) and estimator bias through
+#'    \eqn{\gamma} (gamma). Uses the firm-thresholding penalty function.}}
 #' @param tau Optional numeric vector of tau values \eqn{\ge} 0. If tau is
 #' supplied, this overrides the automatic construction of tau values via
 #' \code{max.tau}. Must be non-negative and in descending order, from largest
@@ -79,7 +75,12 @@
 #' @param standardize Logical value indicating whether to standardize DIF and
 #' impact covariates for regularization. Default is \code{TRUE}, as it is
 #' recommended that all covariates be on the same scale.
+#' @param adaptive.quad Logical value indicating whether to use adaptive
+#' quadrature. The default is \code{TRUE}. If set to \code{FALSE}, it is
+#' recommended that 50 or more points be used.
 #' @param quadpts Numeric value indicating the number of quadrature points to
+#' be used in approximating the latent variable distribution during estimation.
+#' Default is \code{15} when using adaptive quadrature.
 #' be used in approximating the latent variable distribution during estimation.
 #' Uses adaptive quadrature. Default is \code{15}.
 #' @param control Optional list of optimization parameters. May be:
@@ -120,6 +121,7 @@ regDIF <- function(item.data,
                    anchor = NULL,
                    impact.data = list(mean = NULL, var = NULL),
                    standardize = TRUE,
+                   adaptive.quad = TRUE,
                    quadpts = 15,
                    control = list()) {
 
@@ -161,6 +163,11 @@ regDIF <- function(item.data,
                              call)
     if(is.null(penalty.type)) penalty.type <- "lasso"
 
+    if(adaptive.quad == F && num_quadpts < 50) {
+      warning(paste0("Fixed quadrature should have 50 points or more to ",
+                     "yield precise estimates."))
+    }
+
     # Run Reg-DIF by looping through tau.
     for(pen in 1:length(data_scrub$tau)){
 
@@ -182,13 +189,14 @@ regDIF <- function(item.data,
                                  data_scrub$num_items,
                                  data_scrub$num_responses,
                                  data_scrub$num_predictors,
-                                 quadpts)
+                                 quadpts,
+                                 adaptive.quad)
 
       # Stop if tau.max is too small on first run.
       p2 <- unlist(estimates[[1]])
       dif_parms <- p2[grep(paste0("cov"),names(p2))]
 
-      if(any(data_scrub$itemtypes == "continuous")) {
+      if(any(data_scrub$item.type == "cfa")) {
         dif_parms <- dif_parms[-grep("s1",names(dif_parms))]
       }
 

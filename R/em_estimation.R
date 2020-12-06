@@ -48,7 +48,8 @@ em_estimation <- function(p,
                           num_items,
                           num_responses,
                           num_predictors,
-                          quadpts) {
+                          quadpts,
+                          adaptive.quad) {
 
   # Maximization settings.
   lastp <- p
@@ -68,6 +69,7 @@ em_estimation <- function(p,
                    samp_size,
                    num_items,
                    num_responses,
+                   adaptive.quad,
                    num_quadpts)
 
     # M-step: Optimize parameters.

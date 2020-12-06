@@ -24,6 +24,7 @@ Estep <-
            samp_size,
            num_items,
            num_responses,
+           adaptive.quad,
            num_quadpts) {
 
   # Make space for the trace lines and the E-tables.
@@ -38,8 +39,15 @@ Estep <-
   phi <- exp(var_predictors %*% p[[num_items+2]])
 
   # Adaptive theta points.
-  theta <- sapply(statmod::gauss.quad(n = num_quadpts, kind = "hermite")$nodes,
-                  function(x) alpha + sqrt(2*phi)*x)
+  if(adaptive.quad == TRUE) {
+    theta <- sapply(statmod::gauss.quad(n = num_quadpts,
+                                        kind = "hermite")$nodes,
+                    function(x) alpha + sqrt(2*phi)*x)
+  } else {
+    theta <- matrix(seq(-10, 10, length.out = num_quadpts), nrow = samp_size,
+                    ncol = num_quadpts, byrow = T)
+  }
+
 
   # Compute the trace lines.
   for (item in 1:num_items) {
@@ -69,7 +77,7 @@ Estep <-
   # Obtain E-tables.
   for(case in 1:samp_size) {
 
-    # Adaptive qaudrature points.
+    # Adaptive quadrature points.
     posterior <- dnorm(theta[case,], mean = alpha[case], sd = sqrt(phi[case]))
 
     # Within each response pattern, loop over items and compute posterior

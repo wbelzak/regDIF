@@ -13,6 +13,7 @@ Estep(
   samp_size,
   num_items,
   num_responses,
+  adaptive.quad,
   num_quadpts
 )
 }

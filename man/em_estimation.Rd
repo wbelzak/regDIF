@@ -22,7 +22,8 @@ em_estimation(
   num_items,
   num_responses,
   num_predictors,
-  quadpts
+  quadpts,
+  adaptive.quad
 )
 }
 \arguments{

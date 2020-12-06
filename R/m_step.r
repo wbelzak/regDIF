@@ -180,8 +180,8 @@ Mstep <-
                                        num_quadpts)
           z <- p_item[c1_parms] - anl_deriv[[1]]/anl_deriv[[2]]
           p_new <- ifelse(penalty.type == "lasso",
-                          soft_thresh_est(z,alpha,tau),
-                          firm_thresh_est(z,alpha,tau,gamma))
+                          soft_thresh_cpp(z,alpha,tau),
+                          firm_thresh_cpp(z,alpha,tau,gamma))
           names(p_new) <- names(z)
           p_item <- replace(p_item,names(p_new),p_new)
         }
@@ -213,8 +213,8 @@ Mstep <-
                                          num_quadpts)
             z <- p_item[a1_parms] - anl_deriv[[1]]/anl_deriv[[2]]
             p_new <- ifelse(penalty.type == "mcp",
-                            firm_thresh_est(z,alpha,tau,gamma),
-                            soft_thresh_est(z,alpha,tau))
+                            firm_thresh_cpp(z,alpha,tau,gamma),
+                            soft_thresh_cpp(z,alpha,tau))
             names(p_new) <- names(z)
             p_item <- replace(p_item,names(p_new),p_new)
           }
@@ -310,8 +310,8 @@ Mstep <-
                                          num_quadpts)
           z <- p_item[c1_parms] - anl_deriv[[1]]/anl_deriv[[2]]
           p_new <- ifelse(penalty.type == "mcp",
-                          firm_thresh_est(z,alpha,tau,gamma),
-                          soft_thresh_est(z,alpha,tau))
+                          firm_thresh_cpp(z,alpha,tau,gamma),
+                          soft_thresh_cpp(z,alpha,tau))
           names(p_new) <- names(z)
           p_item <- replace(p_item,names(p_new),p_new)
         }
@@ -344,8 +344,8 @@ Mstep <-
                                            num_quadpts)
             z <- p_item[a1_parms] - anl_deriv[[1]]/anl_deriv[[2]]
             p_new <- ifelse(penalty.type == "mcp",
-                            firm_thresh_est(z,alpha,tau,gamma),
-                            soft_thresh_est(z,alpha,tau))
+                            firm_thresh_cpp(z,alpha,tau,gamma),
+                            soft_thresh_cpp(z,alpha,tau))
             names(p_new) <- names(z)
             p_item <- replace(p_item,names(p_new),p_new)
           }
@@ -452,8 +452,8 @@ Mstep <-
                                      num_quadpts)
           z <- p_item[c1_parms] - anl_deriv[[1]]/anl_deriv[[2]]
           p_new <- ifelse(penalty.type == "mcp",
-                          firm_thresh_est(z,alpha,tau,gamma),
-                          soft_thresh_est(z,alpha,tau))
+                          firm_thresh_cpp(z,alpha,tau,gamma),
+                          soft_thresh_cpp(z,alpha,tau))
           names(p_new) <- names(z)
           p_item <- replace(p_item,names(p_new),p_new)
         }
@@ -485,8 +485,8 @@ Mstep <-
                                        num_quadpts)
             z <- p_item[a1_parms] - anl_deriv[[1]]/anl_deriv[[2]]
             p_new <- ifelse(penalty.type == "mcp",
-                            firm_thresh_est(z,alpha,tau,gamma),
-                            soft_thresh_est(z,alpha,tau))
+                            firm_thresh_cpp(z,alpha,tau,gamma),
+                            soft_thresh_cpp(z,alpha,tau))
             names(p_new) <- names(z)
             p_item <- replace(p_item,names(p_new),p_new)
           }

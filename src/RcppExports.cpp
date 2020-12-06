@@ -6,22 +6,22 @@
 
 using namespace Rcpp;
 
-// soft_thresh_est
-double soft_thresh_est(double z, double alpha, double tau);
-RcppExport SEXP _regDIF_soft_thresh_est(SEXP zSEXP, SEXP alphaSEXP, SEXP tauSEXP) {
+// soft_thresh_cpp
+double soft_thresh_cpp(double z, double alpha, double tau);
+RcppExport SEXP _regDIF_soft_thresh_cpp(SEXP zSEXP, SEXP alphaSEXP, SEXP tauSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< double >::type z(zSEXP);
     Rcpp::traits::input_parameter< double >::type alpha(alphaSEXP);
     Rcpp::traits::input_parameter< double >::type tau(tauSEXP);
-    rcpp_result_gen = Rcpp::wrap(soft_thresh_est(z, alpha, tau));
+    rcpp_result_gen = Rcpp::wrap(soft_thresh_cpp(z, alpha, tau));
     return rcpp_result_gen;
 END_RCPP
 }
-// firm_thresh_est
-double firm_thresh_est(double z, double alpha, double tau, double gamma);
-RcppExport SEXP _regDIF_firm_thresh_est(SEXP zSEXP, SEXP alphaSEXP, SEXP tauSEXP, SEXP gammaSEXP) {
+// firm_thresh_cpp
+double firm_thresh_cpp(double z, double alpha, double tau, double gamma);
+RcppExport SEXP _regDIF_firm_thresh_cpp(SEXP zSEXP, SEXP alphaSEXP, SEXP tauSEXP, SEXP gammaSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -29,7 +29,7 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< double >::type alpha(alphaSEXP);
     Rcpp::traits::input_parameter< double >::type tau(tauSEXP);
     Rcpp::traits::input_parameter< double >::type gamma(gammaSEXP);
-    rcpp_result_gen = Rcpp::wrap(firm_thresh_est(z, alpha, tau, gamma));
+    rcpp_result_gen = Rcpp::wrap(firm_thresh_cpp(z, alpha, tau, gamma));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -192,8 +192,8 @@ END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
-    {"_regDIF_soft_thresh_est", (DL_FUNC) &_regDIF_soft_thresh_est, 3},
-    {"_regDIF_firm_thresh_est", (DL_FUNC) &_regDIF_firm_thresh_est, 4},
+    {"_regDIF_soft_thresh_cpp", (DL_FUNC) &_regDIF_soft_thresh_cpp, 3},
+    {"_regDIF_firm_thresh_cpp", (DL_FUNC) &_regDIF_firm_thresh_cpp, 4},
     {"_regDIF_dnormCpp", (DL_FUNC) &_regDIF_dnormCpp, 4},
     {"_regDIF_bernoulli_traceline_deriv", (DL_FUNC) &_regDIF_bernoulli_traceline_deriv, 5},
     {"_regDIF_bernoulli_traceline_cpp", (DL_FUNC) &_regDIF_bernoulli_traceline_cpp, 5},

@@ -163,7 +163,7 @@ regDIF <- function(item.data,
                              call)
     if(is.null(penalty.type)) penalty.type <- "lasso"
 
-    if(adaptive.quad == F && num_quadpts < 50) {
+    if(adaptive.quad == F && quadpts < 50) {
       warning(paste0("Fixed quadrature should have 50 points or more to ",
                      "yield precise estimates."))
     }
@@ -232,7 +232,7 @@ regDIF <- function(item.data,
                                 data_scrub$num_responses,
                                 data_scrub$num_predictors,
                                 data_scrub$num_items,
-                                data_scrub$num_quadpts)
+                                quadpts)
 
       # Update parameter estimates for next tau value.
       data_scrub$p <- estimates[[1]]

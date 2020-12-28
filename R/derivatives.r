@@ -8,9 +8,9 @@
 #' @param var_predictors Possibly different matrix of predictors for the
 #' variance impact equation.
 #' @param cov Covariate being maximized.
-#' @param samp_size Sample size in dataset.
-#' @param num_items Number of items in dataset.
-#' @param num_quadpts Number of quadrature points used for approximating the
+#' @param samp_size Sample size in data set.
+#' @param num_items Number of items in data set.
+#' @param num.quad Number of quadrature points used for approximating the
 #' latent variable.
 #'
 #' @keywords internal
@@ -24,14 +24,14 @@ d_alpha <-
            cov,
            samp_size,
            num_items,
-           num_quadpts) {
+           num.quad) {
 
   # Get latent mean and variance vectors.
   alpha <- mean_predictors %*% p_impact[grep("g",names(p_impact),fixed=T)]
   phi <- exp(var_predictors %*% p_impact[grep("b",names(p_impact),fixed=T)])
 
-  eta_d <- matrix(rep(mean_predictors[,cov], num_quadpts),
-                  ncol = num_quadpts,
+  eta_d <- matrix(rep(mean_predictors[,cov], num.quad),
+                  ncol = num.quad,
                   nrow = samp_size)
 
   d1_trace <- t(sapply(1:samp_size,
@@ -62,7 +62,7 @@ d_alpha <-
 #' @param cov Covariate being maximized.
 #' @param samp_size Sample size in dataset.
 #' @param num_items Number of items in dataset.
-#' @param num_quadpts Number of quadrature points used for approximating the
+#' @param num.quad Number of quadrature points used for approximating the
 #' latent variable.
 #'
 #' @keywords internal
@@ -76,7 +76,7 @@ d_phi <-
            cov,
            samp_size,
            num_items,
-           num_quadpts) {
+           num.quad) {
 
   # Get latent mean and variance vectors
   alpha <- mean_predictors %*% p_impact[grep("g",names(p_impact),fixed=T)]
@@ -108,11 +108,11 @@ d_phi <-
 #' @param p_item Vector of item parameters.
 #' @param etable E-table for impact.
 #' @param theta Matrix of adaptive theta values.
-#' @param predictor.data Matrix or dataframe of DIF and/or impact predictors.
+#' @param pred.data Matrix or dataframe of DIF and/or impact predictors.
 #' @param cov Covariate being maximized.
 #' @param samp_size Sample size in dataset.
 #' @param num_items Number of items in dataset.
-#' @param num_quadpts Number of quadrature points used for approximating the
+#' @param num.quad Number of quadrature points used for approximating the
 #' latent variable.
 #'
 #' @keywords internal
@@ -122,31 +122,31 @@ d_bernoulli <-
            p_item,
            etable,
            theta,
-           predictor.data,
+           pred.data,
            cov,
            samp_size,
            num_items,
-           num_quadpts) {
+           num.quad) {
 
   if(parm == "c0"){
-    eta_d <- matrix(1, nrow = samp_size, ncol = num_quadpts)
+    eta_d <- matrix(1, nrow = samp_size, ncol = num.quad)
   } else if(parm == "a0"){
     eta_d <- theta
   } else if(parm == "c1"){
-    eta_d <- matrix(rep(predictor.data[,cov], num_quadpts),
-                    ncol = num_quadpts,
+    eta_d <- matrix(rep(pred.data[,cov], num.quad),
+                    ncol = num.quad,
                     nrow = samp_size)
   } else if(parm == "a1"){
-    eta_d <- matrix(rep(predictor.data[,cov], num_quadpts),
-                    ncol = num_quadpts,
+    eta_d <- matrix(rep(pred.data[,cov], num.quad),
+                    ncol = num.quad,
                     nrow = samp_size)*theta
   }
 
   traceline <- bernoulli_traceline_cpp(p_item,
                                        theta,
-                                       predictor.data,
+                                       pred.data,
                                        samp_size,
-                                       num_quadpts)
+                                       num.quad)
 
   d1 <- sum(traceline[[1]]*eta_d*etable[[2]], na.rm = TRUE) +
     sum(-traceline[[2]]*eta_d*etable[[1]], na.rm = TRUE)
@@ -163,12 +163,12 @@ d_bernoulli <-
 #' @param p_item Vector of item parameters.
 #' @param etable E-table for impact.
 #' @param theta Matrix of adaptive theta values.
-#' @param predictor.data Matrix or dataframe of DIF and/or impact predictors.
+#' @param pred.data Matrix or dataframe of DIF and/or impact predictors.
 #' @param thr Threshold value being maximized.
 #' @param cov Covariate being maximized.
 #' @param samp_size Sample size in dataset.
 #' @param num_items Number of items in dataset.
-#' @param num_quadpts Number of quadrature points used for approximating the
+#' @param num.quad Number of quadrature points used for approximating the
 #' latent variable.
 #'
 #' @keywords internal
@@ -178,37 +178,37 @@ d_categorical <-
            p_item,
            etable,
            theta,
-           predictor.data,
+           pred.data,
            thr,
            cov,
            samp_size,
            num_responses_item,
            num_items,
-           num_quadpts) {
+           num.quad) {
 
   if(parm == "c0"){
-    eta_d <- matrix(1, nrow = samp_size, ncol = num_quadpts)
+    eta_d <- matrix(1, nrow = samp_size, ncol = num.quad)
   } else if(parm == "a0"){
     eta_d <- theta
   } else if(parm == "c1"){
-    eta_d <- matrix(rep(predictor.data[,cov], num_quadpts),
-                    ncol = num_quadpts,
+    eta_d <- matrix(rep(pred.data[,cov], num.quad),
+                    ncol = num.quad,
                     nrow = samp_size)
   } else if(parm == "a1"){
-    eta_d <- matrix(rep(predictor.data[,cov], num_quadpts),
-                    ncol = num_quadpts,
+    eta_d <- matrix(rep(pred.data[,cov], num.quad),
+                    ncol = num.quad,
                     nrow = samp_size)*theta
   }
 
   cum_traceline <- cumulative_traceline_pts(p_item,
                                             theta,
-                                            predictor.data,
+                                            pred.data,
                                             samp_size,
                                             num_responses_item,
-                                            num_quadpts)
+                                            num.quad)
 
   # Non-threshold derivatives.
-  if(is.null(thr)){
+  if(thr < 0){
     d1 <-
       eta_d*(-etable[[1]]*cum_traceline[[1]] +
                etable[[num_responses_item]]*(
@@ -243,10 +243,10 @@ d_categorical <-
   } else {
     cat_traceline <- categorical_traceline_pts(p_item,
                                                theta,
-                                               predictor.data,
+                                               pred.data,
                                                samp_size,
                                                num_responses_item,
-                                               num_quadpts)
+                                               num.quad)
     d1 <-
       sum(-etable[[thr]]*cum_traceline[[thr]]*(
         1 - cum_traceline[[thr]]
@@ -280,11 +280,11 @@ d_categorical <-
 #' @param etable E-table for impact.
 #' @param theta Matrix of adaptive theta values.
 #' @param responses_item Vector of item responses.
-#' @param predictor.data Matrix or dataframe of DIF and/or impact predictors.
+#' @param pred.data Matrix or dataframe of DIF and/or impact predictors.
 #' @param cov Covariate being maximized.
 #' @param samp_size Sample size in dataset.
 #' @param num_items Number of items in dataset.
-#' @param num_quadpts Number of quadrature points used for approximating the
+#' @param num.quad Number of quadrature points used for approximating the
 #' latent variable.
 #'
 #' @keywords internal
@@ -295,23 +295,23 @@ d_mu_gaussian <-
            etable,
            theta,
            responses_item,
-           predictor.data,
+           pred.data,
            cov,
            samp_size,
            num_items,
-           num_quadpts) {
+           num.quad) {
 
   if(parm == "c0"){
-    eta_d <- matrix(1, nrow = samp_size, ncol = num_quadpts)
+    eta_d <- matrix(1, nrow = samp_size, ncol = num.quad)
   } else if(parm == "a0"){
     eta_d <- theta
   } else if(parm == "c1"){
-    eta_d <- matrix(rep(predictor.data[,cov], num_quadpts),
-                    ncol = num_quadpts,
+    eta_d <- matrix(rep(pred.data[,cov], num.quad),
+                    ncol = num.quad,
                     nrow = samp_size)
   } else if(parm == "a1"){
-    eta_d <- matrix(rep(predictor.data[,cov], num_quadpts),
-                    ncol = num_quadpts,
+    eta_d <- matrix(rep(pred.data[,cov], num.quad),
+                    ncol = num.quad,
                     nrow = samp_size)*theta
   }
 
@@ -321,14 +321,14 @@ d_mu_gaussian <-
               2,
               function(x) {
                 (p_item[grep("c0",names(p_item),fixed=T)] +
-                   predictor.data %*%
+                   pred.data %*%
                    p_item[grep("c1",names(p_item),fixed=T)]) +
                   (p_item[grep("a0",names(p_item),fixed=T)] +
-                     predictor.data %*%
+                     pred.data %*%
                      p_item[grep("a1",names(p_item),fixed=T)])*x
                 })
   sigma <- sqrt(p_item[grep("s0",names(p_item))][1]*exp(
-    predictor.data %*% p_item[grep("s1",names(p_item))]
+    pred.data %*% p_item[grep("s1",names(p_item))]
     ))
 
 
@@ -355,11 +355,11 @@ d_mu_gaussian <-
 #' @param etable E-table for impact.
 #' @param theta Matrix of adaptive theta values.
 #' @param responses_item Vector of item responses.
-#' @param predictor.data Matrix or dataframe of DIF and/or impact predictors.
+#' @param pred.data Matrix or dataframe of DIF and/or impact predictors.
 #' @param cov Covariate being maximized.
 #' @param samp_size Sample size in dataset.
 #' @param num_items Number of items in dataset.
-#' @param num_quadpts Number of quadrature points used for approximating the
+#' @param num.quad Number of quadrature points used for approximating the
 #' latent variable.
 #'
 #' @keywords internal
@@ -370,45 +370,45 @@ d_sigma_gaussian <-
            etable,
            theta,
            responses_item,
-           predictor.data,
+           pred.data,
            cov,
            samp_size,
            num_items,
-           num_quadpts) {
+           num.quad) {
 
   sigma <- sqrt(p_item[grep("s0",names(p_item))][1]*exp(
-    predictor.data %*% p_item[grep("s1",names(p_item))]))
+    pred.data %*% p_item[grep("s1",names(p_item))]))
   mu <- apply(theta,
               2,
               function(x) {
                 (p_item[grep("c0",names(p_item),fixed=T)] +
-                   predictor.data %*%
+                   pred.data %*%
                    p_item[grep("c1",names(p_item),fixed=T)]) +
                   (p_item[grep("a0",names(p_item),fixed=T)] +
-                     predictor.data %*%
+                     pred.data %*%
                      p_item[grep("a1",names(p_item),fixed=T)])*x
                 })
 
   if(parm == "s0") {
     eta_d1 <- sapply(1:samp_size,
                      function(x) {
-                       exp(predictor.data[x,] %*%
+                       exp(pred.data[x,] %*%
                              p_item[grep("s1",names(p_item))]) / (2*sigma[x])
                        })
     eta_d2 <- sapply(1:samp_size,
                      function(x) {
-                       -exp(predictor.data[x,] %*%
+                       -exp(pred.data[x,] %*%
                               p_item[grep("s1",names(p_item))])**2 /
                          (4*sigma[x]**3)
                        })
   } else if(parm == "s1") {
     eta_d1 <- sapply(1:samp_size,
                      function(x) {
-                       sigma[x]*predictor.data[x,cov] / 2
+                       sigma[x]*pred.data[x,cov] / 2
                        })
     eta_d2 <- sapply(1:samp_size,
                      function(x) {
-                       sigma[x]*predictor.data[x,cov]**2 / 4
+                       sigma[x]*pred.data[x,cov]**2 / 4
                        })
   }
 

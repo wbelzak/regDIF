@@ -423,11 +423,11 @@ List d_categorical_cpp(
     eta_d = theta;
   } else if(parm == "c1"){
     for(int q = 0; q < num_quadpts; q++){
-      eta_d.col(q) = predictors.col(cov);
+      eta_d.col(q) = predictors.col(cov-1);
     }
   } else if(parm == "a1"){
     for(int q = 0; q < num_quadpts; q++){
-      eta_d.col(q) = predictors.col(cov) % theta.col(q);
+      eta_d.col(q) = predictors.col(cov-1) % theta.col(q);
     }
   }
 

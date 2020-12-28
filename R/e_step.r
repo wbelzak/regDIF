@@ -2,7 +2,7 @@
 #'
 #' @param p List of parameters.
 #' @param item.data Matrix or dataframe of item responses.
-#' @param predictor.data Matrix or dataframe of DIF and/or impact predictors.
+#' @param pred.data Matrix or dataframe of DIF and/or impact predictors.
 #' @param mean_predictors Possibly different matrix of predictors for the mean
 #' impact equation.
 #' @param var_predictors Possibly different matrix of predictors for the
@@ -10,7 +10,7 @@
 #' @param samp_size Sample size in dataset.
 #' @param num_items Number of items in dataset.
 #' @param num_responses Number of responses for each item.
-#' @param num_quadpts Number of quadrature points used for approximating the
+#' @param num.quad Number of quadrature points used for approximating the
 #' latent variable.
 #'
 #' @keywords internal
@@ -18,34 +18,34 @@
 Estep <-
   function(p,
            item.data,
-           predictor.data,
+           pred.data,
            mean_predictors,
            var_predictors,
            samp_size,
            num_items,
            num_responses,
-           adaptive.quad,
-           num_quadpts) {
+           adapt.quad,
+           num.quad) {
 
   # Make space for the trace lines and the E-tables.
   itemtrace <- rep(list(NA),num_items)
   etable <- replicate(n=num_items,
-                      matrix(0,nrow=samp_size,ncol=num_quadpts+1),
+                      matrix(0,nrow=samp_size,ncol=num.quad+1),
                       simplify = F)
-  etable_all <- matrix(0,nrow=samp_size,ncol=num_quadpts)
+  etable_all <- matrix(0,nrow=samp_size,ncol=num.quad)
 
   # Impact.
   alpha <- mean_predictors %*% p[[num_items+1]]
   phi <- exp(var_predictors %*% p[[num_items+2]])
 
   # Adaptive theta points.
-  if(adaptive.quad == TRUE) {
-    theta <- sapply(statmod::gauss.quad(n = num_quadpts,
+  if(adapt.quad == TRUE) {
+    theta <- sapply(statmod::gauss.quad(n = num.quad,
                                         kind = "hermite")$nodes,
                     function(x) alpha + sqrt(2*phi)*x)
   } else {
-    theta <- matrix(seq(-10, 10, length.out = num_quadpts), nrow = samp_size,
-                    ncol = num_quadpts, byrow = T)
+    theta <- matrix(seq(-6, 6, length.out = num.quad), nrow = samp_size,
+                    ncol = num.quad, byrow = T)
   }
 
 
@@ -55,30 +55,32 @@ Estep <-
       itemtrace[[item]] <- gaussian_traceline_pts(p[[item]],
                                                   theta,
                                                   item.data[,item],
-                                                  predictor.data,
+                                                  pred.data,
                                                   samp_size,
-                                                  num_quadpts)
+                                                  num.quad)
     } else if (num_responses[item] == 2) {
       itemtrace[[item]] <- bernoulli_traceline_cpp(p[[item]],
                                                    theta,
-                                                   predictor.data,
+                                                   pred.data,
                                                    samp_size,
-                                                   num_quadpts)
+                                                   num.quad)
     } else if (num_responses[item] > 2) {
       itemtrace[[item]] <- categorical_traceline_cpp(p[[item]],
                                                      theta,
-                                                     predictor.data,
+                                                     pred.data,
                                                      samp_size,
                                                      num_responses[item],
-                                                     num_quadpts)
+                                                     num.quad)
     }
   }
 
   # Obtain E-tables.
   for(case in 1:samp_size) {
 
-    # Adaptive quadrature points.
-    posterior <- dnorm(theta[case,], mean = alpha[case], sd = sqrt(phi[case]))
+    # Get weights for computing adaptive or fixed-point quadrature.
+    posterior <- dnorm(theta[case,],
+                       mean = alpha[case],
+                       sd = sqrt(phi[case]))
 
     # Within each response pattern, loop over items and compute posterior
     # probability of response pattern.

@@ -19,7 +19,7 @@ coef.regDIF <-
 
       # Which tau/model to show.
       if(is.null(tau)){
-        table <- list("tau.parms" = object$tau,
+        table <- list("tau.parms" = object$tau_vec,
                       "impact.lv.parms" = object$impact.lv.parms,
                       "base.item.parms" = object$base.item.parms,
                       "dif.item.parms" = object$dif.item.parms)
@@ -27,7 +27,7 @@ coef.regDIF <-
       } else if(tau == "tau.min") {
         if(method == "aic") {
           table <- list("tau.parms" =
-                          object$tau[which.min(object$aic)],
+                          object$tau_vec[which.min(object$aic)],
                         "impact.lv.parms" =
                           object$impact.lv.parms[,which.min(object$aic)],
                         "base.item.parms" =
@@ -37,7 +37,7 @@ coef.regDIF <-
 
         } else if(method == "bic") {
           table <- list("tau.parms" =
-                          object$tau[which.min(object$bic)],
+                          object$tau_vec[which.min(object$bic)],
                         "impact.lv.parms" =
                           object$impact.lv.parms[,which.min(object$bic)],
                         "base.item.parms" =
@@ -48,7 +48,7 @@ coef.regDIF <-
 
       } else if(is.numeric(tau)) {
         table <- list("tau.parms" =
-                        object$tau[tau],
+                        object$tau_vec[tau],
                       "impact.lv.parms" =
                         object$impact.lv.parms[,tau],
                       "base.item.parms" =

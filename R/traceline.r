@@ -2,9 +2,9 @@
 #'
 #' @param p_active Vector of item parameters.
 #' @param theta Matrix of adaptive theta values.
-#' @param predictor.data Matrix or dataframe of DIF and/or impact predictors.
+#' @param pred.data Matrix or dataframe of DIF and/or impact predictors.
 #' @param samp_size Sample size in dataset.
-#' @param num_quadpts Number of quadrature points used for approximating the
+#' @param quad.pts Number of quadrature points used for approximating the
 #' latent variable.
 #'
 #' @keywords internal
@@ -12,9 +12,9 @@
 bernoulli_traceline_pts <-
   function(p_active,
            theta,
-           predictor.data,
+           pred.data,
            samp_size,
-           num_quadpts) {
+           quad.pts) {
 
     c0_parms <- grepl("c0",names(p_active),fixed=T)
     c1_parms <- grepl("c1",names(p_active),fixed=T)
@@ -26,9 +26,9 @@ bernoulli_traceline_pts <-
             2,
             function(x) {
               1 - 1 / (1 + exp(-((p_active[c0_parms] +
-                                  predictor.data %*% p_active[c1_parms]) +
+                                  pred.data %*% p_active[c1_parms]) +
                                    (p_active[a0_parms] +
-                                      predictor.data %*% p_active[a1_parms])*x)
+                                      pred.data %*% p_active[a1_parms])*x)
                                )
                        )
               })
@@ -42,10 +42,10 @@ bernoulli_traceline_pts <-
 #'
 #' @param p_active Vector of item parameters.
 #' @param theta Matrix of adaptive theta values.
-#' @param predictor.data Matrix or dataframe of DIF and/or impact predictors.
+#' @param pred.data Matrix or dataframe of DIF and/or impact predictors.
 #' @param samp_size Sample size in dataset.
 #' @param num_responses_item Number of responses for item.
-#' @param num_quadpts Number of quadrature points used for approximating the
+#' @param quad.pts Number of quadrature points used for approximating the
 #' latent variable.
 #'
 #' @keywords internal
@@ -53,14 +53,14 @@ bernoulli_traceline_pts <-
 categorical_traceline_pts <-
   function(p_active,
            theta,
-           predictor.data,
+           pred.data,
            samp_size,
            num_responses_item,
-           num_quadpts) {
+           quad.pts) {
 
   # Space for category traceline (y = c category).
   traceline <- replicate(n=num_responses_item,
-                         matrix(0,nrow=samp_size,ncol=num_quadpts),
+                         matrix(0,nrow=samp_size,ncol=quad.pts),
                          simplify = F)
 
   c0_parms <- grepl("c0",names(p_active),fixed=T)
@@ -74,9 +74,9 @@ categorical_traceline_pts <-
           2,
           function(x) {
             1 - 1 / (1 + exp(-((p_active[c0_parms][1] +
-                                  predictor.data %*% p_active[c1_parms]) +
+                                  pred.data %*% p_active[c1_parms]) +
                                  (p_active[a0_parms] +
-                                    predictor.data %*% p_active[a1_parms])*x)
+                                    pred.data %*% p_active[a1_parms])*x)
                              )
                      )
             })
@@ -88,9 +88,9 @@ categorical_traceline_pts <-
           2,
           function(x) {
             1 / (1 + exp(-((p_active[c0_parms][1] +
-                              predictor.data %*% p_active[c1_parms]) +
+                              pred.data %*% p_active[c1_parms]) +
                              (p_active[a0_parms] +
-                                predictor.data %*% p_active[a1_parms])*x)
+                                pred.data %*% p_active[a1_parms])*x)
                          )
                  )
             }) -
@@ -99,9 +99,9 @@ categorical_traceline_pts <-
           function(x) {
             1 / (1 + exp(-((p_active[c0_parms][1] -
                               p_active[c0_parms][2] +
-                              predictor.data %*% p_active[c1_parms]) +
+                              pred.data %*% p_active[c1_parms]) +
                              (p_active[a0_parms] +
-                                predictor.data %*% p_active[a1_parms])*x)
+                                pred.data %*% p_active[a1_parms])*x)
                          )
                  )
             })
@@ -115,9 +115,9 @@ categorical_traceline_pts <-
                 function(x) {
                   1 / (1 + exp(-((p_active[c0_parms][1] -
                                     p_active[c0_parms][thr-1] +
-                                    predictor.data %*% p_active[c1_parms]) +
+                                    pred.data %*% p_active[c1_parms]) +
                                    (p_active[a0_parms] +
-                                      predictor.data %*% p_active[a1_parms])*x)
+                                      pred.data %*% p_active[a1_parms])*x)
                                )
                        )
                   }) -
@@ -126,9 +126,9 @@ categorical_traceline_pts <-
                 function(x) {
                   1 / (1 + exp(-((p_active[c0_parms][1] -
                                     p_active[c0_parms][thr] +
-                                    predictor.data %*% p_active[c1_parms]) +
+                                    pred.data %*% p_active[c1_parms]) +
                                    (p_active[a0_parms] +
-                                      predictor.data %*% p_active[a1_parms])*x)
+                                      pred.data %*% p_active[a1_parms])*x)
                                )
                        )
                   })
@@ -146,9 +146,9 @@ categorical_traceline_pts <-
           function(x) {
             1 / (1 + exp(-((p_active[c0_parms][1] -
                               p_active[c0_parms][num_responses_item-1] +
-                              predictor.data %*% p_active[c1_parms]) +
+                              pred.data %*% p_active[c1_parms]) +
                              (p_active[a0_parms] +
-                                predictor.data %*% p_active[a1_parms])*x)
+                                pred.data %*% p_active[a1_parms])*x)
                          )
                  )
             })
@@ -161,10 +161,10 @@ categorical_traceline_pts <-
 #'
 #' @param p_active Vector of item parameters.
 #' @param theta Matrix of adaptive theta values.
-#' @param predictor.data Matrix or dataframe of DIF and/or impact predictors.
+#' @param pred.data Matrix or dataframe of DIF and/or impact predictors.
 #' @param samp_size Sample size in dataset.
 #' @param num_responses_item Number of responses for item.
-#' @param num_quadpts Number of quadrature points used for approximating the
+#' @param quad.pts Number of quadrature points used for approximating the
 #' latent variable.
 #'
 #' @keywords internal
@@ -172,15 +172,15 @@ categorical_traceline_pts <-
 cumulative_traceline_pts <-
   function(p_active,
            theta,
-           predictor.data,
+           pred.data,
            samp_size,
            num_responses_item,
-           num_quadpts) {
+           quad.pts) {
 
   # Space for cumulative traceline (y >= c category).
   traceline <-
     replicate(n=(num_responses_item-1),
-              matrix(0,nrow=samp_size,ncol=num_quadpts),
+              matrix(0,nrow=samp_size,ncol=quad.pts),
               simplify = F)
 
   c0_parms <- grepl("c0",names(p_active),fixed=T)
@@ -194,9 +194,9 @@ cumulative_traceline_pts <-
           2,
           function(x) {
             1 / (1 + exp(-((p_active[c0_parms][1] +
-                              predictor.data %*% p_active[c1_parms]) +
+                              pred.data %*% p_active[c1_parms]) +
                              (p_active[a0_parms] +
-                                predictor.data %*% p_active[a1_parms])*x)
+                                pred.data %*% p_active[a1_parms])*x)
                          )
                  )
             })
@@ -210,9 +210,9 @@ cumulative_traceline_pts <-
               function(x) {
                 1 / (1 + exp(-((p_active[c0_parms][1] -
                                   p_active[c0_parms][thr] +
-                                  predictor.data %*% p_active[c1_parms]) +
+                                  pred.data %*% p_active[c1_parms]) +
                                  (p_active[a0_parms] +
-                                    predictor.data %*% p_active[a1_parms])*x)
+                                    pred.data %*% p_active[a1_parms])*x)
                              )
                      )
                 })
@@ -228,9 +228,9 @@ cumulative_traceline_pts <-
 #' @param p_active Vector of item parameters.
 #' @param theta Matrix of adaptive theta values.
 #' @param responses_item Vector of item responses.
-#' @param predictor.data Matrix or dataframe of DIF and/or impact predictors.
+#' @param pred.data Matrix or dataframe of DIF and/or impact predictors.
 #' @param samp_size Sample size in dataset.
-#' @param num_quadpts Number of quadrature points used for approximating the
+#' @param quad.pts Number of quadrature points used for approximating the
 #' latent variable.
 #'
 #' @keywords internal
@@ -239,9 +239,9 @@ gaussian_traceline_pts <-
   function(p_active,
            theta,
            responses_item,
-           predictor.data,
+           pred.data,
            samp_size,
-           num_quadpts) {
+           quad.pts) {
 
   c0_parms <- grepl("c0",names(p_active),fixed=T)
   c1_parms <- grepl("c1",names(p_active),fixed=T)
@@ -255,12 +255,12 @@ gaussian_traceline_pts <-
           2,
           function(x) {
             (p_active[c0_parms] +
-               predictor.data %*% p_active[c1_parms]) +
+               pred.data %*% p_active[c1_parms]) +
               (p_active[a0_parms] +
-                 predictor.data %*% p_active[a1_parms])*x
+                 pred.data %*% p_active[a1_parms])*x
             })
   sigma <-
-    sqrt(p_active[s0_parms][1]*exp(predictor.data %*% p_active[s1_parms]))
+    sqrt(p_active[s0_parms][1]*exp(pred.data %*% p_active[s1_parms]))
 
   traceline <- t(sapply(1:samp_size,
                         function(x) {

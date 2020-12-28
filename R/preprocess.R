@@ -1,110 +1,114 @@
 #' Pre-process data.
 #'
-#' @param item.data Matrix or dataframe of item responses.
-#' @param Matrix or dataframe of DIF and/or impact predictors.
+#' @param item.data Matrix or data frame of item responses.
+#' @param pred.data Matrix or data frame of DIF and/or impact predictors.
 #' @param item.type Character value or vector indicating the item response
 #' distributions.
 #' @param num.tau Numeric value of how many to tau values to fit.
-#' @param max.tau Numberic value indicating the maximum tau parameter.
 #' @param tau Optional numeric vector of tau values.
 #' @param anchor Optional numeric value or vector indicating which item
 #' response(s) are anchors (e.g., \code{anchor = 1}).
-#' @param impact.data Optional list of matrices or data frames with predictors
-#' for mean and variance impact.
-#' @param standardize Logical value indicating whether to standardize DIF and
-#' impact covariates for regularization.
-#' @param quadpts Numeric value indicating the number of quadrature points.
-#' @param control Optional list of optimization parameters.
+#' @param stdz Logical value indicating whether to standardize DIF and
+#' impact predictors for regularization.
+#' @param num.quad Numeric value indicating the number of quadrature points.
+#' @param control Optional list of additional model specification and
+#' optimization parameters.
+#' @param pen.type Character indicating type of penalty.
+#' @param adapt.quad Logical determining whether to use adaptive quadrature.
 #' @param call Defined from regDIF.
 #'
 #' @keywords internal
 #'
 preprocess <-
   function(item.data,
-           predictor.data,
+           pred.data,
            item.type,
            num.tau,
-           max.tau,
            tau,
            anchor,
-           impact.data,
-           standardize,
-           quadpts,
+           stdz,
+           num.quad,
            control,
+           pen.type,
+           adapt.quad,
            call){
 
+  # Control parameters.
+  final.control <- list(impact.data = list(mean = NULL, var = NULL),
+                        tol = 10^-4,
+                        maxit = 5000)
+  if(length(control) > 0) final.control[names(control)] <- control
+
   # Impact data (if different).
-  if(is.null(impact.data$mean)) {
-    mean_predictors <- predictor.data
+  if(is.null(control$impact.data$mean)) {
+    mean_predictors <- pred.data
   } else {
-    mean_predictors <- impact.data$mean
+    mean_predictors <- control$impact.data$mean
   }
 
-  if(is.null(impact.data$var)) {
-    var_predictors <- predictor.data
+  if(is.null(control$impact.data$var)) {
+    var_predictors <- pred.data
   } else {
-    var_predictors <- impact.data$var
+    var_predictors <- control$impact.data$var
   }
 
   # Pre-process warnings.
-  # if(any(item.type == "cfa")) {
-  #   stop(paste0("Continuous (Gaussian) item responses are not currently ",
-  #               "supported."))
-  # }
-  if(!(any(item.type == "rasch") |
-       any(item.type == "2pl") |
-       any(item.type == "graded") |
-       any(item.type == "cfa") |
+  if(!(any(item.type == "Rasch") ||
+       any(item.type == "2PL") ||
+       any(item.type == "Graded") ||
        any(is.null(item.type)))) {
-    stop(paste0("Item response types must either be rasch, 2pl, or ",
-                "graded."))
+    stop(paste0("Item response types must either be Rasch, 2PL, or Graded."))
   }
   if(any(tau < 0)) {
     stop("Tau values must be non-negative.", call. = TRUE)
   }
-  if(length(tau) > 1 & all(diff(tau) >= 0)) {
+  if(length(tau) > 1 && all(diff(tau) >= 0)) {
     stop("Tau values must be in descending order (e.g., tau = c(-2,-1,0)).")
   }
-  if(is.null(anchor) & length(tau) == 1) {
+  if(is.null(anchor) && length(tau) == 1) {
     if(tau == 0) {
       stop("Anchor item must be specified with tau = 0.", call. = TRUE)
     }
-
   }
-  if(!is.null(anchor) & !is.numeric(anchor)) {
+  if(!is.null(anchor) && !is.numeric(anchor)) {
     stop("Anchor items must be numeric (e.g., anchor = 1).", call. = TRUE)
   }
+  if(adapt.quad == F && num.quad < 51) {
+    stop(paste0("Fixed quadrature must have at least 51 to ",
+                "yield precise estimates."))
+  }
 
-  # Control parameters.
-  final.control <- list(tol = 10^-5,
-                        maxit = 10000)
-  if(length(control) > 0) final.control[names(control)] <- control
 
-  # Tau.
+  # Define number of tau values.
   if(is.null(tau)){
-    tau <- seq(max.tau**(1/3),0,length.out = num.tau)**3
+    tau_vec <- 1e20
+    id_tau <- FALSE
+  } else {
+    num.tau <- length(tau)
+    tau_vec <- tau
+    id_tau <- TRUE
   }
 
   # Speeds up computation.
   item.data <- as.matrix(sapply(item.data,as.numeric))
-  predictor.data <- as.matrix(sapply(predictor.data,as.numeric))
+  pred.data <- as.matrix(sapply(pred.data,as.numeric))
   mean_predictors <- as.matrix(sapply(mean_predictors,as.numeric))
   var_predictors <- as.matrix(sapply(var_predictors,as.numeric))
   samp_size <- dim(item.data)[1]
   num_items <- dim(item.data)[2]
-  num_predictors <- dim(predictor.data)[2]
+  num_predictors <- dim(pred.data)[2]
 
   # Get muliple characters of item.type for number of items.
   if(length(item.type) == 1 | is.null(item.type)) {
-    if(is.null(item.type)) item.type <- "2pl"
+    if(is.null(item.type)) item.type <- "2PL"
     item.type <- rep(item.type, num_items)
   }
 
   # Get item response types.
   num_responses <- rep(1,num_items)
-  cat_items <- item.type == "rasch" |
-    item.type == "2pl" |
-    item.type == "graded"
+  cat_items <- item.type == "Rasch" |
+    item.type == "2PL" |
+    item.type == "Graded"
   if(any(cat_items)) {
     item.data[,which(cat_items)] <-
       apply(item.data[,which(cat_items)],
@@ -117,11 +121,14 @@ preprocess <-
   }
 
   # Standardize predictors.
-  if(standardize == TRUE){
-    predictor.data <- scale(predictor.data)
+  if(stdz == TRUE){
+    pred.data <- scale(pred.data)
     mean_predictors <- scale(mean_predictors)
     var_predictors <- scale(var_predictors)
   }
+
+  # Penalty type.
+  if(is.null(pen.type)) pen.type <- "lasso"
 
   # Starting values.
   p <- replicate(n=num_items+2,list(NA),simplify=F)
@@ -183,30 +190,34 @@ preprocess <-
     num_dif_parms <- length(c(unlist(p)[grep('c1',names(unlist(p)))],
                               unlist(p)[grep('a1',names(unlist(p)))]))
   }
-  final <- list(tau = rep(NA,length(tau)),
-                aic = rep(NA,length(tau)),
-                bic = rep(NA,length(tau)),
-                impact.lv.parms = matrix(NA,ncol=length(tau),
+  final.length <- ifelse(is.null(tau),num.tau,length(tau))
+  final <- list(tau_vec = rep(NA,final.length),
+                aic = rep(NA,final.length),
+                bic = rep(NA,final.length),
+                impact.lv.parms = matrix(NA,ncol=final.length,
                                          nrow=(ncol(mean_predictors)+
                                                  ncol(var_predictors))),
-                base.item.parms = matrix(NA,ncol=length(tau),
+                base.item.parms = matrix(NA,ncol=final.length,
                                          nrow=num_base_parms),
-                dif.item.parms = matrix(NA,ncol=length(tau),
+                dif.item.parms = matrix(NA,ncol=final.length,
                                         nrow=num_dif_parms),
                 call = call)
 
   return(list(p = p,
               final = final,
               item.data = item.data,
-              predictor.data = predictor.data,
+              pred.data = pred.data,
               mean_predictors = mean_predictors,
               var_predictors = var_predictors,
               item.type = item.type,
               final.control = final.control,
-              tau = tau,
               num_responses = num_responses,
               num_predictors = num_predictors,
               samp_size = samp_size,
-              num_items = num_items))
+              num_items = num_items,
+              pen.type = pen.type,
+              tau_vec = tau_vec,
+              num.tau = num.tau,
+              id_tau = id_tau))
 
 }

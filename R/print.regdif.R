@@ -16,7 +16,7 @@ print.regDIF <-
     print(x$call)
     # Create table to display results.
     table <- data.frame(
-      "Tau" = x$tau,
+      "Tau" = x$tau_vec,
       "AIC" = x$aic,
       "BIC" = x$bic
     )

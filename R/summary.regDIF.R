@@ -17,7 +17,7 @@ summary.regDIF <-
     print(object$call)
     # Create summary table to display results.
     if(method == "aic") {
-      sum_results <- c(object$tau[which.min(object$aic)],
+      sum_results <- c(object$tau_vec[which.min(object$aic)],
                        object$aic[which.min(object$aic)])
       impact <- object$impact.lv.parms[,which.min(object$aic)]
       base <- object$base.item.parms[,which.min(object$aic)]
@@ -25,7 +25,7 @@ summary.regDIF <-
       names(sum_results) <- c("tau","aic")
 
     } else if(method == "bic") {
-      sum_results <- c(object$tau[which.min(object$bic)],
+      sum_results <- c(object$tau_vec[which.min(object$bic)],
                        object$bic[which.min(object$bic)])
       impact <- object$impact.lv.parms[,which.min(object$bic)]
       base <- object$base.item.parms[,which.min(object$bic)]
@@ -35,7 +35,7 @@ summary.regDIF <-
     }
 
     # Print the results table.
-    cat(paste0("\nOptimal Model (out of ", length(object$tau),"):\n"))
+    cat(paste0("\nOptimal Model (out of ", length(object$tau_vec),"):\n"))
     print(sum_results)
     cat("\nLatent Variable Impact Parameters:\n")
     print(impact)

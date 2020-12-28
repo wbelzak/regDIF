@@ -2,20 +2,19 @@
 #'
 #' @param estimates List of converged parameters.
 #' @param item.data Matrix or dataframe of item responses.
-#' @param predictor.data Matrix or dataframe of DIF and/or impact predictors.
+#' @param pred.data Matrix or dataframe of DIF and/or impact predictors.
 #' @param mean_predictors Possibly different matrix of predictors for the mean
 #' impact equation.
 #' @param var_predictors Possibly different matrix of predictors for the
 #' variance impact equation.
-#' @param impact.data Optional list of matrices or data frames with predictors
-#' for mean and variance impact.
-#' @param tau Optional numeric vector of tau values.
+#' @param tau_vec Optional numeric vector of tau values.
 #' @param alpha Numeric value indicating the alpha parameter in the elastic net
 #' penalty function.
 #' @param pen Tuning parameter index.
 #' @param anchor Anchor item(s).
+#' @param control Optional list of user-defined control parameters
 #' @param final.control List of final control parameters.
-#' @param final.control List of user-defined control parameters.
+#' @param final List of model results.
 #' @param samp_size Sample size in dataset.
 #' @param num_responses Number of responses for each item.
 #' @param num_predictors Number of predictors.
@@ -28,59 +27,59 @@
 postprocess <-
   function(estimates,
            item.data,
-           predictor.data,
+           pred.data,
            mean_predictors,
            var_predictors,
-           impact.data,
-           tau,
+           tau_vec,
            alpha,
            pen,
            anchor,
+           control,
            final.control,
            final,
            samp_size,
            num_responses,
            num_predictors,
            num_items,
-           num_quadpts) {
+           num.quad) {
 
   # Get estimates and information criteria.
   p <- estimates[[1]]
   infocrit <- estimates[[2]]
 
   # Organize impact parameters.
-  if(is.null(impact.data$mean)) {
-    if(is.null(colnames(predictor.data)) |
-       length(colnames(predictor.data)) == 0) {
+  if(is.null(control$impact.data$mean)) {
+    if(is.null(colnames(pred.data)) |
+       length(colnames(pred.data)) == 0) {
       mean_names <- paste0('mean.cov',1:ncol(mean_predictors))
     } else {
-      mean_names <- paste0('mean.',colnames(predictor.data))
+      mean_names <- paste0('mean.',colnames(pred.data))
     }
 
   } else {
-    if(is.null(colnames(impact.data$mean)) |
-       length(colnames(impact.data$mean)) == 0) {
+    if(is.null(colnames(control$impact.data$mean)) |
+       length(colnames(control$impact.data$mean)) == 0) {
       mean_names <- paste0('mean.cov',1:ncol(mean_predictors))
     } else {
-      mean_names <- paste0('mean.',colnames(impact.data$mean))
+      mean_names <- paste0('mean.',colnames(control$impact.data$mean))
     }
 
   }
 
-  if(is.null(impact.data$var)) {
-    if(is.null(colnames(predictor.data)) |
-       length(colnames(predictor.data)) == 0) {
+  if(is.null(control$impact.data$var)) {
+    if(is.null(colnames(pred.data)) |
+       length(colnames(pred.data)) == 0) {
       var_names <- paste0('var.cov',1:ncol(var_predictors))
     } else {
-      var_names <- paste0('var.',colnames(predictor.data))
+      var_names <- paste0('var.',colnames(pred.data))
     }
 
   } else {
-    if(is.null(colnames(predictor.data)) |
-       length(colnames(predictor.data)) == 0){
+    if(is.null(colnames(pred.data)) |
+       length(colnames(pred.data)) == 0){
       var_names <- paste0('var.cov',1:ncol(var_predictors))
     } else {
-      var_names <- paste0('var.',colnames(impact.data$var))
+      var_names <- paste0('var.',colnames(control$impact.data$var))
     }
 
   }
@@ -135,12 +134,12 @@ postprocess <-
   # Organize item DIF parameters.
   all_items_parms_dif <- NULL
   all_items_names_dif <- NULL
-  if(is.null(colnames(predictor.data)) |
-     length(colnames(predictor.data)) == 0) {
+  if(is.null(colnames(pred.data)) |
+     length(colnames(pred.data)) == 0) {
     cov_names <- paste0("cov",1:num_predictors)
 
   } else {
-    cov_names <- colnames(predictor.data)
+    cov_names <- colnames(pred.data)
 
   }
 
@@ -172,7 +171,7 @@ postprocess <-
 
 
   # Assign output to final list.
-  final$tau[pen] <- tau[pen]
+  final$tau_vec[pen] <- tau_vec[pen]
   final$aic[pen] <- round(infocrit[1],3)
   final$bic[pen] <- round(infocrit[2],3)
   final$impact.lv.parms[,pen] <- round(lv_parms,3)
@@ -239,7 +238,7 @@ postprocess <-
   cat('\r',
       sprintf(paste0("Models Completed: %d of %d  Iteration: %d  Change: %d",
                      "              "),
-              pen, length(tau), 0, 0))
+              pen, length(tau_vec), 0, 0))
   utils::flush.console()
 
   return(final)

@@ -1,8 +1,8 @@
 #' Maximization step.
 #'
 #' @param p List of parameters.
-#' @param item.data Matrix or dataframe of item responses.
-#' @param predictor.data Matrix or dataframe of DIF and/or impact predictors.
+#' @param item.data Matrix or data frame of item responses.
+#' @param pred.data Matrix or data frame of DIF and/or impact predictors.
 #' @param mean_predictors Possibly different matrix of predictors for the mean
 #' impact equation.
 #' @param var_predictors Possibly different matrix of predictors for the
@@ -11,18 +11,19 @@
 #' theta values.
 #' @param item.type Optional character value or vector indicating the type of
 #' item to be modeled.
-#' @param penalty.type Character value indicating the penalty function to use.
-#' @param tau Optional numeric vector of tau values.
+#' @param pen.type Character value indicating the penalty function to use.
+#' @param tau_current A single numeric value of tau that exists within
+#' \code{tau_vec}.
 #' @param alpha Numeric value indicating the alpha parameter in the elastic net
 #' penalty function.
 #' @param gamma Numeric value indicating the gamma parameter in the MCP
 #' function.
 #' @param anchor Optional numeric value or vector indicating which item
 #' response(s) are anchors (e.g., \code{anchor = 1}).
-#' @param samp_size Sample size in dataset.
+#' @param samp_size Sample size in data set.
 #' @param num_responses Number of responses for each item.
-#' @param num_items Number of items in dataset.
-#' @param num_quadpts Number of quadrature points used for approximating the
+#' @param num_items Number of items in data set.
+#' @param num.quad Number of quadrature points used for approximating the
 #' latent variable.
 #' @param num_predictors Number of predictors.
 #'
@@ -31,20 +32,20 @@
 Mstep <-
   function(p,
            item.data,
-           predictor.data,
+           pred.data,
            mean_predictors,
            var_predictors,
            elist,
            item.type,
-           penalty.type,
-           tau,
+           pen.type,
+           tau_current,
            alpha,
            gamma,
            anchor,
            samp_size,
            num_responses,
            num_items,
-           num_quadpts,
+           num.quad,
            num_predictors) {
 
 
@@ -66,7 +67,7 @@ Mstep <-
                              cov=cov,
                              samp_size,
                              num_items,
-                             num_quadpts)
+                             num.quad)
     p_new <- p_impact[mean_parms][cov+1] - anl_deriv[[1]]/anl_deriv[[2]]
     p_impact <- replace(p_impact,names(p_new),p_new)
   }
@@ -82,7 +83,7 @@ Mstep <-
                            cov=cov,
                            samp_size,
                            num_items,
-                           num_quadpts)
+                           num.quad)
     p_new <- p_impact[var_parms][cov+1] - anl_deriv[[1]]/anl_deriv[[2]]
     p_impact <- replace(p_impact,names(p_new),p_new)
   }
@@ -92,7 +93,6 @@ Mstep <-
 
   p[[num_items+1]] <- replace(p[[num_items+1]],names(g),g)
   p[[num_items+2]] <- replace(p[[num_items+2]],names(b),b)
-
 
   # Maximize independent logistic regressions.
   for (item in 1:num_items) {
@@ -112,7 +112,7 @@ Mstep <-
 
     # Get item parameters.
     p_item <- p[[item]]
-    etable <- lapply(etable, function(x) x[,1:num_quadpts])
+    etable <- lapply(etable, function(x) x[,1:num.quad])
 
     # Bernoulli responses.
     if(num_responses[item] == 2) {
@@ -124,27 +124,27 @@ Mstep <-
                                    etable[[1]],
                                    etable[[2]],
                                    elist$theta,
-                                   predictor.data,
+                                   pred.data,
                                    cov=0,
                                    samp_size,
                                    num_items,
-                                   num_quadpts)
+                                   num.quad)
       p_new <- p_item[c0_parms][1] - anl_deriv[[1]]/anl_deriv[[2]]
       p_item <- replace(p_item,names(p_new),p_new)
 
       # Slope updates.
-      if(item.type[item] != "rasch") {
+      if(item.type[item] != "Rasch") {
         a0_parms <- grep(paste0("a0_itm",item,"_"),names(p_item),fixed=T)
         anl_deriv <- d_bernoulli_cpp("a0",
                                      p_item,
                                      etable[[1]],
                                      etable[[2]],
                                      elist$theta,
-                                     predictor.data,
+                                     pred.data,
                                      cov=0,
                                      samp_size,
                                      num_items,
-                                     num_quadpts)
+                                     num.quad)
         p_new <- p_item[a0_parms] - anl_deriv[[1]]/anl_deriv[[2]]
         p_item <- replace(p_item,names(p_new),p_new)
       }
@@ -159,9 +159,9 @@ Mstep <-
 
           # End routine if only one anchor item is left on each covariate
           # for each item parameter.
-          if(is.null(anchor) &
+          if(is.null(anchor) &&
              sum(p2[grep(paste0("c1(.*?)cov",cov+1),names(p2))] != 0) >
-             (num_items - 2) &
+             (num_items - 2) &&
              alpha == 1){
             next
           }
@@ -173,15 +173,15 @@ Mstep <-
                                        etable[[1]],
                                        etable[[2]],
                                        elist$theta,
-                                       predictor.data,
+                                       pred.data,
                                        cov,
                                        samp_size,
                                        num_items,
-                                       num_quadpts)
+                                       num.quad)
           z <- p_item[c1_parms] - anl_deriv[[1]]/anl_deriv[[2]]
-          p_new <- ifelse(penalty.type == "lasso",
-                          soft_thresh_cpp(z,alpha,tau),
-                          firm_thresh_cpp(z,alpha,tau,gamma))
+          p_new <- ifelse(pen.type == "lasso",
+                          soft_thresh_cpp(z,alpha,tau_current),
+                          firm_thresh_cpp(z,alpha,tau_current,gamma))
           names(p_new) <- names(z)
           p_item <- replace(p_item,names(p_new),p_new)
         }
@@ -198,7 +198,7 @@ Mstep <-
             next
           }
 
-          if(item.type[item] != "rasch") {
+          if(item.type[item] != "Rasch") {
             a1_parms <-
               grep(paste0("a1_itm",item,"_cov",cov+1),names(p_item),fixed=T)
             anl_deriv <- d_bernoulli_cpp("a1",
@@ -206,15 +206,15 @@ Mstep <-
                                          etable[[1]],
                                          etable[[2]],
                                          elist$theta,
-                                         predictor.data,
+                                         pred.data,
                                          cov,
                                          samp_size,
                                          num_items,
-                                         num_quadpts)
+                                         num.quad)
             z <- p_item[a1_parms] - anl_deriv[[1]]/anl_deriv[[2]]
-            p_new <- ifelse(penalty.type == "mcp",
-                            firm_thresh_cpp(z,alpha,tau,gamma),
-                            soft_thresh_cpp(z,alpha,tau))
+            p_new <- ifelse(pen.type == "mcp",
+                            firm_thresh_cpp(z,alpha,tau_current,gamma),
+                            soft_thresh_cpp(z,alpha,tau_current))
             names(p_new) <- names(z)
             p_item <- replace(p_item,names(p_new),p_new)
           }
@@ -227,54 +227,54 @@ Mstep <-
 
       c0_parms <- grep(paste0("c0_itm",item,"_"),names(p_item),fixed=T)
 
-      # Intercept updates (thr and cov are -1 for c++ function, i.e., NULL).
-      anl_deriv <- d_categorical_cpp("c0",
+      # Intercept updates.
+      anl_deriv <- d_categorical("c0",
                                      p_item,
                                      etable,
                                      elist$theta,
-                                     predictor.data,
+                                     pred.data,
                                      thr=-1,
                                      cov=-1,
                                      samp_size,
                                      num_responses[[item]],
                                      num_items,
-                                     num_quadpts)
+                                 num.quad)
       p_new <- p_item[c0_parms][1] - anl_deriv[[1]]/anl_deriv[[2]]
       p_item <- replace(p_item,names(p_new),p_new)
 
       # Threshold updates.
       if(num_responses[item] > 2) {
         for(thr in 2:(num_responses[item]-1)) {
-          anl_deriv <- d_categorical_cpp("c0",
+          anl_deriv <- d_categorical("c0",
                                          p_item,
                                          etable,
                                          elist$theta,
-                                         predictor.data,
+                                         pred.data,
                                          thr=thr,
                                          cov=-1,
                                          samp_size,
                                          num_responses[[item]],
                                          num_items,
-                                         num_quadpts)
+                                     num.quad)
           p_new <- p_item[c0_parms][thr] - anl_deriv[[1]]/anl_deriv[[2]]
           p_item <- replace(p_item,names(p_new),p_new)
         }
       }
 
       # Slope updates.
-      if(item.type[item] != "rasch") {
+      if(item.type[item] != "Rasch") {
         a0_parms <- grep(paste0("a0_itm",item,"_"),names(p_item),fixed=T)
-        anl_deriv <- d_categorical_cpp("a0",
+        anl_deriv <- d_categorical("a0",
                                        p_item,
                                        etable,
                                        elist$theta,
-                                       predictor.data,
+                                       pred.data,
                                        thr=-1,
                                        cov=-1,
                                        samp_size,
                                        num_responses[[item]],
                                        num_items,
-                                       num_quadpts)
+                                   num.quad)
         p_new <- p_item[a0_parms] - anl_deriv[[1]]/anl_deriv[[2]]
         p_item <- replace(p_item,names(p_new),p_new)
       }
@@ -297,21 +297,21 @@ Mstep <-
 
           c1_parms <-
             grep(paste0("c1_itm",item,"_cov",cov),names(p_item),fixed=T)
-          anl_deriv <- d_categorical_cpp("c1",
+          anl_deriv <- d_categorical("c1",
                                          p_item,
                                          etable,
                                          elist$theta,
-                                         predictor.data,
+                                         pred.data,
                                          thr=-1,
-                                         cov-1,
+                                         cov,
                                          samp_size,
                                          num_responses[[item]],
                                          num_items,
-                                         num_quadpts)
+                                     num.quad)
           z <- p_item[c1_parms] - anl_deriv[[1]]/anl_deriv[[2]]
-          p_new <- ifelse(penalty.type == "mcp",
-                          firm_thresh_cpp(z,alpha,tau,gamma),
-                          soft_thresh_cpp(z,alpha,tau))
+          p_new <- ifelse(pen.type == "mcp",
+                          firm_thresh_cpp(z,alpha,tau_current,gamma),
+                          soft_thresh_cpp(z,alpha,tau_current))
           names(p_new) <- names(z)
           p_item <- replace(p_item,names(p_new),p_new)
         }
@@ -328,24 +328,24 @@ Mstep <-
             next
           }
 
-          if(item.type[item] != "rasch") {
+          if(item.type[item] != "Rasch") {
             a1_parms <-
               grep(paste0("a1_itm",item,"_cov",cov),names(p_item),fixed=T)
-            anl_deriv <- d_categorical_cpp("a1",
+            anl_deriv <- d_categorical("a1",
                                            p_item,
                                            etable,
                                            elist$theta,
-                                           predictor.data,
+                                           pred.data,
                                            thr=-1,
-                                           cov-1,
+                                           cov,
                                            samp_size,
                                            num_responses[[item]],
                                            num_items,
-                                           num_quadpts)
+                                       num.quad)
             z <- p_item[a1_parms] - anl_deriv[[1]]/anl_deriv[[2]]
-            p_new <- ifelse(penalty.type == "mcp",
-                            firm_thresh_cpp(z,alpha,tau,gamma),
-                            soft_thresh_cpp(z,alpha,tau))
+            p_new <- ifelse(pen.type == "mcp",
+                            firm_thresh_cpp(z,alpha,tau_current,gamma),
+                            soft_thresh_cpp(z,alpha,tau_current))
             names(p_new) <- names(z)
             p_item <- replace(p_item,names(p_new),p_new)
           }
@@ -363,27 +363,27 @@ Mstep <-
                                  etable,
                                  elist$theta,
                                  item.data[,item],
-                                 predictor.data,
+                                 pred.data,
                                  cov=NULL,
                                  samp_size,
                                  num_items,
-                                 num_quadpts)
+                                 num.quad)
       p_new <- p_item[c0_parms][1] - anl_deriv[[1]]/anl_deriv[[2]]
       p_item <- replace(p_item,names(p_new),p_new)
 
       # Slope updates.
-      if(item.type[item] != "rasch") {
+      if(item.type[item] != "Rasch") {
         a0_parms <- grep(paste0("a0_itm",item,"_"),names(p_item),fixed=T)
         anl_deriv <- d_mu_gaussian("a0",
                                    p_item,
                                    etable,
                                    elist$theta,
                                    item.data[,item],
-                                   predictor.data,
+                                   pred.data,
                                    cov=NULL,
                                    samp_size,
                                    num_items,
-                                   num_quadpts)
+                                   num.quad)
         p_new <- p_item[a0_parms] - anl_deriv[[1]]/anl_deriv[[2]]
         p_item <- replace(p_item,names(p_new),p_new)
       }
@@ -395,11 +395,11 @@ Mstep <-
                                     etable,
                                     elist$theta,
                                     item.data[,item],
-                                    predictor.data,
+                                    pred.data,
                                     cov=NULL,
                                     samp_size,
                                     num_items,
-                                    num_quadpts)
+                                    num.quad)
       p_new <- p_item[s0_parms][1] - anl_deriv[[1]]/anl_deriv[[2]]
       p_item <- replace(p_item,names(p_new),p_new)
 
@@ -415,11 +415,11 @@ Mstep <-
                                         etable,
                                         elist$theta,
                                         item.data[,item],
-                                        predictor.data,
+                                        pred.data,
                                         cov=cov,
                                         samp_size,
                                         num_items,
-                                        num_quadpts)
+                                        num.quad)
           p_new <- p_item[s1_parms][1] - anl_deriv[[1]]/anl_deriv[[2]]
           p_item <- replace(p_item,names(p_new),p_new)
         }
@@ -445,15 +445,15 @@ Mstep <-
                                      etable,
                                      elist$theta,
                                      item.data[,item],
-                                     predictor.data,
+                                     pred.data,
                                      cov,
                                      samp_size,
                                      num_items,
-                                     num_quadpts)
+                                     num.quad)
           z <- p_item[c1_parms] - anl_deriv[[1]]/anl_deriv[[2]]
-          p_new <- ifelse(penalty.type == "mcp",
-                          firm_thresh_cpp(z,alpha,tau,gamma),
-                          soft_thresh_cpp(z,alpha,tau))
+          p_new <- ifelse(pen.type == "mcp",
+                          firm_thresh_cpp(z,alpha,tau_current,gamma),
+                          soft_thresh_cpp(z,alpha,tau_current))
           names(p_new) <- names(z)
           p_item <- replace(p_item,names(p_new),p_new)
         }
@@ -470,7 +470,7 @@ Mstep <-
             next
           }
 
-          if(item.type[item] != "rasch"){
+          if(item.type[item] != "Rasch"){
             a1_parms <-
               grep(paste0("a1_itm",item,"_cov",cov),names(p_item),fixed=T)
             anl_deriv <- d_mu_gaussian("a1",
@@ -478,15 +478,15 @@ Mstep <-
                                        etable,
                                        elist$theta,
                                        item.data[,item],
-                                       predictor.data,
+                                       pred.data,
                                        cov,
                                        samp_size,
                                        num_items,
-                                       num_quadpts)
+                                       num.quad)
             z <- p_item[a1_parms] - anl_deriv[[1]]/anl_deriv[[2]]
-            p_new <- ifelse(penalty.type == "mcp",
-                            firm_thresh_cpp(z,alpha,tau,gamma),
-                            soft_thresh_cpp(z,alpha,tau))
+            p_new <- ifelse(pen.type == "mcp",
+                            firm_thresh_cpp(z,alpha,tau_current,gamma),
+                            soft_thresh_cpp(z,alpha,tau_current))
             names(p_new) <- names(z)
             p_item <- replace(p_item,names(p_new),p_new)
           }

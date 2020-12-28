@@ -14,11 +14,13 @@
 plot.regDIF <-
   function(x, y = NULL, method = "bic", legend.seed = 123, ...) {
 
-    tau <- x$tau
-    if(length(tau) < 2) stop(paste0("Must run multiple tau values to plot."),
-                             call. = TRUE)
-    dif.parms <- x$dif.item.parms[grep(paste0(c("int","slp"),collapse = "|")
-                                       ,rownames(x$dif.item.parms)), ]
+    tau <- x$tau_vec
+    if(length(tau) < 2) stop(
+      paste0("Must run multiple tau values to plot."),
+      call. = TRUE)
+    dif.parms <- x$dif.item.parms[grep(paste0(c("int","slp"),
+                                                   collapse = "|"),
+                                            rownames(x$dif.item.parms)), ]
     min.tau <- tau[which.min(unlist(x[method]))]
     dif.min.tau <- dif.parms[,which(tau == min.tau)]
     nonzero.dif <- dif.min.tau[!(dif.min.tau == 0)]

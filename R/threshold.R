@@ -6,10 +6,10 @@
 soft_threshold <-
   function(z,
            alpha,
-           lambda) {
+           tau) {
 
-  p_new <- sign(z)*max(abs(z/(1+lambda*(1-alpha))) -
-                         (lambda*alpha)/(1+lambda*(1-alpha)), 0)
+  p_new <- sign(z)*max(abs(z/(1+tau*(1-alpha))) -
+                         (tau*alpha)/(1+tau*(1-alpha)), 0)
 
   return(p_new)
 
@@ -19,13 +19,13 @@ soft_threshold <-
 firm_threshold <-
   function(z,
            alpha,
-           lambda,
+           tau,
            gamma) {
 
-  if(abs(z/(1+lambda*(1-alpha))) <= gamma*lambda){
-    p_new <- (gamma/(gamma-1))*soft_threshold(z,alpha,lambda)
+  if(abs(z/(1+tau*(1-alpha))) <= gamma*tau){
+    p_new <- (gamma/(gamma-1))*soft_threshold(z,alpha,tau)
   }else{
-    p_new <- z/(1+lambda*(1-alpha))
+    p_new <- z/(1+tau*(1-alpha))
   }
 
   return(p_new)

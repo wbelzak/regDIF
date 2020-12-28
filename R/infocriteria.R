@@ -4,19 +4,18 @@
 #' theta values.
 #' @param p List of parameters.
 #' @param item.data Matrix or dataframe of item responses.
-#' @param predictor.data Matrix or dataframe of DIF and/or impact predictors.
+#' @param pred.data Matrix or dataframe of DIF and/or impact predictors.
 #' @param mean_predictors Possibly different matrix of predictors for the mean
 #' impact equation.
 #' @param var_predictors Possibly different matrix of predictors for the
 #' variance impact equation.
 #' @param theta Matrix of adaptive theta values.
-#' @param tau Optional numeric vector of tau values.
 #' @param gamma Numeric value indicating the gamma parameter in the MCP
 #' function.
 #' @param samp_size Sample size in dataset.
 #' @param num_responses Number of responses for each item.
 #' @param num_items Number of items in dataset.
-#' @param num_quadpts Number of quadrature points used for approximating the
+#' @param quad.pts Number of quadrature points used for approximating the
 #' latent variable.
 #'
 #' @keywords internal
@@ -25,16 +24,15 @@ information_criteria <-
   function(elist,
            p,
            item.data,
-           predictor.data,
+           pred.data,
            mean_predictors,
            var_predictors,
            theta,
-           tau,
            gamma,
            samp_size,
            num_responses,
            num_items,
-           num_quadpts) {
+           quad.pts) {
 
   ll_dif <- 0
   for (item in 1:num_items) {
@@ -47,7 +45,7 @@ information_criteria <-
       etable[[resp]][which(
         !(etable[[resp]][,ncol(etable[[resp]])] == resp)),] <- 0
     }
-    etable <- lapply(etable, function(x) x[,1:num_quadpts])
+    etable <- lapply(etable, function(x) x[,1:quad.pts])
 
     #get item parameters
     p_item <- p[[item]]
@@ -57,27 +55,27 @@ information_criteria <-
       itemtrace <- gaussian_traceline_pts(p[[item]],
                                           theta,
                                           item.data[,item],
-                                          predictor.data,
+                                          pred.data,
                                           samp_size,
-                                          num_quadpts)
+                                          quad.pts)
       ll_dif_item <- -1*sum(etable[[1]]*log(itemtrace[[1]]), na.rm = TRUE)
 
     } else if (num_responses[item] == 2) {
       itemtrace <- bernoulli_traceline_pts(p[[item]],
                                            theta,
-                                           predictor.data,
+                                           pred.data,
                                            samp_size,
-                                           num_quadpts)
+                                           quad.pts)
       ll_dif_item <- -1*(sum(etable[[1]]*log(itemtrace[[1]]), na.rm = TRUE) +
                            sum(etable[[2]]*log(itemtrace[[2]]), na.rm = TRUE))
 
     } else if (num_responses[item] > 2){
       itemtrace <- categorical_traceline_pts(p[[item]],
                                              theta,
-                                             predictor.data,
+                                             pred.data,
                                              samp_size,
                                              num_responses[item],
-                                             num_quadpts)
+                                             quad.pts)
       ll_dif_item <- 0
       for(resp in 1:num_responses[item]){
       if(all(itemtrace[[resp]] == 0)){

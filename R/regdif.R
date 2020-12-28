@@ -4,39 +4,36 @@
 #'
 #' @usage
 #' regDIF(item.data,
-#'        predictor.data,
+#'        pred.data,
 #'        item.type = NULL,
-#'        penalty.type = NULL,
+#'        pen.type = NULL,
 #'        tau = NULL,
 #'        num.tau = 100,
-#'        max.tau = 2,
 #'        alpha = 1,
 #'        gamma = 3,
 #'        anchor = NULL,
-#'        impact.data = list(mean = NULL, var = NULL),
-#'        standardize = TRUE,
-#'        adaptive.quad = TRUE,
-#'        quadpts = 15,
+#'        stdz = TRUE,
+#'        adapt.quad = TRUE,
+#'        num.quad = ifelse(adapt.quad == TRUE, 15, 51),
 #'        control = list())
 #'
-#' @param item.data Matrix or dataframe of item responses. See below for
+#' @param item.data Matrix or data frame of item responses. See below for
 #' supported item types.
-#' @param predictor.data Matrix or dataframe of DIF and/or impact predictors.
-#' See below for option to specify different predictors for impact model.
+#' @param pred.data Matrix or data frame of DIF/impact predictors.
+#' See \code{control} option below to specify different predictors for impact
+#' model.
 #' @param item.type Optional character value or vector indicating the type of
 #' item to be modeled. The default is NULL, corresponding to a 2PL or graded
 #' item type. Different item types may be specified for a single model
 #' by providing a vector equal in length to the number of items in item.data.
 #' The options include:
 #' \itemize{
-#'    \item{\code{"rasch"} - Slopes constrained to 1 and intercepts freely
+#'    \item{\code{"Rasch"} - Slopes constrained to 1 and intercepts freely
 #'    estimated.}
-#'    \item{\code{"2pl"} - Slopes and intercepts freely estimated.}
-#'    \item{\code{"graded"} - Slopes, intercepts, and thresholds freely
-#'    estimated.}
-#'    \item{\code{"cfa"} - Not currently supported. Slopes and intercepts
-#'    freely estimated with continuous (Gaussian) item responses.}}
-#' @param penalty.type Optional character value indicating the penalty
+#'    \item{\code{"2PL"} - Slopes and intercepts freely estimated.}
+#'    \item{\code{"Graded"} - Slopes, intercepts, and thresholds freely
+#'    estimated.}}
+#' @param pen.type Optional character value indicating the penalty
 #' function to use. The default is NULL, corresponding to the LASSO function.
 #' The options include:
 #' \itemize{
@@ -51,9 +48,6 @@
 #' to smallest values (e.g., \code{seq(1,0,-.01)}.
 #' @param num.tau Numeric value indicating how many tau values to fit. The
 #' default is 100.
-#' @param max.tau Numberic value indicating the maximum tau parameter to use
-#' for internal construction of tau vector. Default is 2. Must be large enough
-#' to shrink all DIF effects to zero to begin with.
 #' @param alpha Numeric value indicating the alpha parameter in the elastic net
 #' penalty function. Alpha controls the degree to which LASSO or ridge is used
 #' during regularization. The default is 1, which is equivalent to LASSO.
@@ -68,27 +62,28 @@
 #' response(s) are anchors (e.g., \code{anchor = 1}). Default is \code{NULL},
 #' meaning at least one DIF effect per covariate will be fixed to zero as
 #' tau approaches 0 (required to identify the model).
-#' @param impact.data Optional list of matrices or data frames with predictors
-#' for mean and variance impact. Allows for different sets of predictors on
-#' the mean and variance impact equations compared to the item response DIF
-#' equations.
-#' @param standardize Logical value indicating whether to standardize DIF and
-#' impact covariates for regularization. Default is \code{TRUE}, as it is
-#' recommended that all covariates be on the same scale.
-#' @param adaptive.quad Logical value indicating whether to use adaptive
+#' @param stdz Logical value indicating whether to standardize DIF and
+#' impact predictors for regularization. Default is \code{TRUE}, as it is
+#' recommended that all predictors be on the same scale.
+#' @param adapt.quad Logical value indicating whether to use adaptive
 #' quadrature. The default is \code{TRUE}. If set to \code{FALSE}, it is
 #' recommended that 50 or more points be used.
-#' @param quadpts Numeric value indicating the number of quadrature points to
+#' @param num.quad Numeric value indicating the number of quadrature points to
 #' be used in approximating the latent variable distribution during estimation.
-#' Default is \code{15} when using adaptive quadrature.
-#' be used in approximating the latent variable distribution during estimation.
-#' Uses adaptive quadrature. Default is \code{15}.
-#' @param control Optional list of optimization parameters. May be:
+#' Default is \code{15} when using adaptive quadrature, or \code{51} when using
+#' fixed-point quadrature, to approximate the latent variable distribution.
+#' @param control Optional list of different model specifications and
+#' optimization parameters. May be:
 #' \describe{
+#'    \item{impact.data}{List of matrices or data frames with predictors for
+#'    mean and variance impact. Allows for different sets of predictors on the
+#'    mean and variance impact equations compared to the item response DIF
+#'    equations. Default is for all predictors to affect the mean and variance
+#'    equations.}
 #'    \item{tol}{Convergence threshold of EM algorithm. Default is
-#'    \code{10^-5}.}
+#'    \code{10^-4}.}
 #'    \item{maxiter}{Maximum number of EM iterations. Default is
-#'    \code{10000}.}}
+#'    \code{5000}.}}
 #'
 #' @return Function returns an object of class \code{regDIF}
 #'
@@ -98,8 +93,8 @@
 #' library(regDIF)
 #' head(ida)
 #' item.data <- ida[,1:6]
-#' predictor.data <- ida[,7:9]
-#' fit <- regDIF(item.data, predictor.data)
+#' pred.data <- ida[,7:9]
+#' fit <- regDIF(item.data, pred.data, num.tau = 10)
 #' summary(fit)
 #'
 #' }
@@ -110,76 +105,72 @@
 #'
 #' @export
 regDIF <- function(item.data,
-                   predictor.data,
+                   pred.data,
                    item.type = NULL,
-                   penalty.type = NULL,
+                   pen.type = NULL,
                    tau = NULL,
                    num.tau = 100,
-                   max.tau = 2,
                    alpha = 1,
                    gamma = 3,
                    anchor = NULL,
-                   impact.data = list(mean = NULL, var = NULL),
-                   standardize = TRUE,
-                   adaptive.quad = TRUE,
-                   quadpts = 15,
+                   stdz = TRUE,
+                   adapt.quad = TRUE,
+                   num.quad = ifelse(adapt.quad == TRUE, 15, 51),
                    control = list()) {
 
-
-  # Obtain larger tau if necessary.
-  need_larger_tau <- TRUE
-  tau_times <- 0
-  while(need_larger_tau | tau_times < 6){
-
-    # Increase tau.max if all penalized parameters have NOT been removed from
-    # model (unless specifying anchor item).
-    if(need_larger_tau == FALSE) break
-    if(tau_times > 0) {
-      max.tau <- max.tau*1.5
-      tau[1] <- tau[1]*1.5
-    }
-    # If too many tau.max values have been tried, stop.
-    if(tau_times == 5){
-      print(coef(data_scrub$final))
-      stop("max.tau is too small.\n  Three possible solutions:\n  1. Increase
-           max.tau large enough to ensure all DIF parameters are removed from
-           the model.\n  2. Standardize predictors if not already
-           standardized.\n  3. Provide anchor item(s).", call. = TRUE)
-    }
 
     # Pre-process data.
     call <- match.call()
     data_scrub <- preprocess(item.data,
-                             predictor.data,
+                             pred.data,
                              item.type,
                              num.tau,
-                             max.tau,
                              tau,
                              anchor,
-                             impact.data,
-                             standardize,
-                             quadpts,
+                             stdz,
+                             num.quad,
                              control,
+                             pen.type,
+                             adapt.quad,
                              call)
-    if(is.null(penalty.type)) penalty.type <- "lasso"
 
-    if(adaptive.quad == F && quadpts < 50) {
-      warning(paste0("Fixed quadrature should have 50 points or more to ",
-                     "yield precise estimates."))
+    # Identify minimum tau that removes all DIF.
+    if(isFALSE(data_scrub$id_tau)) {
+      max.tau <- identify_tau(data_scrub$p,
+                              data_scrub$item.data,
+                              data_scrub$pred.data,
+                              data_scrub$mean_predictors,
+                              data_scrub$var_predictors,
+                              data_scrub$item.type,
+                              data_scrub$pen.type,
+                              data_scrub$tau_vec,
+                              alpha,
+                              gamma,
+                              anchor,
+                              data_scrub$final.control,
+                              data_scrub$samp_size,
+                              data_scrub$num_items,
+                              data_scrub$num_responses,
+                              data_scrub$num_predictors,
+                              num.quad,
+                              adapt.quad)
+      data_scrub$p <- max.tau$p
+      data_scrub$tau_vec <- seq(max.tau$max_tau**(1/3),0,
+                                length.out = data_scrub$num.tau)**3
     }
 
     # Run Reg-DIF by looping through tau.
-    for(pen in 1:length(data_scrub$tau)){
+    for(pen in 1:data_scrub$num.tau){
 
       # Obtain regDIF estimates.
       estimates <- em_estimation(data_scrub$p,
                                  data_scrub$item.data,
-                                 data_scrub$predictor.data,
+                                 data_scrub$pred.data,
                                  data_scrub$mean_predictors,
                                  data_scrub$var_predictors,
                                  data_scrub$item.type,
-                                 penalty.type,
-                                 data_scrub$tau,
+                                 data_scrub$pen.type,
+                                 data_scrub$tau_vec,
                                  alpha,
                                  gamma,
                                  pen,
@@ -189,10 +180,9 @@ regDIF <- function(item.data,
                                  data_scrub$num_items,
                                  data_scrub$num_responses,
                                  data_scrub$num_predictors,
-                                 quadpts,
-                                 adaptive.quad)
+                                 num.quad,
+                                 adapt.quad)
 
-      # Stop if tau.max is too small on first run.
       p2 <- unlist(estimates[[1]])
       dif_parms <- p2[grep(paste0("cov"),names(p2))]
 
@@ -201,45 +191,36 @@ regDIF <- function(item.data,
       }
 
 
-      if(is.null(anchor) &
-         pen == 1 &
-         sum(abs(dif_parms)) > 0 &
-         alpha == 1
-         ) {
-        message("\nWarning: tau.max or user-defined tau value is too small
-                to penalize all parameters to zero without anchor item.
-                Automatically trying larger tau.max or tau value.")
-        tau_times <- tau_times + 1
-        break
-      } else{
-        need_larger_tau <- FALSE
+      if(is.null(anchor) & pen == 1 & sum(abs(dif_parms)) > 0 & alpha == 1) {
+        stop(paste0("\nWarning: Automatically-generated or user-defined tau",
+                    "value is too small to penalize all parameters to zero",
+                    "without anchor item. Larger values of tau are needed."))
       }
 
       # Post-process data.
       data_final <- postprocess(estimates,
                                 data_scrub$item.data,
-                                data_scrub$predictor.data,
+                                data_scrub$pred.data,
                                 data_scrub$mean_predictors,
                                 data_scrub$var_predictors,
-                                impact.data,
-                                data_scrub$tau,
+                                data_scrub$tau_vec,
                                 alpha,
                                 pen,
                                 anchor,
+                                control,
                                 data_scrub$final.control,
                                 data_scrub$final,
                                 data_scrub$samp_size,
                                 data_scrub$num_responses,
                                 data_scrub$num_predictors,
                                 data_scrub$num_items,
-                                quadpts)
+                                num.quad)
 
       # Update parameter estimates for next tau value.
       data_scrub$p <- estimates[[1]]
       data_scrub$final <- data_final
     }
 
-  }
 
   # Obtain final results.
   class(data_final) <- "regDIF"

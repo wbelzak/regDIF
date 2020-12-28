@@ -6,47 +6,47 @@
 \usage{
 preprocess(
   item.data,
-  predictor.data,
+  pred.data,
   item.type,
   num.tau,
-  max.tau,
   tau,
   anchor,
-  impact.data,
-  standardize,
-  quadpts,
+  stdz,
+  num.quad,
   control,
+  pen.type,
+  adapt.quad,
   call
 )
 }
 \arguments{
-\item{item.data}{Matrix or dataframe of item responses.}
+\item{item.data}{Matrix or data frame of item responses.}
+
+\item{pred.data}{Matrix or data frame of DIF and/or impact predictors.}
 
 \item{item.type}{Character value or vector indicating the item response
 distributions.}
 
 \item{num.tau}{Numeric value of how many to tau values to fit.}
 
-\item{max.tau}{Numberic value indicating the maximum tau parameter.}
-
 \item{tau}{Optional numeric vector of tau values.}
 
 \item{anchor}{Optional numeric value or vector indicating which item
 response(s) are anchors (e.g., \code{anchor = 1}).}
 
-\item{impact.data}{Optional list of matrices or data frames with predictors
-for mean and variance impact.}
+\item{stdz}{Logical value indicating whether to standardize DIF and
+impact predictors for regularization.}
 
-\item{standardize}{Logical value indicating whether to standardize DIF and
-impact covariates for regularization.}
+\item{num.quad}{Numeric value indicating the number of quadrature points.}
 
-\item{quadpts}{Numeric value indicating the number of quadrature points.}
+\item{control}{Optional list of additional model specification and
+optimization parameters.}
 
-\item{control}{Optional list of optimization parameters.}
+\item{pen.type}{Character indicating type of penalty.}
+
+\item{adapt.quad}{Logical determining whether to use adaptive quadrature.}
 
 \item{call}{Defined from regDIF.}
-
-\item{Matrix}{or dataframe of DIF and/or impact predictors.}
 }
 \description{
 Pre-process data.

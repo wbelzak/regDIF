@@ -4,24 +4,18 @@
 \alias{bernoulli_traceline_pts}
 \title{Binary item tracelines.}
 \usage{
-bernoulli_traceline_pts(
-  p_active,
-  theta,
-  predictor.data,
-  samp_size,
-  num_quadpts
-)
+bernoulli_traceline_pts(p_active, theta, pred.data, samp_size, quad.pts)
 }
 \arguments{
 \item{p_active}{Vector of item parameters.}
 
 \item{theta}{Matrix of adaptive theta values.}
 
-\item{predictor.data}{Matrix or dataframe of DIF and/or impact predictors.}
+\item{pred.data}{Matrix or dataframe of DIF and/or impact predictors.}
 
 \item{samp_size}{Sample size in dataset.}
 
-\item{num_quadpts}{Number of quadrature points used for approximating the
+\item{quad.pts}{Number of quadrature points used for approximating the
 latent variable.}
 }
 \description{

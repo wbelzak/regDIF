@@ -7,29 +7,29 @@
 Mstep(
   p,
   item.data,
-  predictor.data,
+  pred.data,
   mean_predictors,
   var_predictors,
   elist,
   item.type,
-  penalty.type,
-  tau,
+  pen.type,
+  tau_current,
   alpha,
   gamma,
   anchor,
   samp_size,
   num_responses,
   num_items,
-  num_quadpts,
+  num.quad,
   num_predictors
 )
 }
 \arguments{
 \item{p}{List of parameters.}
 
-\item{item.data}{Matrix or dataframe of item responses.}
+\item{item.data}{Matrix or data frame of item responses.}
 
-\item{predictor.data}{Matrix or dataframe of DIF and/or impact predictors.}
+\item{pred.data}{Matrix or data frame of DIF and/or impact predictors.}
 
 \item{mean_predictors}{Possibly different matrix of predictors for the mean
 impact equation.}
@@ -43,9 +43,10 @@ theta values.}
 \item{item.type}{Optional character value or vector indicating the type of
 item to be modeled.}
 
-\item{penalty.type}{Character value indicating the penalty function to use.}
+\item{pen.type}{Character value indicating the penalty function to use.}
 
-\item{tau}{Optional numeric vector of tau values.}
+\item{tau_current}{A single numeric value of tau that exists within
+\code{tau_vec}.}
 
 \item{alpha}{Numeric value indicating the alpha parameter in the elastic net
 penalty function.}
@@ -56,13 +57,13 @@ function.}
 \item{anchor}{Optional numeric value or vector indicating which item
 response(s) are anchors (e.g., \code{anchor = 1}).}
 
-\item{samp_size}{Sample size in dataset.}
+\item{samp_size}{Sample size in data set.}
 
 \item{num_responses}{Number of responses for each item.}
 
-\item{num_items}{Number of items in dataset.}
+\item{num_items}{Number of items in data set.}
 
-\item{num_quadpts}{Number of quadrature points used for approximating the
+\item{num.quad}{Number of quadrature points used for approximating the
 latent variable.}
 
 \item{num_predictors}{Number of predictors.}

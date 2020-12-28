@@ -8,9 +8,9 @@ gaussian_traceline_pts(
   p_active,
   theta,
   responses_item,
-  predictor.data,
+  pred.data,
   samp_size,
-  num_quadpts
+  quad.pts
 )
 }
 \arguments{
@@ -20,11 +20,11 @@ gaussian_traceline_pts(
 
 \item{responses_item}{Vector of item responses.}
 
-\item{predictor.data}{Matrix or dataframe of DIF and/or impact predictors.}
+\item{pred.data}{Matrix or dataframe of DIF and/or impact predictors.}
 
 \item{samp_size}{Sample size in dataset.}
 
-\item{num_quadpts}{Number of quadrature points used for approximating the
+\item{quad.pts}{Number of quadrature points used for approximating the
 latent variable.}
 }
 \description{

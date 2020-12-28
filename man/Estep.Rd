@@ -7,14 +7,14 @@
 Estep(
   p,
   item.data,
-  predictor.data,
+  pred.data,
   mean_predictors,
   var_predictors,
   samp_size,
   num_items,
   num_responses,
-  adaptive.quad,
-  num_quadpts
+  adapt.quad,
+  num.quad
 )
 }
 \arguments{
@@ -22,7 +22,7 @@ Estep(
 
 \item{item.data}{Matrix or dataframe of item responses.}
 
-\item{predictor.data}{Matrix or dataframe of DIF and/or impact predictors.}
+\item{pred.data}{Matrix or dataframe of DIF and/or impact predictors.}
 
 \item{mean_predictors}{Possibly different matrix of predictors for the mean
 impact equation.}
@@ -36,7 +36,7 @@ variance impact equation.}
 
 \item{num_responses}{Number of responses for each item.}
 
-\item{num_quadpts}{Number of quadrature points used for approximating the
+\item{num.quad}{Number of quadrature points used for approximating the
 latent variable.}
 }
 \description{

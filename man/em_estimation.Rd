@@ -7,12 +7,12 @@
 em_estimation(
   p,
   item.data,
-  predictor.data,
+  pred.data,
   mean_predictors,
   var_predictors,
   item.type,
-  penalty.type,
-  tau,
+  pen.type,
+  tau_vec,
   alpha,
   gamma,
   pen,
@@ -22,16 +22,16 @@ em_estimation(
   num_items,
   num_responses,
   num_predictors,
-  quadpts,
-  adaptive.quad
+  num.quad,
+  adapt.quad
 )
 }
 \arguments{
 \item{p}{List of parameters with starting values obtained from preprocess.}
 
-\item{item.data}{Matrix or dataframe of item responses.}
+\item{item.data}{Matrix or data frame of item responses.}
 
-\item{predictor.data}{Matrix or dataframe of DIF and/or impact predictors.}
+\item{pred.data}{Matrix or data frame of DIF and/or impact predictors.}
 
 \item{mean_predictors}{Possibly different matrix of predictors for the mean
 impact equation.}
@@ -42,9 +42,12 @@ variance impact equation.}
 \item{item.type}{Optional character value or vector indicating the type of
 item to be modeled.}
 
-\item{penalty.type}{Character value indicating the penalty function to use.}
+\item{pen.type}{Character value indicating the penalty function to use.}
 
-\item{tau}{Optional numeric vector of tau values.}
+\item{tau_vec}{Vector of tau values that either are automatically generated
+or provided by the user. The first \code{tau_vec} will be equal to \code{Inf}
+to identify a minimal value of tau in which all DIF is removed from the
+model.}
 
 \item{alpha}{Numeric value indicating the alpha parameter in the elastic net
 penalty function.}
@@ -52,27 +55,25 @@ penalty function.}
 \item{gamma}{Numeric value indicating the gamma parameter in the MCP
 function.}
 
+\item{pen}{Index for the tau vector.}
+
 \item{anchor}{Optional numeric value or vector indicating which item
 response(s) are anchors (e.g., \code{anchor = 1}).}
 
-\item{quadpts}{Numeric value indicating the number of quadrature points.}
+\item{final.control}{Control parameters.}
 
-\item{ntau}{Numeric value of how many to tau values to fit.}
+\item{samp_size}{Numeric value indicating the sample size.}
 
-\item{tau.max}{Numberic value indicating the maximum tau parameter.}
+\item{num_items}{Numeric value indicating the number of items.}
 
-\item{rasch}{Logical value indicating whether to constrain item slopes
-to 1 (i.e., equal slopes).}
+\item{num_responses}{Vector with number of responses for each item.}
 
-\item{impact.data}{Optional list of matrices or data frames with predictors
-for mean and variance impact.}
+\item{num_predictors}{Numeric value indicating the number of predictors.}
 
-\item{standardize}{Logical value indicating whether to standardize DIF and
-impact covariates for regularization.}
+\item{num.quad}{Numeric value indicating the number of quadrature points.}
 
-\item{control}{Optional list of optimization parameters.}
-
-\item{call}{Defined from regDIF.}
+\item{adapt.quad}{Logical value indicating whether to use adaptive quad.
+needs to be identified.}
 }
 \description{
 Penalized expectation-maximization algorithm.

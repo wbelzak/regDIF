@@ -8,16 +8,15 @@ information_criteria(
   elist,
   p,
   item.data,
-  predictor.data,
+  pred.data,
   mean_predictors,
   var_predictors,
   theta,
-  tau,
   gamma,
   samp_size,
   num_responses,
   num_items,
-  num_quadpts
+  quad.pts
 )
 }
 \arguments{
@@ -28,7 +27,7 @@ theta values.}
 
 \item{item.data}{Matrix or dataframe of item responses.}
 
-\item{predictor.data}{Matrix or dataframe of DIF and/or impact predictors.}
+\item{pred.data}{Matrix or dataframe of DIF and/or impact predictors.}
 
 \item{mean_predictors}{Possibly different matrix of predictors for the mean
 impact equation.}
@@ -37,8 +36,6 @@ impact equation.}
 variance impact equation.}
 
 \item{theta}{Matrix of adaptive theta values.}
-
-\item{tau}{Optional numeric vector of tau values.}
 
 \item{gamma}{Numeric value indicating the gamma parameter in the MCP
 function.}
@@ -49,7 +46,7 @@ function.}
 
 \item{num_items}{Number of items in dataset.}
 
-\item{num_quadpts}{Number of quadrature points used for approximating the
+\item{quad.pts}{Number of quadrature points used for approximating the
 latent variable.}
 }
 \description{

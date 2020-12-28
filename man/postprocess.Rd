@@ -7,21 +7,21 @@
 postprocess(
   estimates,
   item.data,
-  predictor.data,
+  pred.data,
   mean_predictors,
   var_predictors,
-  impact.data,
-  tau,
+  tau_vec,
   alpha,
   pen,
   anchor,
+  control,
   final.control,
   final,
   samp_size,
   num_responses,
   num_predictors,
   num_items,
-  num_quadpts
+  num.quad
 )
 }
 \arguments{
@@ -29,7 +29,7 @@ postprocess(
 
 \item{item.data}{Matrix or dataframe of item responses.}
 
-\item{predictor.data}{Matrix or dataframe of DIF and/or impact predictors.}
+\item{pred.data}{Matrix or dataframe of DIF and/or impact predictors.}
 
 \item{mean_predictors}{Possibly different matrix of predictors for the mean
 impact equation.}
@@ -37,10 +37,7 @@ impact equation.}
 \item{var_predictors}{Possibly different matrix of predictors for the
 variance impact equation.}
 
-\item{impact.data}{Optional list of matrices or data frames with predictors
-for mean and variance impact.}
-
-\item{tau}{Optional numeric vector of tau values.}
+\item{tau_vec}{Optional numeric vector of tau values.}
 
 \item{alpha}{Numeric value indicating the alpha parameter in the elastic net
 penalty function.}
@@ -49,7 +46,11 @@ penalty function.}
 
 \item{anchor}{Anchor item(s).}
 
-\item{final.control}{List of user-defined control parameters.}
+\item{control}{Optional list of user-defined control parameters}
+
+\item{final.control}{List of final control parameters.}
+
+\item{final}{List of model results.}
 
 \item{samp_size}{Sample size in dataset.}
 

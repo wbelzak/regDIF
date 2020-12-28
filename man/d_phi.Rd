@@ -13,7 +13,7 @@ d_phi(
   cov,
   samp_size,
   num_items,
-  num_quadpts
+  num.quad
 )
 }
 \arguments{
@@ -33,7 +33,7 @@ variance impact equation.}
 
 \item{num_items}{Number of items in dataset.}
 
-\item{num_quadpts}{Number of quadrature points used for approximating the
+\item{num.quad}{Number of quadrature points used for approximating the
 latent variable.}
 
 \item{p_active}{Vector of item parameters.}

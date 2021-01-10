@@ -1,7 +1,6 @@
 #' Maximization step.
 #'
-#' @param elist List of E-tables for item and impact equations, in addition to
-#' theta values.
+#' @param etable Matrix of E-table values for item and impact equations.
 #' @param p List of parameters.
 #' @param item.data Matrix or dataframe of item responses.
 #' @param pred.data Matrix or dataframe of DIF and/or impact predictors.
@@ -9,19 +8,19 @@
 #' impact equation.
 #' @param var_predictors Possibly different matrix of predictors for the
 #' variance impact equation.
-#' @param theta Matrix of adaptive theta values.
+#' @param theta Vector of theta values.
 #' @param gamma Numeric value indicating the gamma parameter in the MCP
 #' function.
-#' @param samp_size Sample size in dataset.
+#' @param samp_size Sample size in data set.
 #' @param num_responses Number of responses for each item.
-#' @param num_items Number of items in dataset.
-#' @param quad.pts Number of quadrature points used for approximating the
+#' @param num_items Number of items in data set.
+#' @param num.quad Number of quadrature points used for approximating the
 #' latent variable.
 #'
 #' @keywords internal
 #'
 information_criteria <-
-  function(elist,
+  function(etable,
            p,
            item.data,
            pred.data,
@@ -32,23 +31,19 @@ information_criteria <-
            samp_size,
            num_responses,
            num_items,
-           quad.pts) {
+           num.quad) {
 
   ll_dif <- 0
   for (item in 1:num_items) {
 
     # Obtain E-tables for each response category.
-    etable <- replicate(n=num_responses[item],
-                        elist[[1]][[item]],
+    etable_item <- replicate(n=num_responses[item],
+                        etable,
                         simplify = F)
     for(resp in 1:num_responses[item]) {
-      etable[[resp]][which(
-        !(etable[[resp]][,ncol(etable[[resp]])] == resp)),] <- 0
+      etable_item[[resp]][which(
+        !(item.data[,item] == resp)), ] <- 0
     }
-    etable <- lapply(etable, function(x) x[,1:quad.pts])
-
-    #get item parameters
-    p_item <- p[[item]]
 
     #compute negative log-likelihood values
     if(num_responses[item] == 1) {
@@ -56,32 +51,37 @@ information_criteria <-
                                           theta,
                                           item.data[,item],
                                           pred.data,
-                                          samp_size,
-                                          quad.pts)
+                                          samp_size)
       ll_dif_item <- -1*sum(etable[[1]]*log(itemtrace[[1]]), na.rm = TRUE)
 
     } else if (num_responses[item] == 2) {
-      itemtrace <- bernoulli_traceline_pts(p[[item]],
+      itemtrace <- bernoulli_traceline_cpp(p[[item]],
                                            theta,
                                            pred.data,
                                            samp_size,
-                                           quad.pts)
-      ll_dif_item <- -1*(sum(etable[[1]]*log(itemtrace[[1]]), na.rm = TRUE) +
-                           sum(etable[[2]]*log(itemtrace[[2]]), na.rm = TRUE))
+                                           num.quad)
+      ll_dif_item <- -1*(sum(etable_item[[1]]*log(1-itemtrace), na.rm = TRUE) +
+                           sum(etable_item[[2]]*log(itemtrace), na.rm = TRUE))
 
     } else if (num_responses[item] > 2){
-      itemtrace <- categorical_traceline_pts(p[[item]],
+      itemtrace <- cumulative_traceline_pts(p[[item]],
                                              theta,
                                              pred.data,
                                              samp_size,
                                              num_responses[item],
-                                             quad.pts)
+                                             num.quad)
       ll_dif_item <- 0
       for(resp in 1:num_responses[item]){
       if(all(itemtrace[[resp]] == 0)){
         log_itemtrace_cat <- 0
       } else{
-        log_itemtrace_cat <- log(itemtrace[[resp]])
+        if(resp == 1) {
+          log_itemtrace_cat <- log(1-itemtrace[[resp]])
+        } else if(resp == num_responses[item]) {
+          log_itemtrace_cat <- log(itemtrace[[resp]])
+        } else {
+          log_itemtrace_cat <- log(itemtrace[[resp-1]]-itemtrace[[resp]])
+        }
       }
         log_itemtrace_cat[is.infinite(log_itemtrace_cat)] <- NA
         ll_dif_item <- ll_dif_item +
@@ -93,23 +93,22 @@ information_criteria <-
   }
 
   # Obtain likelihood value for latent variable model
-  p_impact <- c(p[[num_items+1]],p[[num_items+2]])
-  alpha <- mean_predictors %*% p_impact[grep("g",names(p_impact),fixed=T)]
-  phi <- exp(var_predictors %*% p_impact[grep("b",names(p_impact),fixed=T)])
+  alpha <- mean_predictors %*% p[[num_items+1]]
+  phi <- exp(var_predictors %*% p[[num_items+2]])
   prior_scores <- t(sapply(1:samp_size,
                            function(x) {
-                             dnorm(theta[x,],
+                             dnorm(theta,
                                    mean = alpha[x],
                                    sd = sqrt(phi[x]))
                              }))
-  ll_impact <- -1*sum(elist[[2]]*log(prior_scores))
+  ll_impact <- -1*sum(etable*log(prior_scores))
 
   # Remove DIF parameters that equal zero from information crit calculation.
   p2 <- unlist(p)
   p2_base <- p2[c(grep("c0",names(p2)),grep("a0",names(p2)))]
   p2_cov <- p2[c(grep("c1",names(p2)),grep("a1",names(p2)))]
   p2_cov <- p2_cov[p2_cov != 0]
-  p2 <- c(p2_base,p2_cov,p_impact)
+  p2 <- c(p2_base,p2_cov,p[[num_items+1]],p[[num_items+2]])
   ll <- ll_impact + ll_dif
 
   # Compute AIC and BIC.

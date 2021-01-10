@@ -9,6 +9,7 @@
 #' variance impact equation.
 #' @param item.type Optional character value or vector indicating the type of
 #' item to be modeled.
+#' @param theta Vector of fixed quadrature points.
 #' @param pen.type Character value indicating the penalty function to use.
 #' @param tau_vec Vector of tau values that either are automatically generated
 #' or provided by the user. The first \code{tau_vec} will be equal to \code{Inf}
@@ -38,6 +39,7 @@ em_estimation <- function(p,
                           mean_predictors,
                           var_predictors,
                           item.type,
+                          theta,
                           pen.type,
                           tau_vec,
                           alpha,
@@ -62,11 +64,12 @@ em_estimation <- function(p,
 
 
     # E-step: Evaluate Q function with current parameter estimates p.
-    elist <- Estep(p,
+    etable <- Estep(p,
                    item.data,
                    pred.data,
                    mean_predictors,
                    var_predictors,
+                   theta,
                    samp_size,
                    num_items,
                    num_responses,
@@ -79,7 +82,8 @@ em_estimation <- function(p,
                pred.data,
                mean_predictors,
                var_predictors,
-               elist,
+               etable,
+               theta,
                item.type,
                pen.type,
                tau_vec[pen],
@@ -119,13 +123,13 @@ em_estimation <- function(p,
 
 
   # Get information criteria.
-  infocrit <- information_criteria(elist,
+  infocrit <- information_criteria(etable,
                                    p,
                                    item.data,
                                    pred.data,
                                    mean_predictors,
                                    var_predictors,
-                                   elist$theta,
+                                   theta,
                                    gamma,
                                    samp_size,
                                    num_responses,

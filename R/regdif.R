@@ -14,7 +14,7 @@
 #'        anchor = NULL,
 #'        stdz = TRUE,
 #'        adapt.quad = FALSE,
-#'        num.quad = ifelse(adapt.quad, 15, 51),
+#'        num.quad = if(adapt.quad) 15,
 #'        control = list())
 #'
 #' @param item.data Matrix or data frame of item responses. See below for
@@ -70,9 +70,10 @@
 #' \code{FALSE}.
 #' @param num.quad Numeric value indicating the number of quadrature points to
 #' be used in approximating the latent variable distribution during estimation.
-#' Default is \code{15} when using adaptive quadrature
-#' (not currently supported), or \code{51} when using fixed-point quadrature,
-#' to approximate the latent variable distribution.
+#' Default is \code{15} when using adaptive quadrature (not currently
+#' supported). When using fixed-point quadrature, the default is
+#' \code{21} points if all items are binary or \code{51} points if at least one
+#' item is ordered categorical.
 #' @param control Optional list of different model specifications and
 #' optimization parameters. May be:
 #' \describe{
@@ -116,7 +117,7 @@ regDIF <- function(item.data,
                    anchor = NULL,
                    stdz = TRUE,
                    adapt.quad = FALSE,
-                   num.quad = ifelse(adapt.quad, 15, 51),
+                   num.quad = if(adapt.quad) 15,
                    control = list()) {
 
 
@@ -155,7 +156,7 @@ regDIF <- function(item.data,
                                   data_scrub$num_items,
                                   data_scrub$num_responses,
                                   data_scrub$num_predictors,
-                                  num.quad,
+                                  data_scrub$num.quad,
                                   adapt.quad)
 
       p2 <- unlist(max.tau.fit$p)
@@ -190,7 +191,7 @@ regDIF <- function(item.data,
                                 data_scrub$num_responses,
                                 data_scrub$num_predictors,
                                 data_scrub$num_items,
-                                num.quad)
+                                data_scrub$num.quad)
 
       # Update parameter estimates.
       data_scrub$p <- max.tau.fit$p
@@ -220,7 +221,7 @@ regDIF <- function(item.data,
                                  data_scrub$num_items,
                                  data_scrub$num_responses,
                                  data_scrub$num_predictors,
-                                 num.quad,
+                                 data_scrub$num.quad,
                                  adapt.quad)
 
       if(!data_scrub$id_tau) {
@@ -251,7 +252,7 @@ regDIF <- function(item.data,
                                 data_scrub$num_responses,
                                 data_scrub$num_predictors,
                                 data_scrub$num_items,
-                                num.quad)
+                                data_scrub$num.quad)
 
       # Update parameter estimates for next tau value.
       data_scrub$p <- estimates[[1]]

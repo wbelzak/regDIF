@@ -77,13 +77,6 @@ preprocess <-
     warning(paste0("Adaptive quadrature is not fully supported. Fixed-point ",
                    "quadrature is recommended at this time."))
   }
-  if(adapt.quad == F && num.quad < 51) {
-    warning(paste0("When using fixed quadrature, greater than 50 points is ",
-                "recommended to yield precise estimates."))
-  }
-
-  # Define fixed quadrature points.
-  theta <- seq(-6, 6, length.out = num.quad)
 
   # Define number of tau values.
   if(is.null(tau)){
@@ -124,6 +117,21 @@ preprocess <-
       apply(item.data[,which(cat_items)],
             2,
             function(x) length(unique(na.omit(x))))
+  }
+
+
+  # Define fixed quadrature points.
+  if(is.null(num.quad) && all(num_responses == 2)) {
+    num.quad <- 21
+  } else if(is.null(num.quad) && any(num_responses > 2)) {
+    num.quad <- 51
+  }
+  theta <- seq(-6, 6, length.out = num.quad)
+
+  if(adapt.quad == F && num.quad < 21) {
+    warning(paste0("When using fixed quadrature, greater than 20 points for ",
+                   "binary item responses or 50 points for ordered ",
+                   "responses is recommended to yield precise estimates."))
   }
 
   # Standardize predictors.
@@ -225,6 +233,7 @@ preprocess <-
               pen.type = pen.type,
               tau_vec = tau_vec,
               num.tau = num.tau,
-              id_tau = id_tau))
+              id_tau = id_tau,
+              num.quad = num.quad))
 
 }

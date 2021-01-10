@@ -7,8 +7,8 @@
 #' impact equation.
 #' @param var_predictors Possibly different matrix of predictors for the
 #' variance impact equation.
-#' @param etable E-table matrix for item and impact equations.
-#' @param theta Vector of fixed quadrature points.
+#' @param etable E-table matrix for item and impact equations, in addition to
+#' theta values (possibly adaptive).
 #' @param item.type Optional character value or vector indicating the type of
 #' item to be modeled.
 #' @param pen.type Character value indicating the penalty function to use.
@@ -36,7 +36,6 @@ Mstep <-
            mean_predictors,
            var_predictors,
            etable,
-           theta,
            item.type,
            pen.type,
            tau_current,
@@ -48,6 +47,10 @@ Mstep <-
            num_items,
            num.quad,
            num_predictors) {
+
+  # Update theta and etable.
+  theta <- etable$theta
+  etable <- etable$etable
 
 
   # Latent mean impact updates.

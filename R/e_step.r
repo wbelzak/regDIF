@@ -37,6 +37,12 @@ Estep <-
     alpha <- mean_predictors %*% p[[num_items+1]]
     phi <- exp(var_predictors %*% p[[num_items+2]])
 
+    if(adapt.quad == TRUE) {
+      theta <- mean(alpha) +
+        sqrt(2*mean(phi))*statmod::gauss.quad(n = num.quad,
+                                              kind = "hermite")$nodes
+    }
+
     # Compute the trace lines.
     for (item in 1:num_items) {
       if(num_responses[item] == 1) {
@@ -102,8 +108,9 @@ Estep <-
 
     }
 
-    # E-table matrix to be used in Q function.
-    return(etable)
+    # E-table matrix to be used in Q function and (possibly adaptive)
+    # theta values.
+    return(list(etable=etable,theta=theta))
 
 
   }

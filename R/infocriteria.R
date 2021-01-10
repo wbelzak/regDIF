@@ -8,7 +8,6 @@
 #' impact equation.
 #' @param var_predictors Possibly different matrix of predictors for the
 #' variance impact equation.
-#' @param theta Vector of theta values.
 #' @param gamma Numeric value indicating the gamma parameter in the MCP
 #' function.
 #' @param samp_size Sample size in data set.
@@ -26,12 +25,15 @@ information_criteria <-
            pred.data,
            mean_predictors,
            var_predictors,
-           theta,
            gamma,
            samp_size,
            num_responses,
            num_items,
            num.quad) {
+
+  # Update theta and etable.
+  theta <- etable$theta
+  etable <- etable$etable
 
   ll_dif <- 0
   for (item in 1:num_items) {

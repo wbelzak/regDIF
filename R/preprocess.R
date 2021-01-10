@@ -74,7 +74,8 @@ preprocess <-
     stop("Anchor items must be numeric (e.g., anchor = 1).", call. = TRUE)
   }
   if(adapt.quad == T) {
-    stop(paste0("Adaptive quadrature not currently supported."))
+    warning(paste0("Adaptive quadrature is not fully supported. Fixed-point ",
+                   "quadrature is recommended at this time."))
   }
   if(adapt.quad == F && num.quad < 51) {
     warning(paste0("When using fixed quadrature, greater than 50 points is ",

@@ -11,7 +11,6 @@ Mstep(
   mean_predictors,
   var_predictors,
   etable,
-  theta,
   item.type,
   pen.type,
   tau_current,
@@ -38,9 +37,8 @@ impact equation.}
 \item{var_predictors}{Possibly different matrix of predictors for the
 variance impact equation.}
 
-\item{etable}{E-table matrix for item and impact equations.}
-
-\item{theta}{Vector of fixed quadrature points.}
+\item{etable}{E-table matrix for item and impact equations, in addition to
+theta values (possibly adaptive).}
 
 \item{item.type}{Optional character value or vector indicating the type of
 item to be modeled.}

@@ -11,7 +11,6 @@ information_criteria(
   pred.data,
   mean_predictors,
   var_predictors,
-  theta,
   gamma,
   samp_size,
   num_responses,
@@ -33,8 +32,6 @@ impact equation.}
 
 \item{var_predictors}{Possibly different matrix of predictors for the
 variance impact equation.}
-
-\item{theta}{Vector of theta values.}
 
 \item{gamma}{Numeric value indicating the gamma parameter in the MCP
 function.}

@@ -80,7 +80,6 @@ identify_tau <- function(p,
                mean_predictors,
                var_predictors,
                etable,
-               theta,
                item.type,
                pen.type,
                tau_vec[1],
@@ -125,7 +124,6 @@ identify_tau <- function(p,
                                    pred.data,
                                    mean_predictors,
                                    var_predictors,
-                                   theta,
                                    gamma,
                                    samp_size,
                                    num_responses,
@@ -138,7 +136,6 @@ identify_tau <- function(p,
                           mean_predictors,
                           var_predictors,
                           etable,
-                          theta,
                           item.type,
                           pen.type,
                           tau_vec[1],
@@ -167,7 +164,6 @@ identify_tau <- function(p,
 #' variance impact equation.
 #' @param etable Etable for item and impact equations, in addition to
 #' theta values.
-#' @param theta Vector of fixed quadrature points.
 #' @param item.type Optional character value or vector indicating the type of
 #' item to be modeled.
 #' @param pen.type Character value indicating the penalty function to use.
@@ -195,7 +191,6 @@ Mstep_id_tau <-
            mean_predictors,
            var_predictors,
            etable,
-           theta,
            item.type,
            pen.type,
            tau_current,
@@ -211,6 +206,10 @@ Mstep_id_tau <-
 
   # Last Mstep
   id_max_z <- 0
+
+  # Update theta and etable.
+  theta <- etable$theta
+  etable <- etable$etable
 
   # Maximize independent logistic regressions.
   for (item in 1:num_items) {

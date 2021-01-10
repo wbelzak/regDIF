@@ -11,7 +11,6 @@ Mstep_id_tau(
   mean_predictors,
   var_predictors,
   etable,
-  theta,
   item.type,
   pen.type,
   tau_current,
@@ -40,8 +39,6 @@ variance impact equation.}
 
 \item{etable}{Etable for item and impact equations, in addition to
 theta values.}
-
-\item{theta}{Vector of fixed quadrature points.}
 
 \item{item.type}{Optional character value or vector indicating the type of
 item to be modeled.}

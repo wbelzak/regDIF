@@ -9,9 +9,11 @@
 #' variance impact equation.
 #' @param item.type Optional character value or vector indicating the type of
 #' item to be modeled.
+#' @param theta Vector of fixed weights to approximate the latent variable.
 #' @param pen.type Character value indicating the penalty function to use.
 #' @param tau_vec Vector of tau values that either are automatically generated
 #' or provided by the user.
+#' @param num.tau Number of tau values to run Reg-DIF on.
 #' @param alpha Numeric value indicating the alpha parameter in the elastic net
 #' penalty function.
 #' @param gamma Numeric value indicating the gamma parameter in the MCP
@@ -34,8 +36,10 @@ identify_tau <- function(p,
                          mean_predictors,
                          var_predictors,
                          item.type,
+                         theta,
                          pen.type,
                          tau_vec,
+                         num.tau,
                          alpha,
                          gamma,
                          anchor,
@@ -57,16 +61,17 @@ identify_tau <- function(p,
         iter < final.control$maxit){
 
     # E-step: Evaluate Q function with current parameter estimates p.
-    elist <- Estep(p,
-                   item.data,
-                   pred.data,
-                   mean_predictors,
-                   var_predictors,
-                   samp_size,
-                   num_items,
-                   num_responses,
-                   adapt.quad,
-                   num.quad)
+    etable <- Estep(p,
+                    item.data,
+                    pred.data,
+                    mean_predictors,
+                    var_predictors,
+                    theta,
+                    samp_size,
+                    num_items,
+                    num_responses,
+                    adapt.quad,
+                    num.quad)
 
     # M-step: Optimize parameters.
     p <- Mstep(p,
@@ -74,7 +79,8 @@ identify_tau <- function(p,
                pred.data,
                mean_predictors,
                var_predictors,
-               elist,
+               etable,
+               theta,
                item.type,
                pen.type,
                tau_vec[1],
@@ -101,19 +107,38 @@ identify_tau <- function(p,
                      "values. Please input your own vector of tau values."))
     }
 
-    cat('\r', sprintf("Generating vector of tuning parameters..."))
+    cat('\r', sprintf("Models Completed: %d of %d  Iteration: %d  Change: %f",
+                      0,
+                      num.tau,
+                      iter,
+                      round(eps, nchar(final.control$tol))))
 
     utils::flush.console()
 
 
   }
 
+  # Get information criteria.
+  infocrit <- information_criteria(etable,
+                                   p,
+                                   item.data,
+                                   pred.data,
+                                   mean_predictors,
+                                   var_predictors,
+                                   theta,
+                                   gamma,
+                                   samp_size,
+                                   num_responses,
+                                   num_items,
+                                   num.quad)
+
   max_tau <- Mstep_id_tau(p,
                           item.data,
                           pred.data,
                           mean_predictors,
                           var_predictors,
-                          elist,
+                          etable,
+                          theta,
                           item.type,
                           pen.type,
                           tau_vec[1],
@@ -126,7 +151,7 @@ identify_tau <- function(p,
                           num.quad,
                           num_predictors)
 
-  return(list(p=p,max_tau=max_tau))
+  return(list(p=p,infocrit=infocrit,max_tau=max_tau))
 }
 
 
@@ -140,8 +165,9 @@ identify_tau <- function(p,
 #' impact equation.
 #' @param var_predictors Possibly different matrix of predictors for the
 #' variance impact equation.
-#' @param elist List of E-tables for item and impact equations, in addition to
+#' @param etable Etable for item and impact equations, in addition to
 #' theta values.
+#' @param theta Vector of fixed quadrature points.
 #' @param item.type Optional character value or vector indicating the type of
 #' item to be modeled.
 #' @param pen.type Character value indicating the penalty function to use.
@@ -168,7 +194,8 @@ Mstep_id_tau <-
            pred.data,
            mean_predictors,
            var_predictors,
-           elist,
+           etable,
+           theta,
            item.type,
            pen.type,
            tau_current,
@@ -189,21 +216,17 @@ Mstep_id_tau <-
   for (item in 1:num_items) {
 
     # Get posterior probabilities.
-    etable <- replicate(n=num_responses[item],
-                        elist[[1]][[item]],
+    etable_item <- replicate(n=num_responses[item],
+                        etable,
                         simplify = F)
 
     # Obtain E-tables for each response category.
     if(num_responses[item] > 1) {
       for(resp in 1:num_responses[item]) {
-        etable[[resp]][which(
-          !(etable[[resp]][, ncol(etable[[resp]])] == resp)), ] <- 0
+        etable_item[[resp]][which(
+          !(item.data[,item] == resp)), ] <- 0
       }
     }
-
-    # Get item parameters.
-    p_item <- p[[item]]
-    etable <- lapply(etable, function(x) x[,1:num.quad])
 
     # Bernoulli responses.
     if(num_responses[item] == 2) {
@@ -224,19 +247,16 @@ Mstep_id_tau <-
             next
           }
 
-          c1_parms <-
-            grep(paste0("c1_itm",item,"_cov",cov+1),names(p_item),fixed=T)
-          anl_deriv <- d_bernoulli_cpp("c1",
-                                       p_item,
-                                       etable[[1]],
-                                       etable[[2]],
-                                       elist$theta,
+          anl_deriv <- d_bernoulli("c1",
+                                       p[[item]],
+                                       etable_item,
+                                       theta,
                                        pred.data,
                                        cov,
                                        samp_size,
                                        num_items,
                                        num.quad)
-          z <- p_item[c1_parms] - anl_deriv[[1]]/anl_deriv[[2]]
+          z <- p[[item]][[3+cov]] - anl_deriv[[1]]/anl_deriv[[2]]
           id_max_z <- c(id_max_z,z)
         }
 
@@ -253,19 +273,17 @@ Mstep_id_tau <-
           }
 
           if(item.type[item] != "Rasch") {
-            a1_parms <-
-              grep(paste0("a1_itm",item,"_cov",cov+1),names(p_item),fixed=T)
-            anl_deriv <- d_bernoulli_cpp("a1",
-                                         p_item,
-                                         etable[[1]],
-                                         etable[[2]],
-                                         elist$theta,
+            anl_deriv <- d_bernoulli("a1",
+                                         p[[item]],
+                                         etable_item,
+                                         theta,
                                          pred.data,
                                          cov,
                                          samp_size,
                                          num_items,
                                          num.quad)
-            z <- p_item[a1_parms] - anl_deriv[[1]]/anl_deriv[[2]]
+            z <- p[[item]][[length(p[[item]])-2+cov]] -
+              anl_deriv[[1]]/anl_deriv[[2]]
             id_max_z <- c(id_max_z,z)
           }
 
@@ -291,12 +309,10 @@ Mstep_id_tau <-
             next
           }
 
-          c1_parms <-
-            grep(paste0("c1_itm",item,"_cov",cov),names(p_item),fixed=T)
           anl_deriv <- d_categorical("c1",
-                                     p_item,
-                                     etable,
-                                     elist$theta,
+                                     p[[item]],
+                                     etable_item,
+                                     theta,
                                      pred.data,
                                      thr=-1,
                                      cov,
@@ -304,7 +320,8 @@ Mstep_id_tau <-
                                      num_responses[[item]],
                                      num_items,
                                      num.quad)
-          z <- p_item[c1_parms] - anl_deriv[[1]]/anl_deriv[[2]]
+          z <- p[[item]][[num_responses[[item]]+cov]] -
+            anl_deriv[[1]]/anl_deriv[[2]]
           id_max_z <- c(id_max_z,z)
         }
 
@@ -321,12 +338,10 @@ Mstep_id_tau <-
           }
 
           if(item.type[item] != "Rasch") {
-            a1_parms <-
-              grep(paste0("a1_itm",item,"_cov",cov),names(p_item),fixed=T)
             anl_deriv <- d_categorical("a1",
-                                       p_item,
-                                       etable,
-                                       elist$theta,
+                                       p[[item]],
+                                       etable_item,
+                                       theta,
                                        pred.data,
                                        thr=-1,
                                        cov,
@@ -334,7 +349,8 @@ Mstep_id_tau <-
                                        num_responses[[item]],
                                        num_items,
                                        num.quad)
-            z <- p_item[a1_parms] - anl_deriv[[1]]/anl_deriv[[2]]
+            z <- p[[item]][[length(p[[item]])-ncol(pred.data)+cov]] -
+              anl_deriv[[1]]/anl_deriv[[2]]
             id_max_z <- c(id_max_z,z)
           }
         }
@@ -361,18 +377,18 @@ Mstep_id_tau <-
           }
 
           c1_parms <-
-            grep(paste0("c1_itm",item,"_cov",cov),names(p_item),fixed=T)
+            grep(paste0("c1_itm",item,"_cov",cov),names(p[[item]]),fixed=T)
           anl_deriv <- d_mu_gaussian("c1",
-                                     p_item,
-                                     etable,
-                                     elist$theta,
+                                     p[[item]],
+                                     etable_item,
+                                     theta,
                                      item.data[,item],
                                      pred.data,
                                      cov,
                                      samp_size,
                                      num_items,
                                      num.quad)
-          z <- p_item[c1_parms] - anl_deriv[[1]]/anl_deriv[[2]]
+          z <- p[[item]][[c1_parms]] - anl_deriv[[1]]/anl_deriv[[2]]
           id_max_z <- c(id_max_z,z)
         }
 
@@ -390,18 +406,18 @@ Mstep_id_tau <-
 
           if(item.type[item] != "Rasch"){
             a1_parms <-
-              grep(paste0("a1_itm",item,"_cov",cov),names(p_item),fixed=T)
+              grep(paste0("a1_itm",item,"_cov",cov),names(p[[item]]),fixed=T)
             anl_deriv <- d_mu_gaussian("a1",
-                                       p_item,
-                                       etable,
-                                       elist$theta,
+                                       p[[item]],
+                                       etable_item,
+                                       theta,
                                        item.data[,item],
                                        pred.data,
                                        cov,
                                        samp_size,
                                        num_items,
                                        num.quad)
-            z <- p_item[a1_parms] - anl_deriv[[1]]/anl_deriv[[2]]
+            z <- p[[item]][[a1_parms]] - anl_deriv[[1]]/anl_deriv[[2]]
             id_max_z <- c(id_max_z,z)
           }
         }

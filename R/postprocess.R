@@ -221,8 +221,7 @@ postprocess <-
     last <- sum(final$dif.item.parms[-1,pen] == 0)
 
     if((second_last - last) > (num_predictors*num_items)) {
-      print(final)
-      stop(paste0("Large increase in the number of DIF parameters ",
+      warning(paste0("Large increase in the number of DIF parameters ",
                   "from iteration ",
                   pen-1,
                   " to ",
@@ -239,7 +238,8 @@ postprocess <-
       sprintf(paste0("Models Completed: %d of %d  Iteration: %d  Change: %d",
                      "              "),
               pen, length(tau_vec), 0, 0))
-  utils::flush.console()
+
+  if(pen != length(tau_vec)) utils::flush.console()
 
   return(final)
 

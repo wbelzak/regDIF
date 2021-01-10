@@ -35,7 +35,7 @@ preprocess <-
 
   # Control parameters.
   final.control <- list(impact.data = list(mean = NULL, var = NULL),
-                        tol = 10^-4,
+                        tol = 10^-5,
                         maxit = 5000)
   if(length(control) > 0) final.control[names(control)] <- control
 
@@ -73,20 +73,25 @@ preprocess <-
   if(!is.null(anchor) && !is.numeric(anchor)) {
     stop("Anchor items must be numeric (e.g., anchor = 1).", call. = TRUE)
   }
+  if(adapt.quad == T) {
+    stop(paste0("Adaptive quadrature not currently supported."))
+  }
   if(adapt.quad == F && num.quad < 51) {
-    stop(paste0("Fixed quadrature must have at least 51 to ",
-                "yield precise estimates."))
+    warning(paste0("When using fixed quadrature, greater than 50 points is ",
+                "recommended to yield precise estimates."))
   }
 
+  # Define fixed quadrature points.
+  theta <- seq(-6, 6, length.out = num.quad)
 
   # Define number of tau values.
   if(is.null(tau)){
     tau_vec <- 1e20
-    id_tau <- FALSE
+    id_tau <- TRUE
   } else {
     num.tau <- length(tau)
     tau_vec <- tau
-    id_tau <- TRUE
+    id_tau <- FALSE
   }
 
   # Speeds up computation.
@@ -210,6 +215,7 @@ preprocess <-
               mean_predictors = mean_predictors,
               var_predictors = var_predictors,
               item.type = item.type,
+              theta = theta,
               final.control = final.control,
               num_responses = num_responses,
               num_predictors = num_predictors,

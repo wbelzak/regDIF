@@ -72,9 +72,9 @@ arma::vec dnormCpp(
 ///////////////////////////////////////////
 
 //[[Rcpp::export]]
-arma::mat bernoulli_traceline_deriv(
+arma::mat bernoulli_traceline_cpp(
     arma::vec p_item,
-    arma::mat theta,
+    arma::vec theta,
     arma::mat predictors,
     int samp_size,
     int num_quadpts
@@ -91,8 +91,8 @@ arma::mat bernoulli_traceline_deriv(
 
   // Loop through quadrature points
   for(int q = 0; q < num_quadpts; ++q){
-    traceline.col(q) = 1 / (1 + exp(-(p_c0 + predictors * p_c1 +
-      (p_a0 + predictors * p_a1) % theta.col(q))));
+    traceline.col(q) = 1/(1 + exp(-(p_c0 + predictors * p_c1 +
+      (p_a0 + predictors * p_a1) * theta[q])));
   }
 
   return traceline;
@@ -100,41 +100,9 @@ arma::mat bernoulli_traceline_deriv(
 
 
 //[[Rcpp::export]]
-List bernoulli_traceline_cpp(
-    arma::vec p_item,
-    arma::mat theta,
-    arma::mat predictors,
-    int samp_size,
-    int num_quadpts
-){
-
-  // split item parameter vector
-  double p_c0 = p_item(0,0);
-  double p_a0 = p_item(1,0);
-  arma::vec p_c1 = p_item.subvec(2,1+predictors.n_cols);
-  arma::vec p_a1 = p_item.subvec(2+predictors.n_cols,2*predictors.n_cols+1);
-
-  // create matrix to hold traceline
-  arma::mat traceline0 = arma::zeros(samp_size,num_quadpts);
-  arma::mat traceline1 = arma::zeros(samp_size,num_quadpts);
-
-  // Loop through quadrature points
-  for(int q = 0; q < num_quadpts; ++q){
-    traceline1.col(q) = 1/(1 + exp(-(p_c0 + predictors * p_c1 +
-      (p_a0 + predictors * p_a1) % theta.col(q))));
-  }
-  traceline0 = 1 - traceline1;
-
-  List traceline_list(2);
-  traceline_list[0] = traceline0;
-  traceline_list[1] = traceline1;
-  return traceline_list;
-}
-
-//[[Rcpp::export]]
 List categorical_traceline_cpp(
     arma::vec p_item,
-    arma::mat theta,
+    arma::vec theta,
     arma::mat predictors,
     int samp_size,
     int num_responses_item,
@@ -146,7 +114,7 @@ List categorical_traceline_cpp(
   arma::vec p_c0_thr = p_item.subvec(1,num_responses_item - 2);
   double p_a0 = p_item(num_responses_item - 1,0);
   arma::vec p_c1 = p_item.subvec(num_responses_item,
-                          num_responses_item + predictors.n_cols - 1);
+                                 num_responses_item + predictors.n_cols - 1);
   arma::vec p_a1 = p_item.subvec(num_responses_item + predictors.n_cols,
                                  num_responses_item + predictors.n_cols * 2 -
                                    1);
@@ -162,7 +130,7 @@ List categorical_traceline_cpp(
   for(int q = 0; q < num_quadpts; ++q){
     first_response.col(q) =
       1 - 1 / (1 + exp(-(p_c0_int + predictors * p_c1 +
-      (p_a0 + predictors * p_a1) % theta.col(q))));
+      (p_a0 + predictors * p_a1) * theta[q])));
   }
   traceline_list[0] = first_response;
 
@@ -171,7 +139,7 @@ List categorical_traceline_cpp(
   for(int q = 0; q < num_quadpts; ++q){
     last_response.col(q) =
       1 / (1 + exp(-(p_c0_int - p_c0_thr(num_responses_item - 3,0) +
-      predictors * p_c1 + (p_a0 + predictors * p_a1) % theta.col(q))));
+      predictors * p_c1 + (p_a0 + predictors * p_a1) * theta[q])));
   }
   traceline_list[num_responses_item - 1] = last_response;
 
@@ -182,29 +150,29 @@ List categorical_traceline_cpp(
     for(int q = 0; q < num_quadpts; ++q){
       second_response.col(q) =
         1 / (1 + exp(-(p_c0_int + predictors * p_c1 +
-        (p_a0 + predictors * p_a1) % theta.col(q)))) -
+        (p_a0 + predictors * p_a1) * theta[q]))) -
         1 / (1 + exp(-(p_c0_int - p_c0_thr(0,0) + predictors * p_c1 +
-        (p_a0 + predictors * p_a1) % theta.col(q))));
+        (p_a0 + predictors * p_a1) * theta[q])));
     }
     traceline_list[1] = second_response;
 
     if(num_responses_item > 3)
 
-    // Item Response 3 to J-1 Response (if more than 3 responses)
-    for(int r = 2; r < num_responses_item - 1; r++){
+      // Item Response 3 to J-1 Response (if more than 3 responses)
+      for(int r = 2; r < num_responses_item - 1; r++){
 
-      arma::mat next_response = traceline_list[r];
+        arma::mat next_response = traceline_list[r];
 
-      for(int q = 0; q < num_quadpts; q++){
-        next_response.col(q) =
-          1 / (1 + exp(-(p_c0_int - p_c0_thr(r-2,0) + predictors * p_c1 +
-          (p_a0 + predictors * p_a1) % theta.col(q)))) -
-          1 / (1 + exp(-(p_c0_int - p_c0_thr(r-1,0) + predictors * p_c1 +
-          (p_a0 + predictors * p_a1) % theta.col(q))));
+        for(int q = 0; q < num_quadpts; q++){
+          next_response.col(q) =
+            1 / (1 + exp(-(p_c0_int - p_c0_thr(r-2,0) + predictors * p_c1 +
+            (p_a0 + predictors * p_a1) * theta[q]))) -
+            1 / (1 + exp(-(p_c0_int - p_c0_thr(r-1,0) + predictors * p_c1 +
+            (p_a0 + predictors * p_a1) * theta[q])));
+        }
+
+        traceline_list[r] = next_response;
       }
-
-      traceline_list[r] = next_response;
-    }
   }
   return traceline_list;
 }
@@ -213,7 +181,7 @@ List categorical_traceline_cpp(
 //[[Rcpp::export]]
 List cumulative_traceline_cpp(
     arma::vec p_item,
-    arma::mat theta,
+    arma::vec theta,
     arma::mat predictors,
     int samp_size,
     int num_responses_item,
@@ -241,25 +209,25 @@ List cumulative_traceline_cpp(
   for(int q = 0; q < num_quadpts; ++q){
     first_response.col(q) =
       1 / (1 + exp(-(p_c0_int + predictors * p_c1 +
-      (p_a0 + predictors * p_a1) % theta.col(q))));
+      (p_a0 + predictors * p_a1) * theta[q])));
   }
   traceline_list[0] = first_response;
 
   if(num_responses_item > 2){
 
-      // Item Response 2 to J-1 Response
-      for(int r = 1; r < num_responses_item - 1; r++){
+    // Item Response 2 to J-1 Response
+    for(int r = 1; r < num_responses_item - 1; r++){
 
-        arma::mat next_response = traceline_list[r];
+      arma::mat next_response = traceline_list[r];
 
-        for(int q = 0; q < num_quadpts; q++){
-          next_response.col(q) =
-            1 / (1 + exp(-(p_c0_int - p_c0_thr(r-1,0) + predictors * p_c1 +
-            (p_a0 + predictors * p_a1) % theta.col(q))));
-        }
-
-        traceline_list[r] = next_response;
+      for(int q = 0; q < num_quadpts; q++){
+        next_response.col(q) =
+          1 / (1 + exp(-(p_c0_int - p_c0_thr(r-1,0) + predictors * p_c1 +
+          (p_a0 + predictors * p_a1) * theta[q])));
       }
+
+      traceline_list[r] = next_response;
+    }
   }
   return traceline_list;
 }
@@ -269,14 +237,14 @@ List cumulative_traceline_cpp(
 ////////////////////////////////////////////
 
 
-  /////////////// ALPHA - IMPACT ////////////////
+/////////////// ALPHA - IMPACT ////////////////
 
 //[[Rcpp::export]]
 List d_alpha_cpp(
     arma::vec p_alpha,
     arma::vec p_phi,
-    arma::mat etable_all,
-    arma::mat theta,
+    arma::mat etable,
+    arma::vec theta,
     arma::mat mean_predictors,
     arma::mat var_predictors,
     int cov,
@@ -294,17 +262,20 @@ List d_alpha_cpp(
     eta_d.col(q) = mean_predictors.col(cov);
   }
 
+
   arma::mat d1_trace = arma::zeros(samp_size,num_quadpts);
   arma::mat d2_trace = arma::zeros(samp_size,num_quadpts);
   for(int i = 0; i < samp_size; i++){
-    d1_trace.row(i) = eta_d.row(i)/phi_impact[i] % (theta.row(i) -
+    d1_trace.row(i) = eta_d.row(i)/phi_impact[i] % (theta.t() -
       alpha_impact[i]);
     d2_trace.row(i) = -pow(eta_d.row(i),2)/phi_impact[i];
   }
 
+
+
   List dlist(2);
-  dlist[0] = sum(sum(etable_all % d1_trace));
-  dlist[1] = sum(sum(etable_all % d2_trace));
+  dlist[0] = sum(sum(etable % d1_trace));
+  dlist[1] = sum(sum(etable % d2_trace));
 
   return(dlist);
 
@@ -317,8 +288,8 @@ List d_alpha_cpp(
 List d_phi_cpp(
     arma::vec p_alpha,
     arma::vec p_phi,
-    arma::mat etable_all,
-    arma::mat theta,
+    arma::mat etable,
+    arma::vec theta,
     arma::mat mean_predictors,
     arma::mat var_predictors,
     int cov,
@@ -337,15 +308,15 @@ List d_phi_cpp(
   arma::mat d1_trace = arma::zeros(samp_size,num_quadpts);
   arma::mat d2_trace = arma::zeros(samp_size,num_quadpts);
   for(int i = 0; i < samp_size; i++){
-    d1_trace.row(i) = eta_d1[i] * (pow((theta.row(i) - alpha_impact[i]),2) /
+    d1_trace.row(i) = eta_d1[i] * (pow((theta.t() - alpha_impact[i]),2) /
       pow(phi_impact[i],(3.0/2)) - 1 / sqrt(phi_impact[i]));
     d2_trace.row(i) = -2 * eta_d2[i] * (pow(phi_impact[i],(-3.0/2)) *
-      pow((theta.row(i) - alpha_impact[i]),2));
+      pow((theta.t() - alpha_impact[i]),2));
   }
 
   List dlist(2);
-  dlist[0] = sum(sum(etable_all % d1_trace));
-  dlist[1] = sum(sum(etable_all % d2_trace));
+  dlist[0] = sum(sum(etable % d1_trace));
+  dlist[1] = sum(sum(etable % d2_trace));
 
   return(dlist);
 
@@ -360,7 +331,7 @@ List d_bernoulli_cpp(
     arma::vec p_item,
     arma::mat etable1,
     arma::mat etable2,
-    arma::mat theta,
+    arma::vec theta,
     arma::mat predictors,
     int cov,
     int samp_size,
@@ -372,22 +343,25 @@ List d_bernoulli_cpp(
   if(parm == "c0"){
     eta_d.ones();
   } else if(parm == "a0"){
-    eta_d = theta;
+    for(int q = 0; q < num_quadpts; q++){
+      eta_d.col(q) = eta_d.col(q) + theta[q];
+    }
   } else if(parm == "c1"){
     for(int q = 0; q < num_quadpts; q++){
       eta_d.col(q) = predictors.col(cov);
     }
   } else if(parm == "a1"){
     for(int q = 0; q < num_quadpts; q++){
-      eta_d.col(q) = predictors.col(cov) % theta.col(q);
+      eta_d.col(q) = predictors.col(cov) * theta[q];
     }
   }
 
-  arma::mat traceline = bernoulli_traceline_deriv(p_item,
-                                                  theta,
-                                                  predictors,
-                                                  samp_size,
-                                                  num_quadpts);
+
+  arma::mat traceline = bernoulli_traceline_cpp(p_item,
+                                                theta,
+                                                predictors,
+                                                samp_size,
+                                                num_quadpts);
 
   List dlist(2);
   dlist[0] = sum(sum((1-traceline) % eta_d % etable2)) +
@@ -406,7 +380,7 @@ List d_categorical_cpp(
     std::string parm,
     arma::vec p_item,
     Rcpp::List etable,
-    arma::mat theta,
+    arma::vec theta,
     arma::mat predictors,
     int thr,
     int cov,
@@ -420,14 +394,16 @@ List d_categorical_cpp(
   if(parm == "c0"){
     eta_d.ones();
   } else if(parm == "a0"){
-    eta_d = theta;
+    for(int q = 0; q < num_quadpts; q++){
+      eta_d.col(q) = eta_d.col(q) + theta[q];
+    }
   } else if(parm == "c1"){
     for(int q = 0; q < num_quadpts; q++){
       eta_d.col(q) = predictors.col(cov-1);
     }
   } else if(parm == "a1"){
     for(int q = 0; q < num_quadpts; q++){
-      eta_d.col(q) = predictors.col(cov-1) % theta.col(q);
+      eta_d.col(q) = predictors.col(cov-1) * theta[q];
     }
   }
 
@@ -515,4 +491,5 @@ List d_categorical_cpp(
   return(dlist);
 
 }
+
 

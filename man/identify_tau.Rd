@@ -11,8 +11,10 @@ identify_tau(
   mean_predictors,
   var_predictors,
   item.type,
+  theta,
   pen.type,
   tau_vec,
+  num.tau,
   alpha,
   gamma,
   anchor,
@@ -41,10 +43,14 @@ variance impact equation.}
 \item{item.type}{Optional character value or vector indicating the type of
 item to be modeled.}
 
+\item{theta}{Vector of fixed weights to approximate the latent variable.}
+
 \item{pen.type}{Character value indicating the penalty function to use.}
 
 \item{tau_vec}{Vector of tau values that either are automatically generated
 or provided by the user.}
+
+\item{num.tau}{Number of tau values to run Reg-DIF on.}
 
 \item{alpha}{Numeric value indicating the alpha parameter in the elastic net
 penalty function.}

@@ -10,6 +10,7 @@ Estep(
   pred.data,
   mean_predictors,
   var_predictors,
+  theta,
   samp_size,
   num_items,
   num_responses,
@@ -29,6 +30,8 @@ impact equation.}
 
 \item{var_predictors}{Possibly different matrix of predictors for the
 variance impact equation.}
+
+\item{theta}{Vector of fixed quadrature points.}
 
 \item{samp_size}{Sample size in dataset.}
 

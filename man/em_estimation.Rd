@@ -11,6 +11,7 @@ em_estimation(
   mean_predictors,
   var_predictors,
   item.type,
+  theta,
   pen.type,
   tau_vec,
   alpha,
@@ -41,6 +42,8 @@ variance impact equation.}
 
 \item{item.type}{Optional character value or vector indicating the type of
 item to be modeled.}
+
+\item{theta}{Vector of fixed quadrature points.}
 
 \item{pen.type}{Character value indicating the penalty function to use.}
 

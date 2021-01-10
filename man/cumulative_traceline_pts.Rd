@@ -10,13 +10,13 @@ cumulative_traceline_pts(
   pred.data,
   samp_size,
   num_responses_item,
-  quad.pts
+  num.quad
 )
 }
 \arguments{
 \item{p_active}{Vector of item parameters.}
 
-\item{theta}{Matrix of adaptive theta values.}
+\item{theta}{Vector of theta values.}
 
 \item{pred.data}{Matrix or dataframe of DIF and/or impact predictors.}
 
@@ -24,7 +24,7 @@ cumulative_traceline_pts(
 
 \item{num_responses_item}{Number of responses for item.}
 
-\item{quad.pts}{Number of quadrature points used for approximating the
+\item{num.quad}{Number of quadrature points used for approximating the
 latent variable.}
 }
 \description{

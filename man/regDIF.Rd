@@ -14,8 +14,8 @@ regDIF(item.data,
        gamma = 3,
        anchor = NULL,
        stdz = TRUE,
-       adapt.quad = TRUE,
-       num.quad = ifelse(adapt.quad == TRUE, 15, 51),
+       adapt.quad = FALSE,
+       num.quad = ifelse(adapt.quad, 15, 51),
        control = list())
 }
 \arguments{
@@ -77,14 +77,15 @@ tau approaches 0 (required to identify the model).}
 impact predictors for regularization. Default is \code{TRUE}, as it is
 recommended that all predictors be on the same scale.}
 
-\item{adapt.quad}{Logical value indicating whether to use adaptive
-quadrature. The default is \code{TRUE}. If set to \code{FALSE}, it is
-recommended that 50 or more points be used.}
+\item{adapt.quad}{Adaptive quadrature is not currently supported.
+Logical value indicating whether to use adaptive quadrature. The default is
+\code{FALSE}.}
 
 \item{num.quad}{Numeric value indicating the number of quadrature points to
 be used in approximating the latent variable distribution during estimation.
-Default is \code{15} when using adaptive quadrature, or \code{51} when using
-fixed-point quadrature, to approximate the latent variable distribution.}
+Default is \code{15} when using adaptive quadrature
+(not currently supported), or \code{51} when using fixed-point quadrature,
+to approximate the latent variable distribution.}
 
 \item{control}{Optional list of different model specifications and
 optimization parameters. May be:
@@ -95,7 +96,7 @@ optimization parameters. May be:
    equations. Default is for all predictors to affect the mean and variance
    equations.}
    \item{tol}{Convergence threshold of EM algorithm. Default is
-   \code{10^-4}.}
+   \code{10^-5}.}
    \item{maxiter}{Maximum number of EM iterations. Default is
    \code{5000}.}}}
 }

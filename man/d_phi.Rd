@@ -6,7 +6,7 @@
 \usage{
 d_phi(
   p_impact,
-  etable_all,
+  etable,
   theta,
   mean_predictors,
   var_predictors,
@@ -17,8 +17,6 @@ d_phi(
 )
 }
 \arguments{
-\item{etable_all}{E-table for impact.}
-
 \item{theta}{Matrix of adaptive theta values.}
 
 \item{mean_predictors}{Possibly different matrix of predictors for the mean
@@ -37,6 +35,8 @@ variance impact equation.}
 latent variable.}
 
 \item{p_active}{Vector of item parameters.}
+
+\item{etable_all}{E-table for impact.}
 }
 \description{
 Partial derivatives for mean impact equation.

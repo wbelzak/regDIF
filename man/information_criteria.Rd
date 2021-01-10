@@ -5,7 +5,7 @@
 \title{Maximization step.}
 \usage{
 information_criteria(
-  elist,
+  etable,
   p,
   item.data,
   pred.data,
@@ -16,12 +16,11 @@ information_criteria(
   samp_size,
   num_responses,
   num_items,
-  quad.pts
+  num.quad
 )
 }
 \arguments{
-\item{elist}{List of E-tables for item and impact equations, in addition to
-theta values.}
+\item{etable}{Matrix of E-table values for item and impact equations.}
 
 \item{p}{List of parameters.}
 
@@ -35,18 +34,18 @@ impact equation.}
 \item{var_predictors}{Possibly different matrix of predictors for the
 variance impact equation.}
 
-\item{theta}{Matrix of adaptive theta values.}
+\item{theta}{Vector of theta values.}
 
 \item{gamma}{Numeric value indicating the gamma parameter in the MCP
 function.}
 
-\item{samp_size}{Sample size in dataset.}
+\item{samp_size}{Sample size in data set.}
 
 \item{num_responses}{Number of responses for each item.}
 
-\item{num_items}{Number of items in dataset.}
+\item{num_items}{Number of items in data set.}
 
-\item{quad.pts}{Number of quadrature points used for approximating the
+\item{num.quad}{Number of quadrature points used for approximating the
 latent variable.}
 }
 \description{

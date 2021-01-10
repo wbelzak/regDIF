@@ -7,7 +7,7 @@
 d_bernoulli(
   parm,
   p_item,
-  etable,
+  etable_item,
   theta,
   pred.data,
   cov,
@@ -21,7 +21,7 @@ d_bernoulli(
 
 \item{p_item}{Vector of item parameters.}
 
-\item{etable}{E-table for impact.}
+\item{etable_item}{E-table for item.}
 
 \item{theta}{Matrix of adaptive theta values.}
 

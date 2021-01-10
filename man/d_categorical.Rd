@@ -7,7 +7,7 @@
 d_categorical(
   parm,
   p_item,
-  etable,
+  etable_item,
   theta,
   pred.data,
   thr,
@@ -23,7 +23,7 @@ d_categorical(
 
 \item{p_item}{Vector of item parameters.}
 
-\item{etable}{E-table for impact.}
+\item{etable_item}{E-table for impact.}
 
 \item{theta}{Matrix of adaptive theta values.}
 

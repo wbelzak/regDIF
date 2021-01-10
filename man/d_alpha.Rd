@@ -6,7 +6,7 @@
 \usage{
 d_alpha(
   p_impact,
-  etable_all,
+  etable,
   theta,
   mean_predictors,
   var_predictors,
@@ -17,8 +17,6 @@ d_alpha(
 )
 }
 \arguments{
-\item{etable_all}{E-table for impact.}
-
 \item{theta}{Matrix of adaptive theta values.}
 
 \item{mean_predictors}{Possibly different matrix of predictors for the mean
@@ -29,14 +27,16 @@ variance impact equation.}
 
 \item{cov}{Covariate being maximized.}
 
-\item{samp_size}{Sample size in dataset.}
+\item{samp_size}{Sample size in data set.}
 
-\item{num_items}{Number of items in dataset.}
+\item{num_items}{Number of items in data set.}
 
 \item{num.quad}{Number of quadrature points used for approximating the
 latent variable.}
 
 \item{p_active}{Vector of item parameters.}
+
+\item{etable_all}{E-table for impact.}
 }
 \description{
 Partial derivatives for mean impact equation.

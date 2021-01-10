@@ -7,7 +7,7 @@
 d_mu_gaussian(
   parm,
   p_item,
-  etable,
+  etable_item,
   theta,
   responses_item,
   pred.data,
@@ -22,7 +22,7 @@ d_mu_gaussian(
 
 \item{p_item}{Vector of item parameters.}
 
-\item{etable}{E-table for impact.}
+\item{etable_item}{E-table for impact.}
 
 \item{theta}{Matrix of adaptive theta values.}
 

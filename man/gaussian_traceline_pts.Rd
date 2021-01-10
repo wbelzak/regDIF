@@ -4,28 +4,18 @@
 \alias{gaussian_traceline_pts}
 \title{Continuous tracelines.}
 \usage{
-gaussian_traceline_pts(
-  p_active,
-  theta,
-  responses_item,
-  pred.data,
-  samp_size,
-  quad.pts
-)
+gaussian_traceline_pts(p_active, theta, responses_item, pred.data, samp_size)
 }
 \arguments{
 \item{p_active}{Vector of item parameters.}
 
-\item{theta}{Matrix of adaptive theta values.}
+\item{theta}{Vector of theta values.}
 
 \item{responses_item}{Vector of item responses.}
 
 \item{pred.data}{Matrix or dataframe of DIF and/or impact predictors.}
 
 \item{samp_size}{Sample size in dataset.}
-
-\item{quad.pts}{Number of quadrature points used for approximating the
-latent variable.}
 }
 \description{
 Continuous tracelines.

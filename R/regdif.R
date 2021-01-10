@@ -13,8 +13,8 @@
 #'        gamma = 3,
 #'        anchor = NULL,
 #'        stdz = TRUE,
-#'        adapt.quad = TRUE,
-#'        num.quad = ifelse(adapt.quad == TRUE, 15, 51),
+#'        adapt.quad = FALSE,
+#'        num.quad = ifelse(adapt.quad, 15, 51),
 #'        control = list())
 #'
 #' @param item.data Matrix or data frame of item responses. See below for
@@ -65,13 +65,14 @@
 #' @param stdz Logical value indicating whether to standardize DIF and
 #' impact predictors for regularization. Default is \code{TRUE}, as it is
 #' recommended that all predictors be on the same scale.
-#' @param adapt.quad Logical value indicating whether to use adaptive
-#' quadrature. The default is \code{TRUE}. If set to \code{FALSE}, it is
-#' recommended that 50 or more points be used.
+#' @param adapt.quad Adaptive quadrature is not currently supported.
+#' Logical value indicating whether to use adaptive quadrature. The default is
+#' \code{FALSE}.
 #' @param num.quad Numeric value indicating the number of quadrature points to
 #' be used in approximating the latent variable distribution during estimation.
-#' Default is \code{15} when using adaptive quadrature, or \code{51} when using
-#' fixed-point quadrature, to approximate the latent variable distribution.
+#' Default is \code{15} when using adaptive quadrature
+#' (not currently supported), or \code{51} when using fixed-point quadrature,
+#' to approximate the latent variable distribution.
 #' @param control Optional list of different model specifications and
 #' optimization parameters. May be:
 #' \describe{
@@ -81,7 +82,7 @@
 #'    equations. Default is for all predictors to affect the mean and variance
 #'    equations.}
 #'    \item{tol}{Convergence threshold of EM algorithm. Default is
-#'    \code{10^-4}.}
+#'    \code{10^-5}.}
 #'    \item{maxiter}{Maximum number of EM iterations. Default is
 #'    \code{5000}.}}
 #'
@@ -114,8 +115,8 @@ regDIF <- function(item.data,
                    gamma = 3,
                    anchor = NULL,
                    stdz = TRUE,
-                   adapt.quad = TRUE,
-                   num.quad = ifelse(adapt.quad == TRUE, 15, 51),
+                   adapt.quad = FALSE,
+                   num.quad = ifelse(adapt.quad, 15, 51),
                    control = list()) {
 
 
@@ -135,32 +136,70 @@ regDIF <- function(item.data,
                              call)
 
     # Identify minimum tau that removes all DIF.
-    if(isFALSE(data_scrub$id_tau)) {
-      max.tau <- identify_tau(data_scrub$p,
-                              data_scrub$item.data,
-                              data_scrub$pred.data,
-                              data_scrub$mean_predictors,
-                              data_scrub$var_predictors,
-                              data_scrub$item.type,
-                              data_scrub$pen.type,
-                              data_scrub$tau_vec,
-                              alpha,
-                              gamma,
-                              anchor,
-                              data_scrub$final.control,
-                              data_scrub$samp_size,
-                              data_scrub$num_items,
-                              data_scrub$num_responses,
-                              data_scrub$num_predictors,
-                              num.quad,
-                              adapt.quad)
-      data_scrub$p <- max.tau$p
-      data_scrub$tau_vec <- seq(max.tau$max_tau**(1/3),0,
+    if(data_scrub$id_tau) {
+      max.tau.fit <- identify_tau(data_scrub$p,
+                                  data_scrub$item.data,
+                                  data_scrub$pred.data,
+                                  data_scrub$mean_predictors,
+                                  data_scrub$var_predictors,
+                                  data_scrub$item.type,
+                                  data_scrub$theta,
+                                  data_scrub$pen.type,
+                                  data_scrub$tau_vec,
+                                  num.tau,
+                                  alpha,
+                                  gamma,
+                                  anchor,
+                                  data_scrub$final.control,
+                                  data_scrub$samp_size,
+                                  data_scrub$num_items,
+                                  data_scrub$num_responses,
+                                  data_scrub$num_predictors,
+                                  num.quad,
+                                  adapt.quad)
+
+      p2 <- unlist(max.tau.fit$p)
+      dif_parms <- p2[grep(paste0("cov"),names(p2))]
+
+
+      if(is.null(anchor) & sum(abs(dif_parms)) > 0 & alpha == 1) {
+        stop(paste0("\nWarning: Automatically-generated or user-defined tau",
+                    "value is too small to penalize all parameters to zero",
+                    "without anchor item. Larger values of tau are needed."))
+      }
+
+      # Update vector of tau values based on identification of minimum tau value
+      # which removes all DIF from the model.
+      data_scrub$tau_vec <- seq((max.tau.fit$max_tau)**(1/3),0,
                                 length.out = data_scrub$num.tau)**3
+
+      # Post-process data.
+      data_final <- postprocess(max.tau.fit,
+                                data_scrub$item.data,
+                                data_scrub$pred.data,
+                                data_scrub$mean_predictors,
+                                data_scrub$var_predictors,
+                                data_scrub$tau_vec,
+                                alpha,
+                                pen=1,
+                                anchor,
+                                control,
+                                data_scrub$final.control,
+                                data_scrub$final,
+                                data_scrub$samp_size,
+                                data_scrub$num_responses,
+                                data_scrub$num_predictors,
+                                data_scrub$num_items,
+                                num.quad)
+
+      # Update parameter estimates.
+      data_scrub$p <- max.tau.fit$p
+      data_scrub$final <- data_final
     }
 
     # Run Reg-DIF by looping through tau.
-    for(pen in 1:data_scrub$num.tau){
+    start_regDIF <- ifelse(data_scrub$id_tau,2,1)
+    for(pen in start_regDIF:data_scrub$num.tau){
 
       # Obtain regDIF estimates.
       estimates <- em_estimation(data_scrub$p,
@@ -169,6 +208,7 @@ regDIF <- function(item.data,
                                  data_scrub$mean_predictors,
                                  data_scrub$var_predictors,
                                  data_scrub$item.type,
+                                 data_scrub$theta,
                                  data_scrub$pen.type,
                                  data_scrub$tau_vec,
                                  alpha,
@@ -183,18 +223,15 @@ regDIF <- function(item.data,
                                  num.quad,
                                  adapt.quad)
 
+      if(!data_scrub$id_tau) {
       p2 <- unlist(estimates[[1]])
       dif_parms <- p2[grep(paste0("cov"),names(p2))]
-
-      if(any(data_scrub$item.type == "cfa")) {
-        dif_parms <- dif_parms[-grep("s1",names(dif_parms))]
-      }
-
 
       if(is.null(anchor) & pen == 1 & sum(abs(dif_parms)) > 0 & alpha == 1) {
         stop(paste0("\nWarning: Automatically-generated or user-defined tau",
                     "value is too small to penalize all parameters to zero",
                     "without anchor item. Larger values of tau are needed."))
+      }
       }
 
       # Post-process data.

@@ -15,7 +15,7 @@ regDIF(item.data,
        anchor = NULL,
        stdz = TRUE,
        adapt.quad = FALSE,
-       num.quad = ifelse(adapt.quad, 15, 51),
+       num.quad = if(adapt.quad) 15,
        control = list())
 }
 \arguments{
@@ -83,9 +83,10 @@ Logical value indicating whether to use adaptive quadrature. The default is
 
 \item{num.quad}{Numeric value indicating the number of quadrature points to
 be used in approximating the latent variable distribution during estimation.
-Default is \code{15} when using adaptive quadrature
-(not currently supported), or \code{51} when using fixed-point quadrature,
-to approximate the latent variable distribution.}
+Default is \code{15} when using adaptive quadrature (not currently
+supported). When using fixed-point quadrature, the default is
+\code{21} points if all items are binary or \code{51} points if at least one
+item is ordered categorical.}
 
 \item{control}{Optional list of different model specifications and
 optimization parameters. May be:

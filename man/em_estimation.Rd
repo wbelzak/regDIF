@@ -6,33 +6,35 @@
 \usage{
 em_estimation(
   p,
-  item.data,
-  pred.data,
+  item_data,
+  pred_data,
   mean_predictors,
   var_predictors,
-  item.type,
+  item_type,
   theta,
-  pen.type,
+  pen_type,
   tau_vec,
   alpha,
   gamma,
   pen,
   anchor,
-  final.control,
+  final_control,
   samp_size,
   num_items,
   num_responses,
   num_predictors,
-  num.quad,
-  adapt.quad
+  num_quad,
+  adapt_quad,
+  optim_method,
+  em_history
 )
 }
 \arguments{
 \item{p}{List of parameters with starting values obtained from preprocess.}
 
-\item{item.data}{Matrix or data frame of item responses.}
+\item{item_data}{Matrix or data frame of item responses.}
 
-\item{pred.data}{Matrix or data frame of DIF and/or impact predictors.}
+\item{pred_data}{Matrix or data frame of DIF and/or impact predictors.}
 
 \item{mean_predictors}{Possibly different matrix of predictors for the mean
 impact equation.}
@@ -40,12 +42,12 @@ impact equation.}
 \item{var_predictors}{Possibly different matrix of predictors for the
 variance impact equation.}
 
-\item{item.type}{Optional character value or vector indicating the type of
+\item{item_type}{Optional character value or vector indicating the type of
 item to be modeled.}
 
 \item{theta}{Vector of fixed quadrature points.}
 
-\item{pen.type}{Character value indicating the penalty function to use.}
+\item{pen_type}{Character value indicating the penalty function to use.}
 
 \item{tau_vec}{Vector of tau values that either are automatically generated
 or provided by the user. The first \code{tau_vec} will be equal to \code{Inf}
@@ -63,7 +65,7 @@ function.}
 \item{anchor}{Optional numeric value or vector indicating which item
 response(s) are anchors (e.g., \code{anchor = 1}).}
 
-\item{final.control}{Control parameters.}
+\item{final_control}{Control parameters.}
 
 \item{samp_size}{Numeric value indicating the sample size.}
 
@@ -73,10 +75,15 @@ response(s) are anchors (e.g., \code{anchor = 1}).}
 
 \item{num_predictors}{Numeric value indicating the number of predictors.}
 
-\item{num.quad}{Numeric value indicating the number of quadrature points.}
+\item{num_quad}{Numeric value indicating the number of quadrature points.}
 
-\item{adapt.quad}{Logical value indicating whether to use adaptive quad.
+\item{adapt_quad}{Logical value indicating whether to use adaptive quad.
 needs to be identified.}
+
+\item{optim_method}{Character value indicating the type of optimization
+method to use.}
+
+\item{em_history}{List to save EM iterations for supplemental EM algorithm.}
 }
 \description{
 Penalized expectation-maximization algorithm.

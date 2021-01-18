@@ -6,33 +6,35 @@
 \usage{
 identify_tau(
   p,
-  item.data,
-  pred.data,
+  item_data,
+  pred_data,
   mean_predictors,
   var_predictors,
-  item.type,
+  item_type,
   theta,
-  pen.type,
+  pen_type,
   tau_vec,
-  num.tau,
+  num_tau,
   alpha,
   gamma,
   anchor,
-  final.control,
+  final_control,
   samp_size,
   num_items,
   num_responses,
   num_predictors,
-  num.quad,
-  adapt.quad
+  num_quad,
+  adapt_quad,
+  optim_method,
+  em_history
 )
 }
 \arguments{
 \item{p}{List of parameters with starting values obtained from preprocess.}
 
-\item{item.data}{Matrix or dataframe of item responses.}
+\item{item_data}{Matrix or dataframe of item responses.}
 
-\item{pred.data}{Matrix or dataframe of DIF and/or impact predictors.}
+\item{pred_data}{Matrix or dataframe of DIF and/or impact predictors.}
 
 \item{mean_predictors}{Possibly different matrix of predictors for the mean
 impact equation.}
@@ -40,17 +42,17 @@ impact equation.}
 \item{var_predictors}{Possibly different matrix of predictors for the
 variance impact equation.}
 
-\item{item.type}{Optional character value or vector indicating the type of
+\item{item_type}{Optional character value or vector indicating the type of
 item to be modeled.}
 
 \item{theta}{Vector of fixed weights to approximate the latent variable.}
 
-\item{pen.type}{Character value indicating the penalty function to use.}
+\item{pen_type}{Character value indicating the penalty function to use.}
 
 \item{tau_vec}{Vector of tau values that either are automatically generated
 or provided by the user.}
 
-\item{num.tau}{Number of tau values to run Reg-DIF on.}
+\item{num_tau}{Number of tau values to run Reg-DIF on.}
 
 \item{alpha}{Numeric value indicating the alpha parameter in the elastic net
 penalty function.}
@@ -61,7 +63,7 @@ function.}
 \item{anchor}{Optional numeric value or vector indicating which item
 response(s) are anchors (e.g., \code{anchor = 1}).}
 
-\item{final.control}{List of control parameters.}
+\item{final_control}{List of control parameters.}
 
 \item{samp_size}{Numeric value indicating the sample size.}
 
@@ -71,9 +73,14 @@ response(s) are anchors (e.g., \code{anchor = 1}).}
 
 \item{num_predictors}{Numeric value indicating the number of predictors.}
 
-\item{num.quad}{Numeric value indicating the number of quadrature points.}
+\item{num_quad}{Numeric value indicating the number of quadrature points.}
 
-\item{adapt.quad}{Logical value indicating whether to use adaptive quad.}
+\item{adapt_quad}{Logical value indicating whether to use adaptive quad.}
+
+\item{optim_method}{Character value indicating the type of optimization
+method to use.}
+
+\item{em_history}{List to save EM iterations for supplemental EM algorithm.}
 }
 \description{
 Identify the minimum value of tau such that all DIF is removed.

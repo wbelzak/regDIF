@@ -1,7 +1,7 @@
 #' Partial derivatives for mean impact equation.
 #'
-#' @param p_active Vector of item parameters.
-#' @param etable_all E-table for impact.
+#' @param p_impact Vector of impact parameters.
+#' @param etable E-table for impact.
 #' @param theta Matrix of adaptive theta values.
 #' @param mean_predictors Possibly different matrix of predictors for the mean
 #' impact equation.
@@ -10,7 +10,7 @@
 #' @param cov Covariate being maximized.
 #' @param samp_size Sample size in data set.
 #' @param num_items Number of items in data set.
-#' @param num.quad Number of quadrature points used for approximating the
+#' @param num_quad Number of quadrature points used for approximating the
 #' latent variable.
 #'
 #' @keywords internal
@@ -24,23 +24,19 @@ d_alpha <-
            cov,
            samp_size,
            num_items,
-           num.quad) {
+           num_quad) {
 
   # Get latent mean and variance vectors.
-  alpha <- mean_predictors %*% p_impact[grep("g",names(p_impact),fixed=T)]
-  phi <- exp(var_predictors %*% p_impact[grep("b",names(p_impact),fixed=T)])
+  alpha <- mean_predictors %*% p_impact[grep("m",names(p_impact),fixed=T)]
+  phi <- exp(var_predictors %*% p_impact[grep("v",names(p_impact),fixed=T)])
 
-  eta_d <- matrix(rep(mean_predictors[,cov+1], num.quad),
-                  ncol = num.quad,
-                  nrow = samp_size)
-
-  d1_trace <- vapply(1:num.quad,
+  d1_trace <- vapply(1:num_quad,
                        function(x) {
-                         eta_d[,x]/phi*(theta[x]-alpha)
+                         mean_predictors[,cov]/phi*(theta[x]-alpha)
                          },numeric(samp_size))
-  d2_trace <- vapply(1:num.quad,
+  d2_trace <- vapply(1:num_quad,
                        function(x) {
-                         -eta_d[,x]**2/phi
+                         -mean_predictors[,cov]**2/phi
                          },numeric(samp_size))
 
   d1 <- sum(etable*d1_trace, na.rm = TRUE)
@@ -52,8 +48,8 @@ d_alpha <-
 
 #' Partial derivatives for mean impact equation.
 #'
-#' @param p_active Vector of item parameters.
-#' @param etable_all E-table for impact.
+#' @param p_impact Vector of impact parameters.
+#' @param etable E-table for impact.
 #' @param theta Matrix of adaptive theta values.
 #' @param mean_predictors Possibly different matrix of predictors for the mean
 #' impact equation.
@@ -62,7 +58,7 @@ d_alpha <-
 #' @param cov Covariate being maximized.
 #' @param samp_size Sample size in dataset.
 #' @param num_items Number of items in dataset.
-#' @param num.quad Number of quadrature points used for approximating the
+#' @param num_quad Number of quadrature points used for approximating the
 #' latent variable.
 #'
 #' @keywords internal
@@ -76,23 +72,23 @@ d_phi <-
            cov,
            samp_size,
            num_items,
-           num.quad) {
+           num_quad) {
 
   # Get latent mean and variance vectors
-  alpha <- mean_predictors %*% p_impact[grep("g",names(p_impact),fixed=T)]
-  phi <- exp(var_predictors %*% p_impact[grep("b",names(p_impact),fixed=T)])
+  alpha <- mean_predictors %*% p_impact[grep("m",names(p_impact),fixed=T)]
+  phi <- exp(var_predictors %*% p_impact[grep("v",names(p_impact),fixed=T)])
 
-  eta_d1 <- .5*sqrt(phi)*var_predictors[,cov+1]
-  eta_d2 <- .25*sqrt(phi)*var_predictors[,cov+1]**2
+  eta_d1 <- .5*sqrt(phi)*var_predictors[,cov]
+  eta_d2 <- .5*sqrt(phi)*var_predictors[,cov]**2
 
-  d1_trace <- vapply(1:num.quad,
+  d1_trace <- vapply(1:num_quad,
                        function(x) {
                          eta_d1*((theta[x]-alpha)**2/phi**(3/2) -
                                       1/sqrt(phi))
                          },numeric(samp_size))
-  d2_trace <- vapply(1:num.quad,
+  d2_trace <- vapply(1:num_quad,
                        function(x) {
-                         -2*eta_d2*(phi**(-3/2)*(theta[x]-alpha)**2)
+                         -eta_d2*(phi**(-3/2)*(theta[x]-alpha)**2)
                          },numeric(samp_size))
 
   d1 <- sum(etable*d1_trace, na.rm = TRUE)
@@ -100,7 +96,128 @@ d_phi <-
 
   dlist <- list(d1,d2)
 
-}
+  }
+
+#' Partial derivatives for mean and variance impact equation.
+#'
+#' @param p_mean Vector of mean impact parameters.
+#' @param p_var Vector of variance impact parameters.
+#' @param etable E-table for impact.
+#' @param theta Matrix of adaptive theta values.
+#' @param mean_predictors Possibly different matrix of predictors for the mean
+#' impact equation.
+#' @param var_predictors Possibly different matrix of predictors for the
+#' variance impact equation.
+#' @param samp_size Sample size in data set.
+#' @param num_items Number of items in data set.
+#' @param num_quad Number of quadrature points used for approximating the
+#' latent variable.
+#' @param num_predictors Number of predictors in dataset.
+#'
+#' @keywords internal
+#'
+d_impact_block <-
+  function(p_mean,
+           p_var,
+           etable,
+           theta,
+           mean_predictors,
+           var_predictors,
+           samp_size,
+           num_items,
+           num_quad,
+           num_predictors) {
+
+    # Obtain number of impact parameters.
+    num_impact_parms <- length(p_mean) + length(p_var)
+
+    # Make space for first and second derivatives.
+    d1 <- matrix(0,nrow=num_impact_parms,ncol=1)
+    d2 <- matrix(0,nrow=num_impact_parms,ncol=num_impact_parms)
+
+    # Get latent mean and variance vectors.
+    alpha <- mean_predictors %*% p_mean
+    phi <- exp(var_predictors %*% p_var)
+
+    # First and second derivatives for mean impact parameters.
+    for(cov in 1:ncol(mean_predictors)) {
+      d1_trace_mean <- vapply(1:num_quad,
+                              function(x) {
+                                mean_predictors[,cov]/phi*(theta[x]-alpha)
+                              },numeric(samp_size))
+      d2_trace_mean <- vapply(1:num_quad,
+                              function(x) {
+                                -mean_predictors[,cov]**2/phi
+                              },numeric(samp_size))
+
+      d1[cov,1] <- sum(etable*d1_trace_mean, na.rm = TRUE)
+      d2[cov,cov] <- sum(etable*d2_trace_mean, na.rm = TRUE)
+    }
+
+    # First and second derivatives for variance impact parameters.
+    for(cov in 1:ncol(var_predictors)) {
+      d1_trace_var <-
+        vapply(1:num_quad,
+               function(x) {
+                 .5*var_predictors[,cov]*(
+                   (theta[x]-alpha)**2/phi - 1)
+                 },numeric(samp_size))
+      d2_trace_var <-
+        vapply(1:num_quad,
+               function(x) {
+                 -.5*var_predictors[,cov]**2*(theta[x]-alpha)**2/phi
+                 },numeric(samp_size))
+      d1[ncol(mean_predictors)+cov,1] <-
+        sum(etable*d1_trace_var, na.rm = TRUE)
+      d2[ncol(mean_predictors)+cov,ncol(mean_predictors)+cov] <-
+        sum(etable*d2_trace_var, na.rm = TRUE)
+    }
+
+    # Cross derivatives for mean and impact variance parameters.
+    for(cov in 1:ncol(var_predictors)) {
+      for(cov2 in 1:ncol(mean_predictors)) {
+
+        d2_trace_cross <-
+          vapply(1:num_quad,
+                 function(x) {
+                   var_predictors[,cov]*mean_predictors[,cov2]/phi*(
+                     alpha-theta[x])
+                 },numeric(samp_size))
+        d2[ncol(mean_predictors)+cov,cov2] <-
+          sum(etable*d2_trace_cross, na.rm = TRUE)
+
+        if(cov2 > 1 && cov < cov2) {
+
+
+          # Cross derivatives for mean parameters with different predictors.
+          d2_trace_cross_mean <-
+            vapply(1:num_quad,
+                   function(x) {
+                     -mean_predictors[,cov]*mean_predictors[,cov2]/phi
+                   },numeric(samp_size))
+          d2[cov2,cov] <-
+            sum(etable*d2_trace_cross_mean,
+                na.rm = TRUE)
+
+          # Cross derivatives for variance parameters with different predictors.
+          d2_trace_cross_var <-
+            vapply(1:num_quad,
+                   function(x) {
+                     -.5*var_predictors[,cov]*var_predictors[,cov2]*(
+                       theta[x]-alpha)**2/phi
+                   },numeric(samp_size))
+          d2[num_predictors+cov2,num_predictors+cov] <-
+            sum(etable*d2_trace_cross_var,
+                na.rm = TRUE)
+        }
+
+
+      }
+    }
+
+    dlist <- list(d1,d2)
+
+  }
 
 #' Partial derivatives for binary items.
 #'
@@ -122,29 +239,31 @@ d_bernoulli <-
            p_item,
            etable_item,
            theta,
-           pred.data,
+           pred_data,
            cov,
            samp_size,
            num_items,
-           num.quad) {
+           num_quad) {
 
   if(parm == "c0"){
-    eta_d <- matrix(1, nrow = samp_size, ncol = num.quad)
+    eta_d <- matrix(1, nrow = samp_size, ncol = num_quad)
   } else if(parm == "a0"){
-    eta_d <- t(replicate(n=samp_size, theta))
+    eta_d <- t(matrix(theta,ncol=samp_size,nrow=num_quad))
   } else if(parm == "c1"){
-    eta_d <- matrix(rep(pred.data[,cov+1], num.quad),
-                    ncol = num.quad,
+    eta_d <- matrix(pred_data[,cov],
+                    ncol = num_quad,
                     nrow = samp_size)
   } else if(parm == "a1"){
-    eta_d <- matrix(rep(pred.data[,cov+1], num.quad),
-                    ncol = num.quad,
-                    nrow = samp_size)*t(replicate(n=samp_size, theta))
+    eta_d <- matrix(pred_data[,cov],
+                    ncol = num_quad,
+                    nrow = samp_size)*t(matrix(theta,
+                                               ncol=samp_size,
+                                               nrow=num_quad))
   }
 
   traceline <- bernoulli_traceline_pts(p_item,
                                        theta,
-                                       pred.data,
+                                       pred_data,
                                        samp_size)
 
   d1 <- sum(eta_d*traceline*(etable_item[[2]]/traceline -
@@ -156,6 +275,157 @@ d_bernoulli <-
             na.rm = TRUE)
 
   dlist <- list(d1,d2)
+
+  }
+
+#' Partial derivatives for binary items by item-blocks.
+#'
+#' @param p_item Vector of item parameters.
+#' @param etable E-table for item.
+#' @param theta Matrix of adaptive theta values.
+#' @param pred_data Matrix or dataframe of DIF and/or impact predictors.
+#' @param item_data_current Vector of current item responses.
+#' @param samp_size Sample size in dataset.
+#' @param num_items Number of items in dataset.
+#' @param num_predictors Number of predictors in dataset.
+#' @param num_quad Number of quadrature points used for approximating the
+#' latent variable.
+#'
+#' @keywords internal
+#'
+d_bernoulli_itemblock <-
+  function(p_item,
+           etable,
+           theta,
+           pred_data,
+           item_data_current,
+           samp_size,
+           num_items,
+           num_predictors,
+           num_quad) {
+
+    # Make space for first and second derivatives.
+    d1 <- matrix(0,nrow=length(p_item),ncol=1)
+    d2 <- matrix(0,nrow=length(p_item),ncol=length(p_item))
+
+    # First derivative for linear predictor w.r.t. theta.
+    eta_d_a0 <- t(matrix(theta,
+                         ncol=samp_size,
+                         nrow=num_quad))
+
+    # Get item response function.
+    traceline <- bernoulli_traceline_pts(p_item,
+                                         theta,
+                                         pred_data,
+                                         samp_size)
+
+    # Get posterior probabilities for each response.
+    etable_item <- lapply(1:2, function(x) etable)
+
+    # Obtain E-tables for each response category.
+      for(resp in 1:2) {
+        etable_item[[resp]][which(
+          !(item_data_current == resp)), ] <- 0
+      }
+
+    # Calculate first and second base derivatives.
+    d1_base <- traceline*(etable_item[[2]]/traceline -
+                            etable_item[[2]] -
+                            etable_item[[1]])
+    d2_base <- (-traceline + traceline**2)*etable
+
+    # First and second derivative for c0.
+    d1[1,1] <- sum(d1_base, na.rm = TRUE) #d1
+    d2[1,1] <- sum(d2_base, na.rm = TRUE) #d2
+
+    # First and second derivative for a0.
+    d1[2,1] <- sum(eta_d_a0*d1_base, na.rm = TRUE) #d1
+    d2[2,2] <- sum(eta_d_a0**2*d2_base, na.rm = TRUE) #d2
+
+    # Cross derivative for c0 and a0.
+    d2[2,1] <- sum(eta_d_a0*d2_base, na.rm = TRUE) #d2
+
+    # Cycle through predictors (outer cycle).
+    for(cov in 1:num_predictors) {
+
+      # First derivative for linear predictor w.r.t. covariate.
+      cov_matrix <- matrix(pred_data[,cov],
+                           ncol = num_quad,
+                           nrow = samp_size)
+
+      # First and second derivatives for c1.
+      d1[2+cov,1] <-
+        sum(cov_matrix*d1_base,
+            na.rm = TRUE) #d1
+      d2[2+cov,2+cov] <-
+        sum(cov_matrix**2*d2_base,
+            na.rm = TRUE) #d2
+
+      # First and second derivatives for a1.
+      d1[2+num_predictors+cov,1] <-
+        sum(cov_matrix*eta_d_a0*d1_base,
+            na.rm = TRUE) #d1
+      d2[2+num_predictors+cov,2+num_predictors+cov] <-
+        sum((cov_matrix*eta_d_a0)**2*d2_base,
+            na.rm = TRUE) #d2
+
+      # Cross derivatives for c0 and c1.
+      d2[2+cov,1] <-
+        sum(cov_matrix*d2_base,
+            na.rm = TRUE) #d2
+
+      # Cross derivatives for c0 and a1, as well as a0 and c1.
+      d2[2+num_predictors+cov,1] <- d2[2+cov,2] <-
+        sum(cov_matrix*eta_d_a0*d2_base,
+            na.rm = TRUE) #d2
+
+      # Cross derivatives for a0 and a1.
+      d2[2+num_predictors+cov,2] <-
+        sum(cov_matrix*eta_d_a0**2*d2_base,
+            na.rm = TRUE) #d2
+
+      # Cycle through predictors (inner cycle).
+      for(cov2 in 1:num_predictors) {
+
+
+        if(cov == cov2) {
+
+          # Cross derivatives with same predictor for c1 and a1.
+          d2[2+num_predictors+cov,2+cov2] <-
+            sum(cov_matrix**2*eta_d_a0*d2_base,
+                na.rm = TRUE) #d2
+
+        } else {
+
+          # First derivatives for linear predictor w.r.t. second covariate.
+          cov2_matrix <- matrix(pred_data[,cov2],
+                                ncol = num_quad,
+                                nrow = samp_size)
+
+          # Cross derivatives with different predictor for c1 and a1.
+          d2[2+num_predictors+cov,2+cov2] <-
+            sum(cov_matrix*cov2_matrix*eta_d_a0*d2_base,
+                na.rm = TRUE) #d2
+
+          if(cov2 > 1 && cov < cov2) {
+
+            # Cross derivatives with different predictor for c1 and c1.
+            d2[2+cov2,2+cov] <-
+              sum(cov_matrix*cov2_matrix*d2_base, #d2
+                  na.rm = TRUE)
+
+            # Cross derivatives with different predictor for a1 and a1.
+            d2[2+num_predictors+cov2,2+num_predictors+cov] <-
+              sum(cov_matrix*cov2_matrix*eta_d_a0**2*d2_base, #a1a1
+                  na.rm = TRUE)
+          }
+        }
+
+      }
+
+    }
+
+    dlist <- list(d1,d2)
 
   }
 
@@ -180,34 +450,38 @@ d_categorical <-
            p_item,
            etable_item,
            theta,
-           pred.data,
+           pred_data,
            thr,
            cov,
            samp_size,
            num_responses_item,
            num_items,
-           num.quad) {
+           num_quad) {
 
     if(parm == "c0"){
-      eta_d <- matrix(1, nrow = samp_size, ncol = num.quad)
+      eta_d <- matrix(1, nrow = samp_size, ncol = num_quad)
     } else if(parm == "a0"){
-      eta_d <- t(replicate(n=samp_size, theta))
+      eta_d <- t(matrix(theta,
+                        ncol=samp_size,
+                        nrow=num_quad))
     } else if(parm == "c1"){
-      eta_d <- matrix(rep(pred.data[,cov], num.quad),
-                      ncol = num.quad,
+      eta_d <- matrix(pred_data[,cov],
+                      ncol = num_quad,
                       nrow = samp_size)
     } else if(parm == "a1"){
-      eta_d <- matrix(rep(pred.data[,cov], num.quad),
-                      ncol = num.quad,
-                      nrow = samp_size)*t(replicate(n=samp_size, theta))
+      eta_d <- matrix(pred_data[,cov],
+                      ncol = num_quad,
+                      nrow = samp_size)*t(matrix(theta,
+                                                 ncol=samp_size,
+                                                 nrow=num_quad))
     }
 
     cum_traceline <- cumulative_traceline_pts(p_item,
                                               theta,
-                                              pred.data,
+                                              pred_data,
                                               samp_size,
                                               num_responses_item,
-                                              num.quad)
+                                              num_quad)
 
     # Non-threshold derivatives.
     if(thr < 0){
@@ -249,19 +523,20 @@ d_categorical <-
         sum(etable_item[[thr+1]]*cum_traceline[[thr]]*(
           1 - cum_traceline[[thr]]
         ) / cat_traceline, na.rm = TRUE)
-      d2 <- sum(etable_item[[thr]] / (cum_traceline[[thr-1]] -
-                                        cum_traceline[[thr]])*(
-                                          cum_traceline[[thr]]*(1 - cum_traceline[[thr]])**2 -
-                                            cum_traceline[[thr]]**2*(1 - cum_traceline[[thr]]) +
-                                            cum_traceline[[thr]]**2*(1 - cum_traceline[[thr]])**2 /
-                                            (cum_traceline[[thr-1]] - cum_traceline[[thr]])
-                                        ), na.rm = TRUE) -
+      d2 <- sum(etable_item[[thr]] /
+                  (cum_traceline[[thr-1]] -
+                     cum_traceline[[thr]])*(
+                       cum_traceline[[thr]]*(1 - cum_traceline[[thr]])**2 -
+                         cum_traceline[[thr]]**2*(1 - cum_traceline[[thr]]) +
+                         cum_traceline[[thr]]**2*(1 - cum_traceline[[thr]])**2 /
+                         (cum_traceline[[thr-1]] - cum_traceline[[thr]])
+                       ), na.rm = TRUE) -
         sum(etable_item[[thr+1]] / cat_traceline*(
-                                        cum_traceline[[thr]]*(1 - cum_traceline[[thr]])**2 -
-                                          cum_traceline[[thr]]**2*(1-cum_traceline[[thr]]) -
-                                          cum_traceline[[thr]]**2*(1-cum_traceline[[thr]])**2 /
-                                          cat_traceline
-                                      ), na.rm = TRUE)
+          cum_traceline[[thr]]*(1 - cum_traceline[[thr]])**2 -
+            cum_traceline[[thr]]**2*(1-cum_traceline[[thr]]) -
+            cum_traceline[[thr]]**2*(1-cum_traceline[[thr]])**2 /
+            cat_traceline
+          ), na.rm = TRUE)
 
     }
 
@@ -277,11 +552,11 @@ d_categorical <-
 #' @param etable_item E-table for impact.
 #' @param theta Matrix of adaptive theta values.
 #' @param responses_item Vector of item responses.
-#' @param pred.data Matrix or dataframe of DIF and/or impact predictors.
+#' @param pred_data Matrix or dataframe of DIF and/or impact predictors.
 #' @param cov Covariate being maximized.
 #' @param samp_size Sample size in dataset.
 #' @param num_items Number of items in dataset.
-#' @param num.quad Number of quadrature points used for approximating the
+#' @param num_quad Number of quadrature points used for approximating the
 #' latent variable.
 #'
 #' @keywords internal
@@ -292,23 +567,23 @@ d_mu_gaussian <-
            etable_item,
            theta,
            responses_item,
-           pred.data,
+           pred_data,
            cov,
            samp_size,
            num_items,
-           num.quad) {
+           num_quad) {
 
   if(parm == "c0"){
-    eta_d <- matrix(1, nrow = samp_size, ncol = num.quad)
+    eta_d <- matrix(1, nrow = samp_size, ncol = num_quad)
   } else if(parm == "a0"){
     eta_d <- t(replicate(n=samp_size, theta))
   } else if(parm == "c1"){
-    eta_d <- matrix(rep(pred.data[,cov], num.quad),
-                    ncol = num.quad,
+    eta_d <- matrix(rep(pred_data[,cov], num_quad),
+                    ncol = num_quad,
                     nrow = samp_size)
   } else if(parm == "a1"){
-    eta_d <- matrix(rep(pred.data[,cov], num.quad),
-                    ncol = num.quad,
+    eta_d <- matrix(rep(pred_data[,cov], num_quad),
+                    ncol = num_quad,
                     nrow = samp_size)*t(replicate(n=samp_size, theta))
   }
 
@@ -317,14 +592,14 @@ d_mu_gaussian <-
   mu <- vapply(theta,
               function(x) {
                 (p_item[grep("c0",names(p_item),fixed=T)] +
-                   pred.data %*%
+                   pred_data %*%
                    p_item[grep("c1",names(p_item),fixed=T)]) +
                   (p_item[grep("a0",names(p_item),fixed=T)] +
-                     pred.data %*%
+                     pred_data %*%
                      p_item[grep("a1",names(p_item),fixed=T)])*x
                 },numeric(samp_size))
   sigma <- sqrt(p_item[grep("s0",names(p_item))][1]*exp(
-    pred.data %*% p_item[grep("s1",names(p_item))]
+    pred_data %*% p_item[grep("s1",names(p_item))]
     ))
 
 
@@ -351,11 +626,11 @@ d_mu_gaussian <-
 #' @param etable_item E-table for impact.
 #' @param theta Matrix of adaptive theta values.
 #' @param responses_item Vector of item responses.
-#' @param pred.data Matrix or dataframe of DIF and/or impact predictors.
+#' @param pred_data Matrix or dataframe of DIF and/or impact predictors.
 #' @param cov Covariate being maximized.
 #' @param samp_size Sample size in dataset.
 #' @param num_items Number of items in dataset.
-#' @param num.quad Number of quadrature points used for approximating the
+#' @param num_quad Number of quadrature points used for approximating the
 #' latent variable.
 #'
 #' @keywords internal
@@ -366,44 +641,44 @@ d_sigma_gaussian <-
            etable_item,
            theta,
            responses_item,
-           pred.data,
+           pred_data,
            cov,
            samp_size,
            num_items,
-           num.quad) {
+           num_quad) {
 
   sigma <- sqrt(p_item[grep("s0",names(p_item))][1]*exp(
-    pred.data %*% p_item[grep("s1",names(p_item))]))
+    pred_data %*% p_item[grep("s1",names(p_item))]))
   mu <- vapply(theta,
               function(x) {
                 (p_item[grep("c0",names(p_item),fixed=T)] +
-                   pred.data %*%
+                   pred_data %*%
                    p_item[grep("c1",names(p_item),fixed=T)]) +
                   (p_item[grep("a0",names(p_item),fixed=T)] +
-                     pred.data %*%
+                     pred_data %*%
                      p_item[grep("a1",names(p_item),fixed=T)])*x
                 },numeric(samp_size))
 
   if(parm == "s0") {
     eta_d1 <- vapply(1:samp_size,
                      function(x) {
-                       exp(pred.data[x,] %*%
+                       exp(pred_data[x,] %*%
                              p_item[grep("s1",names(p_item))]) / (2*sigma[x])
                        },numeric(samp_size))
     eta_d2 <- vapply(1:samp_size,
                      function(x) {
-                       -exp(pred.data[x,] %*%
+                       -exp(pred_data[x,] %*%
                               p_item[grep("s1",names(p_item))])**2 /
                          (4*sigma[x]**3)
                        },numeric(samp_size))
   } else if(parm == "s1") {
     eta_d1 <- vapply(1:samp_size,
                      function(x) {
-                       sigma[x]*pred.data[x,cov] / 2
+                       sigma[x]*pred_data[x,cov] / 2
                        },numeric(samp_size))
     eta_d2 <- vapply(1:samp_size,
                      function(x) {
-                       sigma[x]*pred.data[x,cov]**2 / 4
+                       sigma[x]*pred_data[x,cov]**2 / 4
                        },numeric(samp_size))
   }
 

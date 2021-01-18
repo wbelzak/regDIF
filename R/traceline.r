@@ -1,31 +1,26 @@
 #' Binary item tracelines.
 #'
-#' @param p_active Vector of item parameters.
+#' @param p_item Vector of item parameters.
 #' @param theta Vector of theta values.
-#' @param pred.data Matrix or dataframe of DIF and/or impact predictors.
+#' @param pred_data Matrix or dataframe of DIF and/or impact predictors.
 #' @param samp_size Sample size in dataset.
 #'
 #' @keywords internal
 #'
 bernoulli_traceline_pts <-
-  function(p_active,
+  function(p_item,
            theta,
-           pred.data,
+           pred_data,
            samp_size) {
 
-    c0_parms <- grepl("c0",names(p_active),fixed=T)
-    c1_parms <- grepl("c1",names(p_active),fixed=T)
-    a0_parms <- grepl("a0",names(p_active),fixed=T)
-    a1_parms <- grepl("a1",names(p_active),fixed=T)
-
-    traceline <- vapply(theta,
-                        function(x) {1 / (1 + exp(-((p_active[c0_parms] +
-                                  pred.data %*% p_active[c1_parms]) +
-                                   (p_active[a0_parms] +
-                                      pred.data %*% p_active[a1_parms])*x)
-                               )
-                       )
-              },numeric(samp_size))
+    traceline <-
+      vapply(theta,
+             function(x) {
+   1 / (1 + exp(
+     -((p_item[1] + pred_data %*% p_item[3:(2+ncol(pred_data))]) +
+       (p_item[2] + pred_data %*% p_item[(3+ncol(pred_data)):length(p_item)])*x)
+     ))
+               }, numeric(samp_size))
 
     return(traceline)
 
@@ -33,43 +28,42 @@ bernoulli_traceline_pts <-
 
 #' Ordinal tracelines (for derivatives).
 #'
-#' @param p_active Vector of item parameters.
+#' @param p_item Vector of item parameters.
 #' @param theta Vector of theta values.
-#' @param pred.data Matrix or dataframe of DIF and/or impact predictors.
+#' @param pred_data Matrix or dataframe of DIF and/or impact predictors.
 #' @param samp_size Sample size in dataset.
 #' @param num_responses_item Number of responses for item.
-#' @param num.quad Number of quadrature points used for approximating the
+#' @param num_quad Number of quadrature points used for approximating the
 #' latent variable.
 #'
 #' @keywords internal
 #'
 cumulative_traceline_pts <-
-  function(p_active,
+  function(p_item,
            theta,
-           pred.data,
+           pred_data,
            samp_size,
            num_responses_item,
-           num.quad) {
+           num_quad) {
 
   # Space for cumulative traceline (y >= c category).
   traceline <-
-    replicate(n=(num_responses_item-1),
-              matrix(0,nrow=samp_size,ncol=num.quad),
-              simplify = F)
+    lapply(1:(num_responses_item-1), function(x) {
+              matrix(0,nrow=samp_size,ncol=num_quad)})
 
-  c0_parms <- grepl("c0",names(p_active),fixed=T)
-  c1_parms <- grepl("c1",names(p_active),fixed=T)
-  a0_parms <- grepl("a0",names(p_active),fixed=T)
-  a1_parms <- grepl("a1",names(p_active),fixed=T)
+  c0_parms <- grepl("c0",names(p_item),fixed=T)
+  c1_parms <- grepl("c1",names(p_item),fixed=T)
+  a0_parms <- grepl("a0",names(p_item),fixed=T)
+  a1_parms <- grepl("a1",names(p_item),fixed=T)
 
   # For item response 1.
   traceline[[1]] <-
     vapply(theta,
           function(x) {
-            1 / (1 + exp(-((p_active[c0_parms][1] +
-                              pred.data %*% p_active[c1_parms]) +
-                             (p_active[a0_parms] +
-                                pred.data %*% p_active[a1_parms])*x)
+            1 / (1 + exp(-((p_item[c0_parms][1] +
+                              pred_data %*% p_item[c1_parms]) +
+                             (p_item[a0_parms] +
+                                pred_data %*% p_item[a1_parms])*x)
                          )
                  )
             }, numeric(samp_size))
@@ -79,11 +73,11 @@ cumulative_traceline_pts <-
       traceline[[thr]] <-
         vapply(theta,
               function(x) {
-                1 / (1 + exp(-((p_active[c0_parms][1] -
-                                  p_active[c0_parms][thr] +
-                                  pred.data %*% p_active[c1_parms]) +
-                                 (p_active[a0_parms] +
-                                    pred.data %*% p_active[a1_parms])*x)
+                1 / (1 + exp(-((p_item[c0_parms][1] -
+                                  p_item[c0_parms][thr] +
+                                  pred_data %*% p_item[c1_parms]) +
+                                 (p_item[a0_parms] +
+                                    pred_data %*% p_item[a1_parms])*x)
                              )
                      )
                 }, numeric(samp_size))
@@ -95,38 +89,38 @@ cumulative_traceline_pts <-
 
 #' Continuous tracelines.
 #'
-#' @param p_active Vector of item parameters.
+#' @param p_item Vector of item parameters.
 #' @param theta Vector of theta values.
 #' @param responses_item Vector of item responses.
-#' @param pred.data Matrix or dataframe of DIF and/or impact predictors.
-#' @param samp_size Sample size in dataset.
+#' @param pred_data Matrix or data frame of DIF and/or impact predictors.
+#' @param samp_size Sample size in data set.
 #'
 #' @keywords internal
 #'
 gaussian_traceline_pts <-
-  function(p_active,
+  function(p_item,
            theta,
            responses_item,
-           pred.data,
+           pred_data,
            samp_size) {
 
-  c0_parms <- grepl("c0",names(p_active),fixed=T)
-  c1_parms <- grepl("c1",names(p_active),fixed=T)
-  a0_parms <- grepl("a0",names(p_active),fixed=T)
-  a1_parms <- grepl("a1",names(p_active),fixed=T)
-  s0_parms <- grepl("s0",names(p_active),fixed=T)
-  s1_parms <- grepl("s1",names(p_active),fixed=T)
+  c0_parms <- grepl("c0",names(p_item),fixed=T)
+  c1_parms <- grepl("c1",names(p_item),fixed=T)
+  a0_parms <- grepl("a0",names(p_item),fixed=T)
+  a1_parms <- grepl("a1",names(p_item),fixed=T)
+  s0_parms <- grepl("s0",names(p_item),fixed=T)
+  s1_parms <- grepl("s1",names(p_item),fixed=T)
 
   mu <-
     vapply(theta,
           function(x) {
-            (p_active[c0_parms] +
-               pred.data %*% p_active[c1_parms]) +
-              (p_active[a0_parms] +
-                 pred.data %*% p_active[a1_parms])*x
+            (p_item[c0_parms] +
+               pred_data %*% p_item[c1_parms]) +
+              (p_item[a0_parms] +
+                 pred_data %*% p_item[a1_parms])*x
             }, numeric(samp_size))
   sigma <-
-    sqrt(p_active[s0_parms][1]*exp(pred.data %*% p_active[s1_parms]))
+    sqrt(p_item[s0_parms][1]*exp(pred_data %*% p_item[s1_parms]))
 
   traceline <- t(sapply(1:samp_size,
                         function(x) {

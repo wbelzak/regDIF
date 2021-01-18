@@ -8,14 +8,12 @@ preprocess(
   item.data,
   pred.data,
   item.type,
-  num.tau,
+  pen.type,
   tau,
+  num.tau,
   anchor,
   stdz,
-  num.quad,
   control,
-  pen.type,
-  adapt.quad,
   call
 )
 }
@@ -27,9 +25,11 @@ preprocess(
 \item{item.type}{Character value or vector indicating the item response
 distributions.}
 
-\item{num.tau}{Numeric value of how many to tau values to fit.}
+\item{pen.type}{Character indicating type of penalty.}
 
 \item{tau}{Optional numeric vector of tau values.}
+
+\item{num.tau}{Numeric indicating number of tau values to run Reg-DIF on.}
 
 \item{anchor}{Optional numeric value or vector indicating which item
 response(s) are anchors (e.g., \code{anchor = 1}).}
@@ -37,14 +37,8 @@ response(s) are anchors (e.g., \code{anchor = 1}).}
 \item{stdz}{Logical value indicating whether to standardize DIF and
 impact predictors for regularization.}
 
-\item{num.quad}{Numeric value indicating the number of quadrature points.}
-
 \item{control}{Optional list of additional model specification and
 optimization parameters.}
-
-\item{pen.type}{Character indicating type of penalty.}
-
-\item{adapt.quad}{Logical determining whether to use adaptive quadrature.}
 
 \item{call}{Defined from regDIF.}
 }

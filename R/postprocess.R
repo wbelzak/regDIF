@@ -1,8 +1,8 @@
 #' Maximization step.
 #'
 #' @param estimates List of converged parameters.
-#' @param item.data Matrix or dataframe of item responses.
-#' @param pred.data Matrix or dataframe of DIF and/or impact predictors.
+#' @param item_data Matrix or dataframe of item responses.
+#' @param pred_data Matrix or dataframe of DIF and/or impact predictors.
 #' @param mean_predictors Possibly different matrix of predictors for the mean
 #' impact equation.
 #' @param var_predictors Possibly different matrix of predictors for the
@@ -13,7 +13,7 @@
 #' @param pen Tuning parameter index.
 #' @param anchor Anchor item(s).
 #' @param control Optional list of user-defined control parameters
-#' @param final.control List of final control parameters.
+#' @param final_control List of final control parameters.
 #' @param final List of model results.
 #' @param samp_size Sample size in dataset.
 #' @param num_responses Number of responses for each item.
@@ -26,8 +26,8 @@
 #'
 postprocess <-
   function(estimates,
-           item.data,
-           pred.data,
+           item_data,
+           pred_data,
            mean_predictors,
            var_predictors,
            tau_vec,
@@ -35,51 +35,52 @@ postprocess <-
            pen,
            anchor,
            control,
-           final.control,
+           final_control,
            final,
            samp_size,
            num_responses,
            num_predictors,
            num_items,
-           num.quad) {
+           num_quad) {
 
   # Get estimates and information criteria.
-  p <- estimates[[1]]
-  infocrit <- estimates[[2]]
+  p <- estimates$p
+  infocrit <- estimates$infocrit
+  em_history <- estimates$em_history
 
   # Organize impact parameters.
-  if(is.null(control$impact.data$mean)) {
-    if(is.null(colnames(pred.data)) |
-       length(colnames(pred.data)) == 0) {
+  if(is.null(control$impact.mean.data)) {
+    if(is.null(colnames(pred_data)) |
+       length(colnames(pred_data)) == 0) {
       mean_names <- paste0('mean.cov',1:ncol(mean_predictors))
     } else {
-      mean_names <- paste0('mean.',colnames(pred.data))
+      mean_names <- paste0('mean.',colnames(pred_data))
     }
 
   } else {
-    if(is.null(colnames(control$impact.data$mean)) |
-       length(colnames(control$impact.data$mean)) == 0) {
+    if(is.null(colnames(control$impact.mean.data)) |
+       length(colnames(control$impact.mean.data)) == 0) {
       mean_names <- paste0('mean.cov',1:ncol(mean_predictors))
     } else {
-      mean_names <- paste0('mean.',colnames(control$impact.data$mean))
+      mean_names <- paste0('mean.',colnames(control$impact.mean.data))
     }
 
   }
 
-  if(is.null(control$impact.data$var)) {
-    if(is.null(colnames(pred.data)) |
-       length(colnames(pred.data)) == 0) {
+  if(is.null(control$impact.var.data)) {
+    if(is.null(colnames(pred_data)) |
+       length(colnames(pred_data)) == 0) {
       var_names <- paste0('var.cov',1:ncol(var_predictors))
     } else {
-      var_names <- paste0('var.',colnames(pred.data))
+      var_names <- paste0('var.',colnames(pred_data))
     }
 
   } else {
-    if(is.null(colnames(pred.data)) |
-       length(colnames(pred.data)) == 0){
+    if(is.null(colnames(pred_data)) |
+       length(colnames(pred_data)) == 0){
       var_names <- paste0('var.cov',1:ncol(var_predictors))
     } else {
-      var_names <- paste0('var.',colnames(control$impact.data$var))
+      var_names <- paste0('var.',colnames(control$impact.var.data))
     }
 
   }
@@ -91,33 +92,33 @@ postprocess <-
   p2 <- unlist(p)
   all_items_parms_base <- NULL
   all_items_names_base <- NULL
-  if(is.null(colnames(item.data)) |
-     length(colnames(item.data)) == 0){
+  if(is.null(colnames(item_data)) |
+     length(colnames(item_data)) == 0){
     item_names <- paste0("item",1:num_items)
 
   } else{
-    item_names <- colnames(item.data)
+    item_names <- colnames(item_data)
 
   }
 
   for(item in 1:num_items) {
     if(num_responses[item] == 1) {
-      item_parms_base <- c(p2[grep(paste0("c0_itm",item,"_"),names(p2))],
-                           p2[grep(paste0("a0_itm",item,"_"),names(p2))],
-                           p2[grep(paste0("s0_itm",item,"_"),names(p2))])
+      item_parms_base <- c(p2[grep(paste0("c0_item",item),names(p2))],
+                           p2[grep(paste0("a0_item",item),names(p2))],
+                           p2[grep(paste0("s0_item",item),names(p2))])
       item_names_base <- c(paste0(item_names[item],".int"),
                            paste0(item_names[item],".slp"),
                            paste0(item_names[item],".res"))
 
     } else if(num_responses[item] == 2) {
-      item_parms_base <- c(p2[grep(paste0("c0_itm",item,"_"),names(p2))],
-                           p2[grep(paste0("a0_itm",item,"_"),names(p2))])
+      item_parms_base <- c(p2[grep(paste0("c0_item",item),names(p2))],
+                           p2[grep(paste0("a0_item",item),names(p2))])
       item_names_base <- c(paste0(item_names[item],".int"),
                            paste0(item_names[item],".slp"))
 
     } else if(num_responses[item] > 2) {
-      item_parms_base <- c(p2[grep(paste0("c0_itm",item,"_"),names(p2))],
-                           p2[grep(paste0("a0_itm",item,"_"),names(p2))])
+      item_parms_base <- c(p2[grep(paste0("c0_item",item),names(p2))],
+                           p2[grep(paste0("a0_item",item),names(p2))])
       item_names_base <- c(paste0(item_names[item],".int"),
                            paste0(item_names[item],".thr",
                                   1:(num_responses[item]-2)),
@@ -134,20 +135,20 @@ postprocess <-
   # Organize item DIF parameters.
   all_items_parms_dif <- NULL
   all_items_names_dif <- NULL
-  if(is.null(colnames(pred.data)) |
-     length(colnames(pred.data)) == 0) {
+  if(is.null(colnames(pred_data)) |
+     length(colnames(pred_data)) == 0) {
     cov_names <- paste0("cov",1:num_predictors)
 
   } else {
-    cov_names <- colnames(pred.data)
+    cov_names <- colnames(pred_data)
 
   }
 
   for(item in 1:num_items) {
     if(num_responses[item] == 1) {
-      item_parms_dif <- c(p2[grep(paste0("c1_itm",item,"_"),names(p2),fixed=T)],
-                          p2[grep(paste0("a1_itm",item,"_"),names(p2),fixed=T)],
-                          p2[grep(paste0("s1_itm",item,"_"),names(p2),fixed=T)])
+      item_parms_dif <- c(p2[grep(paste0("c1_item",item),names(p2),fixed=T)],
+                          p2[grep(paste0("a1_item",item),names(p2),fixed=T)],
+                          p2[grep(paste0("s1_item",item),names(p2),fixed=T)])
       item_names_dif <- c(paste0(rep(item_names[item],
                                      each = num_predictors),'.int.',cov_names),
                           paste0(rep(item_names[item],
@@ -156,8 +157,8 @@ postprocess <-
                                      each = num_predictors),'.res.',cov_names))
 
     } else {
-      item_parms_dif <- c(p2[grep(paste0("c1_itm",item,"_"),names(p2),fixed=T)],
-                          p2[grep(paste0("a1_itm",item,"_"),names(p2),fixed=T)])
+      item_parms_dif <- c(p2[grep(paste0("c1_item",item),names(p2),fixed=T)],
+                          p2[grep(paste0("a1_item",item),names(p2),fixed=T)])
       item_names_dif <- c(paste0(rep(item_names[item],
                                      each = num_predictors),'.int.',cov_names),
                           paste0(rep(item_names[item],
@@ -174,51 +175,52 @@ postprocess <-
   final$tau_vec[pen] <- tau_vec[pen]
   final$aic[pen] <- round(infocrit[1],3)
   final$bic[pen] <- round(infocrit[2],3)
-  final$impact.lv.parms[,pen] <- round(lv_parms,3)
-  final$base.item.parms[,pen] <- round(all_items_parms_base,3)
-  final$dif.item.parms[,pen] <- round(all_items_parms_dif,3)
-  rownames(final$impact.lv.parms) <- lv_names
-  rownames(final$base.item.parms) <- all_items_names_base
-  rownames(final$dif.item.parms) <- all_items_names_dif
+  final$impact[,pen] <- round(lv_parms,3)
+  final$base[,pen] <- round(all_items_parms_base,3)
+  final$dif[,pen] <- round(all_items_parms_dif,3)
+  final$em_history[[pen]] <- em_history[[pen]]
+  rownames(final$impact) <- lv_names
+  rownames(final$base) <- all_items_names_base
+  rownames(final$dif) <- all_items_names_dif
 
   # Order item parms.
   final_int_thr_base <-
-    final$base.item.parms[grep(paste0(c(".int",".thr"),
-                                      collapse = "|"),
-                               rownames(final$base.item.parms)),
-                          pen]
+    final$base[grep(paste0(c(".int",".thr"),
+                           collapse = "|"),
+                    rownames(final$base)),
+               pen]
   final_slp_base <-
-    final$base.item.parms[grep(".slp",
-                               rownames(final$base.item.parms)),
-                          pen]
+    final$base[grep(".slp",
+                    rownames(final$base)),
+               pen]
   final_res_base <-
-    final$base.item.parms[grep(".res",
-                               rownames(final$base.item.parms)),
-                          pen]
+    final$base[grep(".res",
+                    rownames(final$base)),
+               pen]
   final_names_base <-
     names(c(final_int_thr_base,final_slp_base,final_res_base))
-  final$base.item.parms[,pen] <-
+  final$base[,pen] <-
     matrix(c(final_int_thr_base,final_slp_base,final_res_base), ncol = 1)
-  rownames(final$base.item.parms) <- final_names_base
+  rownames(final$base) <- final_names_base
 
-  final_int_dif <- final$dif.item.parms[grep(".int",
-                                             rownames(final$dif.item.parms)),
+  final_int_dif <- final$dif[grep(".int",
+                                             rownames(final$dif)),
                                         pen]
-  final_slp_dif <- final$dif.item.parms[grep(".slp",
-                                             rownames(final$dif.item.parms)),
+  final_slp_dif <- final$dif[grep(".slp",
+                                             rownames(final$dif)),
                                         pen]
-  final_res_dif <- final$dif.item.parms[grep(".res",
-                                             rownames(final$dif.item.parms)),
+  final_res_dif <- final$dif[grep(".res",
+                                             rownames(final$dif)),
                                         pen]
   final_names_dif <- names(c(final_int_dif,final_slp_dif,final_res_dif))
-  final$dif.item.parms[,pen] <-
+  final$dif[,pen] <-
     matrix(c(final_int_dif,final_slp_dif,final_res_dif), ncol = 1)
-  rownames(final$dif.item.parms) <- final_names_dif
+  rownames(final$dif) <- final_names_dif
 
   # Stop if there is a large change in DIF parameters.
   if(pen > 1){
-    second_last <- sum(final$dif.item.parms[-1,pen-1] == 0)
-    last <- sum(final$dif.item.parms[-1,pen] == 0)
+    second_last <- sum(final$dif[-1,pen-1] == 0)
+    last <- sum(final$dif[-1,pen] == 0)
 
     if((second_last - last) > (num_predictors*num_items)) {
       warning(paste0("Large increase in the number of DIF parameters ",

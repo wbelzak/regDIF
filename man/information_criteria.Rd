@@ -7,15 +7,15 @@
 information_criteria(
   etable,
   p,
-  item.data,
-  pred.data,
+  item_data,
+  pred_data,
   mean_predictors,
   var_predictors,
   gamma,
   samp_size,
   num_responses,
   num_items,
-  num.quad
+  num_quad
 )
 }
 \arguments{
@@ -23,9 +23,9 @@ information_criteria(
 
 \item{p}{List of parameters.}
 
-\item{item.data}{Matrix or dataframe of item responses.}
+\item{item_data}{Matrix or dataframe of item responses.}
 
-\item{pred.data}{Matrix or dataframe of DIF and/or impact predictors.}
+\item{pred_data}{Matrix or dataframe of DIF and/or impact predictors.}
 
 \item{mean_predictors}{Possibly different matrix of predictors for the mean
 impact equation.}
@@ -42,7 +42,7 @@ function.}
 
 \item{num_items}{Number of items in data set.}
 
-\item{num.quad}{Number of quadrature points used for approximating the
+\item{num_quad}{Number of quadrature points used for approximating the
 latent variable.}
 }
 \description{

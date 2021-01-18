@@ -6,24 +6,24 @@
 \usage{
 Estep(
   p,
-  item.data,
-  pred.data,
+  item_data,
+  pred_data,
   mean_predictors,
   var_predictors,
   theta,
   samp_size,
   num_items,
   num_responses,
-  adapt.quad,
-  num.quad
+  adapt_quad,
+  num_quad
 )
 }
 \arguments{
 \item{p}{List of parameters.}
 
-\item{item.data}{Matrix or dataframe of item responses.}
+\item{item_data}{Matrix or dataframe of item responses.}
 
-\item{pred.data}{Matrix or dataframe of DIF and/or impact predictors.}
+\item{pred_data}{Matrix or dataframe of DIF and/or impact predictors.}
 
 \item{mean_predictors}{Possibly different matrix of predictors for the mean
 impact equation.}
@@ -39,7 +39,7 @@ variance impact equation.}
 
 \item{num_responses}{Number of responses for each item.}
 
-\item{num.quad}{Number of quadrature points used for approximating the
+\item{num_quad}{Number of quadrature points used for approximating the
 latent variable.}
 }
 \description{

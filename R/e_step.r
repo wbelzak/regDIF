@@ -1,8 +1,8 @@
 #' Expectation step.
 #'
 #' @param p List of parameters.
-#' @param item.data Matrix or dataframe of item responses.
-#' @param pred.data Matrix or dataframe of DIF and/or impact predictors.
+#' @param item_data Matrix or dataframe of item responses.
+#' @param pred_data Matrix or dataframe of DIF and/or impact predictors.
 #' @param mean_predictors Possibly different matrix of predictors for the mean
 #' impact equation.
 #' @param var_predictors Possibly different matrix of predictors for the
@@ -11,35 +11,35 @@
 #' @param samp_size Sample size in dataset.
 #' @param num_items Number of items in dataset.
 #' @param num_responses Number of responses for each item.
-#' @param num.quad Number of quadrature points used for approximating the
+#' @param num_quad Number of quadrature points used for approximating the
 #' latent variable.
 #'
 #' @keywords internal
 #'
 Estep <-
   function(p,
-           item.data,
-           pred.data,
+           item_data,
+           pred_data,
            mean_predictors,
            var_predictors,
            theta,
            samp_size,
            num_items,
            num_responses,
-           adapt.quad,
-           num.quad) {
+           adapt_quad,
+           num_quad) {
 
     # Make space for the trace lines and the E-tables.
     itemtrace <- rep(list(NA),num_items)
-    etable <- matrix(0,nrow=samp_size,ncol=num.quad)
+    etable <- matrix(0,nrow=samp_size,ncol=num_quad)
 
     # Impact.
     alpha <- mean_predictors %*% p[[num_items+1]]
     phi <- exp(var_predictors %*% p[[num_items+2]])
 
-    if(adapt.quad == TRUE) {
+    if(adapt_quad == TRUE) {
       theta <- mean(alpha) +
-        sqrt(2*mean(phi))*statmod::gauss.quad(n = num.quad,
+        sqrt(2*mean(phi))*statmod::gauss.quad(n = num_quad,
                                               kind = "hermite")$nodes
     }
 
@@ -48,21 +48,21 @@ Estep <-
       if(num_responses[item] == 1) {
         itemtrace[[item]] <- gaussian_traceline_pts(p[[item]],
                                                     theta,
-                                                    item.data[,item],
-                                                    pred.data,
+                                                    item_data[,item],
+                                                    pred_data,
                                                     samp_size)
       } else if (num_responses[item] == 2) {
         itemtrace[[item]] <- bernoulli_traceline_pts(p[[item]],
                                                      theta,
-                                                     pred.data,
+                                                     pred_data,
                                                      samp_size)
       } else if (num_responses[item] > 2) {
         itemtrace[[item]] <- cumulative_traceline_pts(p[[item]],
                                                       theta,
-                                                      pred.data,
+                                                      pred_data,
                                                       samp_size,
                                                       num_responses[item],
-                                                      num.quad)
+                                                      num_quad)
       }
     }
 
@@ -78,8 +78,8 @@ Estep <-
       # probability of response pattern.
       for(j in 1:num_items) {
 
-        if(is.na(item.data[i,j])) next
-        x <- item.data[i,j]
+        if(is.na(item_data[i,j])) next
+        x <- item_data[i,j]
 
         if(num_responses[item] == 1) { # Continuous responses.
           posterior <- posterior*itemtrace[[j]][i,]

@@ -6,8 +6,8 @@
 \usage{
 postprocess(
   estimates,
-  item.data,
-  pred.data,
+  item_data,
+  pred_data,
   mean_predictors,
   var_predictors,
   tau_vec,
@@ -15,21 +15,21 @@ postprocess(
   pen,
   anchor,
   control,
-  final.control,
+  final_control,
   final,
   samp_size,
   num_responses,
   num_predictors,
   num_items,
-  num.quad
+  num_quad
 )
 }
 \arguments{
 \item{estimates}{List of converged parameters.}
 
-\item{item.data}{Matrix or dataframe of item responses.}
+\item{item_data}{Matrix or dataframe of item responses.}
 
-\item{pred.data}{Matrix or dataframe of DIF and/or impact predictors.}
+\item{pred_data}{Matrix or dataframe of DIF and/or impact predictors.}
 
 \item{mean_predictors}{Possibly different matrix of predictors for the mean
 impact equation.}
@@ -48,7 +48,7 @@ penalty function.}
 
 \item{control}{Optional list of user-defined control parameters}
 
-\item{final.control}{List of final control parameters.}
+\item{final_control}{List of final control parameters.}
 
 \item{final}{List of model results.}
 

@@ -2,8 +2,8 @@
 #'
 #' @param etable Matrix of E-table values for item and impact equations.
 #' @param p List of parameters.
-#' @param item.data Matrix or dataframe of item responses.
-#' @param pred.data Matrix or dataframe of DIF and/or impact predictors.
+#' @param item_data Matrix or dataframe of item responses.
+#' @param pred_data Matrix or dataframe of DIF and/or impact predictors.
 #' @param mean_predictors Possibly different matrix of predictors for the mean
 #' impact equation.
 #' @param var_predictors Possibly different matrix of predictors for the
@@ -13,7 +13,7 @@
 #' @param samp_size Sample size in data set.
 #' @param num_responses Number of responses for each item.
 #' @param num_items Number of items in data set.
-#' @param num.quad Number of quadrature points used for approximating the
+#' @param num_quad Number of quadrature points used for approximating the
 #' latent variable.
 #'
 #' @keywords internal
@@ -21,15 +21,15 @@
 information_criteria <-
   function(etable,
            p,
-           item.data,
-           pred.data,
+           item_data,
+           pred_data,
            mean_predictors,
            var_predictors,
            gamma,
            samp_size,
            num_responses,
            num_items,
-           num.quad) {
+           num_quad) {
 
   # Update theta and etable.
   theta <- etable$theta
@@ -40,47 +40,47 @@ information_criteria <-
 
     # Obtain E-tables for each response category.
     etable_item <- replicate(n=num_responses[item],
-                        etable,
-                        simplify = F)
+                             etable,
+                             simplify = F)
     for(resp in 1:num_responses[item]) {
       etable_item[[resp]][which(
-        !(item.data[,item] == resp)), ] <- 0
+        !(item_data[,item] == resp)), ] <- 0
     }
 
     #compute negative log-likelihood values
     if(num_responses[item] == 1) {
       itemtrace <- gaussian_traceline_pts(p[[item]],
                                           theta,
-                                          item.data[,item],
-                                          pred.data,
+                                          item_data[,item],
+                                          pred_data,
                                           samp_size)
       ll_dif_item <- -1*sum(etable[[1]]*log(itemtrace[[1]]), na.rm = TRUE)
 
     } else if (num_responses[item] == 2) {
       itemtrace <- bernoulli_traceline_cpp(p[[item]],
                                            theta,
-                                           pred.data,
+                                           pred_data,
                                            samp_size,
-                                           num.quad)
+                                           num_quad)
       ll_dif_item <- -1*(sum(etable_item[[1]]*log(1-itemtrace), na.rm = TRUE) +
                            sum(etable_item[[2]]*log(itemtrace), na.rm = TRUE))
 
     } else if (num_responses[item] > 2){
       itemtrace <- cumulative_traceline_pts(p[[item]],
                                              theta,
-                                             pred.data,
+                                             pred_data,
                                              samp_size,
                                              num_responses[item],
-                                             num.quad)
+                                             num_quad)
       ll_dif_item <- 0
       for(resp in 1:num_responses[item]){
-      if(all(itemtrace[[resp]] == 0)){
+      if(resp < num_responses[item] && all(itemtrace[[resp]] == 0)){
         log_itemtrace_cat <- 0
       } else{
         if(resp == 1) {
           log_itemtrace_cat <- log(1-itemtrace[[resp]])
         } else if(resp == num_responses[item]) {
-          log_itemtrace_cat <- log(itemtrace[[resp]])
+          log_itemtrace_cat <- log(itemtrace[[resp-1]])
         } else {
           log_itemtrace_cat <- log(itemtrace[[resp-1]]-itemtrace[[resp]])
         }

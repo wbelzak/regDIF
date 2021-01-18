@@ -13,10 +13,14 @@ d_phi(
   cov,
   samp_size,
   num_items,
-  num.quad
+  num_quad
 )
 }
 \arguments{
+\item{p_impact}{Vector of impact parameters.}
+
+\item{etable}{E-table for impact.}
+
 \item{theta}{Matrix of adaptive theta values.}
 
 \item{mean_predictors}{Possibly different matrix of predictors for the mean
@@ -31,12 +35,8 @@ variance impact equation.}
 
 \item{num_items}{Number of items in dataset.}
 
-\item{num.quad}{Number of quadrature points used for approximating the
+\item{num_quad}{Number of quadrature points used for approximating the
 latent variable.}
-
-\item{p_active}{Vector of item parameters.}
-
-\item{etable_all}{E-table for impact.}
 }
 \description{
 Partial derivatives for mean impact equation.

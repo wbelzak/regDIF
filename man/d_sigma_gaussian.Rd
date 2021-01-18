@@ -10,11 +10,11 @@ d_sigma_gaussian(
   etable_item,
   theta,
   responses_item,
-  pred.data,
+  pred_data,
   cov,
   samp_size,
   num_items,
-  num.quad
+  num_quad
 )
 }
 \arguments{
@@ -28,7 +28,7 @@ d_sigma_gaussian(
 
 \item{responses_item}{Vector of item responses.}
 
-\item{pred.data}{Matrix or dataframe of DIF and/or impact predictors.}
+\item{pred_data}{Matrix or dataframe of DIF and/or impact predictors.}
 
 \item{cov}{Covariate being maximized.}
 
@@ -36,7 +36,7 @@ d_sigma_gaussian(
 
 \item{num_items}{Number of items in dataset.}
 
-\item{num.quad}{Number of quadrature points used for approximating the
+\item{num_quad}{Number of quadrature points used for approximating the
 latent variable.}
 }
 \description{

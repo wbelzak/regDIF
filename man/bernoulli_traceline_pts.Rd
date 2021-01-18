@@ -4,14 +4,14 @@
 \alias{bernoulli_traceline_pts}
 \title{Binary item tracelines.}
 \usage{
-bernoulli_traceline_pts(p_active, theta, pred.data, samp_size)
+bernoulli_traceline_pts(p_item, theta, pred_data, samp_size)
 }
 \arguments{
-\item{p_active}{Vector of item parameters.}
+\item{p_item}{Vector of item parameters.}
 
 \item{theta}{Vector of theta values.}
 
-\item{pred.data}{Matrix or dataframe of DIF and/or impact predictors.}
+\item{pred_data}{Matrix or dataframe of DIF and/or impact predictors.}
 
 \item{samp_size}{Sample size in dataset.}
 }

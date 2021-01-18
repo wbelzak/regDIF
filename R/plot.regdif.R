@@ -18,9 +18,9 @@ plot.regDIF <-
     if(length(tau) < 2) stop(
       paste0("Must run multiple tau values to plot."),
       call. = TRUE)
-    dif.parms <- x$dif.item.parms[grep(paste0(c("int","slp"),
+    dif.parms <- x$dif[grep(paste0(c("int","slp"),
                                                    collapse = "|"),
-                                            rownames(x$dif.item.parms)), ]
+                                            rownames(x$dif)), ]
     min.tau <- tau[which.min(unlist(x[method]))]
     dif.min.tau <- dif.parms[,which(tau == min.tau)]
     nonzero.dif <- dif.min.tau[!(dif.min.tau == 0)]

@@ -5,26 +5,26 @@
 \title{Ordinal tracelines (for derivatives).}
 \usage{
 cumulative_traceline_pts(
-  p_active,
+  p_item,
   theta,
-  pred.data,
+  pred_data,
   samp_size,
   num_responses_item,
-  num.quad
+  num_quad
 )
 }
 \arguments{
-\item{p_active}{Vector of item parameters.}
+\item{p_item}{Vector of item parameters.}
 
 \item{theta}{Vector of theta values.}
 
-\item{pred.data}{Matrix or dataframe of DIF and/or impact predictors.}
+\item{pred_data}{Matrix or dataframe of DIF and/or impact predictors.}
 
 \item{samp_size}{Sample size in dataset.}
 
 \item{num_responses_item}{Number of responses for item.}
 
-\item{num.quad}{Number of quadrature points used for approximating the
+\item{num_quad}{Number of quadrature points used for approximating the
 latent variable.}
 }
 \description{

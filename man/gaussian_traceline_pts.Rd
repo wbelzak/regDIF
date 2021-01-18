@@ -4,18 +4,18 @@
 \alias{gaussian_traceline_pts}
 \title{Continuous tracelines.}
 \usage{
-gaussian_traceline_pts(p_active, theta, responses_item, pred.data, samp_size)
+gaussian_traceline_pts(p_item, theta, responses_item, pred_data, samp_size)
 }
 \arguments{
-\item{p_active}{Vector of item parameters.}
+\item{p_item}{Vector of item parameters.}
 
 \item{theta}{Vector of theta values.}
 
 \item{responses_item}{Vector of item responses.}
 
-\item{pred.data}{Matrix or dataframe of DIF and/or impact predictors.}
+\item{pred_data}{Matrix or data frame of DIF and/or impact predictors.}
 
-\item{samp_size}{Sample size in dataset.}
+\item{samp_size}{Sample size in data set.}
 }
 \description{
 Continuous tracelines.

@@ -19,17 +19,17 @@ summary.regDIF <-
     if(method == "aic") {
       sum_results <- c(object$tau_vec[which.min(object$aic)],
                        object$aic[which.min(object$aic)])
-      impact <- object$impact.lv.parms[,which.min(object$aic)]
-      base <- object$base.item.parms[,which.min(object$aic)]
-      dif <- object$dif.item.parms[,which.min(object$aic)]
+      impact <- object$impact[,which.min(object$aic)]
+      base <- object$base[,which.min(object$aic)]
+      dif <- object$dif[,which.min(object$aic)]
       names(sum_results) <- c("tau","aic")
 
     } else if(method == "bic") {
       sum_results <- c(object$tau_vec[which.min(object$bic)],
                        object$bic[which.min(object$bic)])
-      impact <- object$impact.lv.parms[,which.min(object$bic)]
-      base <- object$base.item.parms[,which.min(object$bic)]
-      dif <- object$dif.item.parms[,which.min(object$bic)]
+      impact <- object$impact[,which.min(object$bic)]
+      base <- object$base[,which.min(object$bic)]
+      dif <- object$dif[,which.min(object$bic)]
       names(sum_results) <- c("tau","bic")
 
     }

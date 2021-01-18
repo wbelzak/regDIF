@@ -9,13 +9,13 @@ d_categorical(
   p_item,
   etable_item,
   theta,
-  pred.data,
+  pred_data,
   thr,
   cov,
   samp_size,
   num_responses_item,
   num_items,
-  num.quad
+  num_quad
 )
 }
 \arguments{
@@ -27,8 +27,6 @@ d_categorical(
 
 \item{theta}{Matrix of adaptive theta values.}
 
-\item{pred.data}{Matrix or dataframe of DIF and/or impact predictors.}
-
 \item{thr}{Threshold value being maximized.}
 
 \item{cov}{Covariate being maximized.}
@@ -36,6 +34,8 @@ d_categorical(
 \item{samp_size}{Sample size in dataset.}
 
 \item{num_items}{Number of items in dataset.}
+
+\item{pred.data}{Matrix or dataframe of DIF and/or impact predictors.}
 
 \item{num.quad}{Number of quadrature points used for approximating the
 latent variable.}

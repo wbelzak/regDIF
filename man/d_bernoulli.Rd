@@ -9,11 +9,11 @@ d_bernoulli(
   p_item,
   etable_item,
   theta,
-  pred.data,
+  pred_data,
   cov,
   samp_size,
   num_items,
-  num.quad
+  num_quad
 )
 }
 \arguments{
@@ -25,13 +25,13 @@ d_bernoulli(
 
 \item{theta}{Matrix of adaptive theta values.}
 
-\item{pred.data}{Matrix or dataframe of DIF and/or impact predictors.}
-
 \item{cov}{Covariate being maximized.}
 
 \item{samp_size}{Sample size in dataset.}
 
 \item{num_items}{Number of items in dataset.}
+
+\item{pred.data}{Matrix or dataframe of DIF and/or impact predictors.}
 
 \item{num.quad}{Number of quadrature points used for approximating the
 latent variable.}

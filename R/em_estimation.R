@@ -15,6 +15,8 @@
 #' or provided by the user. The first \code{tau_vec} will be equal to \code{Inf}
 #' to identify a minimal value of tau in which all DIF is removed from the
 #' model.
+#' @param id_tau Logical indicating whether to identify the minimum value of tau
+#' in which all DIF parameters are removed from the model.
 #' @param alpha Numeric value indicating the alpha parameter in the elastic net
 #' penalty function.
 #' @param gamma Numeric value indicating the gamma parameter in the MCP
@@ -45,6 +47,7 @@ em_estimation <- function(p,
                           theta,
                           pen_type,
                           tau_vec,
+                          id_tau,
                           alpha,
                           gamma,
                           pen,
@@ -166,6 +169,55 @@ em_estimation <- function(p,
                                    num_items,
                                    num_quad)
 
-  return(list(p=p,infocrit=infocrit,em_history=em_history))
+  # Option to identify maximum value of tau which removes all DIF from model.
+  if(id_tau) {
+
+    # Final M-step.
+    if(optim_method == "multi") {
+      max_tau <- Mstep_block_idtau(p,
+                                   item_data,
+                                   pred_data,
+                                   mean_predictors,
+                                   var_predictors,
+                                   etable,
+                                   item_type,
+                                   pen_type,
+                                   tau_vec[1],
+                                   alpha,
+                                   gamma,
+                                   anchor,
+                                   samp_size,
+                                   num_responses,
+                                   num_items,
+                                   num_quad,
+                                   num_predictors)
+    } else if(optim_method == "uni") {
+      max_tau <- Mstep_cd_idtau(p,
+                                item_data,
+                                pred_data,
+                                mean_predictors,
+                                var_predictors,
+                                etable,
+                                item_type,
+                                pen_type,
+                                tau_vec[1],
+                                alpha,
+                                gamma,
+                                anchor,
+                                samp_size,
+                                num_responses,
+                                num_items,
+                                num_quad,
+                                num_predictors)
+    }
+
+    # Return model results for maximum tau value.
+    return(list(p=p,infocrit=infocrit,max_tau=max_tau,em_history=em_history))
+
+  } else {
+
+    # Return model results for all other tau values.
+    return(list(p=p,infocrit=infocrit,em_history=em_history))
+  }
 
 }

@@ -217,7 +217,7 @@ postprocess <-
     matrix(c(final_int_dif,final_slp_dif,final_res_dif), ncol = 1)
   rownames(final$dif) <- final_names_dif
 
-  # Stop if there is a large change in DIF parameters.
+  # Warn if there is a large change in DIF parameters.
   if(pen > 1){
     second_last <- sum(final$dif[-1,pen-1] == 0)
     last <- sum(final$dif[-1,pen] == 0)
@@ -233,6 +233,22 @@ postprocess <-
            call. = FALSE)
     }
 
+  }
+
+  # Get parameter estimates to determine if tau value is too small to remove all
+  # dif from model.
+  p2 <- unlist(estimates$p)
+  dif_parms <- p2[grep(paste0("cov"),names(p2))]
+
+  # Warn if tau does not remove all DIF
+  if(is.null(anchor) &&
+     pen == 1 &&
+     sum(abs(dif_parms)) > 0 &&
+     alpha == 1) {
+    warning(paste0("\nAutomatically-generated or user-defined ",
+                   "tau value is too small to penalize all parameters to ",
+                   "zero without anchor item. Larger values of tau are ",
+                   "recommended."))
   }
 
   # Print information about optimization.

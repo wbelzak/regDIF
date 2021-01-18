@@ -136,74 +136,8 @@ regDIF <- function(item.data,
                              control,
                              call)
 
-    # Identify minimum tau that removes all DIF.
-    if(data_scrub$id_tau) {
-      max_tau_fit <- identify_tau(data_scrub$p,
-                                  data_scrub$item_data,
-                                  data_scrub$pred_data,
-                                  data_scrub$mean_predictors,
-                                  data_scrub$var_predictors,
-                                  data_scrub$item_type,
-                                  data_scrub$theta,
-                                  data_scrub$pen_type,
-                                  data_scrub$tau_vec,
-                                  data_scrub$num_tau,
-                                  alpha,
-                                  gamma,
-                                  anchor,
-                                  data_scrub$final_control,
-                                  data_scrub$samp_size,
-                                  data_scrub$num_items,
-                                  data_scrub$num_responses,
-                                  data_scrub$num_predictors,
-                                  data_scrub$num_quad,
-                                  data_scrub$adapt_quad,
-                                  data_scrub$optim_method,
-                                  data_scrub$em_history)
-
-      p2 <- unlist(max_tau_fit$p)
-      dif_parms <- p2[grep(paste0("cov"),names(p2))]
-
-
-      if(is.null(anchor) & sum(abs(dif_parms)) > 0 & alpha == 1) {
-        stop(paste0("\nWarning: Automatically-generated or user-defined tau",
-                    "value is too small to penalize all parameters to zero",
-                    "without anchor item. Larger values of tau are needed."))
-      }
-
-      # Update vector of tau values based on identification of minimum tau value
-      # which removes all DIF from the model.
-      data_scrub$tau_vec <- seq((max_tau_fit$max_tau)**(1/3),0,
-                                length.out = data_scrub$num_tau)**3
-
-      # Post-process data.
-      data_final <- postprocess(max_tau_fit,
-                                data_scrub$item_data,
-                                data_scrub$pred_data,
-                                data_scrub$mean_predictors,
-                                data_scrub$var_predictors,
-                                data_scrub$tau_vec,
-                                alpha,
-                                pen=1,
-                                anchor,
-                                control,
-                                data_scrub$final_control,
-                                data_scrub$final,
-                                data_scrub$samp_size,
-                                data_scrub$num_responses,
-                                data_scrub$num_predictors,
-                                data_scrub$num_items,
-                                data_scrub$num_quad)
-
-      # Update parameter estimates.
-      data_scrub$p <- max_tau_fit$p
-      data_scrub$final <- data_final
-    }
-
-    # Run Reg-DIF by looping through tau.
-    start_regDIF <- ifelse(data_scrub$id_tau,2,1)
-    # foreach(pen=start_regDIF:data_scrub$num_tau) %dopar% {
-    for(pen in start_regDIF:data_scrub$num_tau){
+    # Run Reg-DIF for each value of tau.
+    for(pen in 1:data_scrub$num_tau){
 
       # Obtain regDIF estimates.
       estimates <- em_estimation(data_scrub$p,
@@ -215,6 +149,7 @@ regDIF <- function(item.data,
                                  data_scrub$theta,
                                  data_scrub$pen_type,
                                  data_scrub$tau_vec,
+                                 data_scrub$id_tau,
                                  alpha,
                                  gamma,
                                  pen,
@@ -229,19 +164,12 @@ regDIF <- function(item.data,
                                  data_scrub$optim_method,
                                  data_scrub$em_history)
 
-      if(!data_scrub$id_tau) {
-      p2 <- unlist(estimates$p)
-      dif_parms <- p2[grep(paste0("cov"),names(p2))]
-
-      if(is.null(anchor) &&
-         pen == 1 &&
-         sum(abs(dif_parms)) > 0 &&
-         alpha == 1) {
-        warning(paste0("\nAutomatically-generated or user-defined ",
-                    "tau value is too small to penalize all parameters to ",
-                    "zero without anchor item. Larger values of tau are ",
-                    "recommended."))
-      }
+      # Update vector of tau values based on identification of minimum tau value
+      # which removes all DIF from the model.
+      if(data_scrub$id_tau) {
+        data_scrub$tau_vec <- seq((estimates$max_tau)**(1/3),0,
+                                  length.out = data_scrub$num_tau)**3
+        data_scrub$id_tau <- FALSE
       }
 
       # Post-process data.

@@ -14,6 +14,7 @@ em_estimation(
   theta,
   pen_type,
   tau_vec,
+  id_tau,
   alpha,
   gamma,
   pen,
@@ -53,6 +54,9 @@ item to be modeled.}
 or provided by the user. The first \code{tau_vec} will be equal to \code{Inf}
 to identify a minimal value of tau in which all DIF is removed from the
 model.}
+
+\item{id_tau}{Logical indicating whether to identify the minimum value of tau
+in which all DIF parameters are removed from the model.}
 
 \item{alpha}{Numeric value indicating the alpha parameter in the elastic net
 penalty function.}

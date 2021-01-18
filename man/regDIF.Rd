@@ -14,17 +14,15 @@ regDIF(item.data,
        gamma = 3,
        anchor = NULL,
        stdz = TRUE,
-       adapt.quad = FALSE,
-       num.quad = if(adapt.quad) 15,
        control = list())
 }
 \arguments{
 \item{item.data}{Matrix or data frame of item responses. See below for
 supported item types.}
 
-\item{pred.data}{Matrix or data frame of DIF/impact predictors.
-See \code{control} option below to specify different predictors for impact
-model.}
+\item{pred.data}{Matrix or data frame of predictors affecting item responses
+(DIF) and latent variable (impact). See \code{control} option below to
+specify different predictors for impact model.}
 
 \item{item.type}{Optional character value or vector indicating the type of
 item to be modeled. The default is NULL, corresponding to a 2PL or graded
@@ -49,8 +47,8 @@ The options include:
    \eqn{\gamma} (gamma). Uses the firm-thresholding penalty function.}}}
 
 \item{tau}{Optional numeric vector of tau values \eqn{\ge} 0. If tau is
-supplied, this overrides the automatic construction of tau values via
-\code{max.tau}. Must be non-negative and in descending order, from largest
+supplied, this overrides the automatic construction of tau values.
+Must be non-negative and in descending order, from largest
 to smallest values (e.g., \code{seq(1,0,-.01)}.}
 
 \item{num.tau}{Numeric value indicating how many tau values to fit. The
@@ -77,29 +75,33 @@ tau approaches 0 (required to identify the model).}
 impact predictors for regularization. Default is \code{TRUE}, as it is
 recommended that all predictors be on the same scale.}
 
-\item{adapt.quad}{Adaptive quadrature is not currently supported.
-Logical value indicating whether to use adaptive quadrature. The default is
-\code{FALSE}.}
-
-\item{num.quad}{Numeric value indicating the number of quadrature points to
-be used in approximating the latent variable distribution during estimation.
-Default is \code{15} when using adaptive quadrature (not currently
-supported). When using fixed-point quadrature, the default is
-\code{21} points if all items are binary or \code{51} points if at least one
-item is ordered categorical.}
-
 \item{control}{Optional list of different model specifications and
 optimization parameters. May be:
 \describe{
-   \item{impact.data}{List of matrices or data frames with predictors for
-   mean and variance impact. Allows for different sets of predictors on the
-   mean and variance impact equations compared to the item response DIF
-   equations. Default is for all predictors to affect the mean and variance
-   equations.}
+   \item{impact.mean.data}{Matrix or data frame of predictors, which allows
+   for a different set of predictors to affect the mean impact equation
+   compared to the item response DIF equations. Default includes all
+   predictors from pred.data.}
+   \item{impact.var.data}{Matrix or data frame with predictors for
+   variance impact. See above. Default includes all predictors in pred.data.}
    \item{tol}{Convergence threshold of EM algorithm. Default is
    \code{10^-5}.}
-   \item{maxiter}{Maximum number of EM iterations. Default is
-   \code{5000}.}}}
+   \item{maxiter}{Maximum number of EM iterations. Default is \code{5000}.}
+   \item{adapt.quad}{Logical value indicating whether to use adaptive
+   quadrature to approximate the latent variable. The default is
+   \code{FALSE}. NOTE: Adaptive quadrature is not supported yet.}
+   \item{num.quad}{Numeric value indicating the number of quadrature
+   points to be used. For fixed-point quadrature, the default is \code{21}
+   points when all item responses are binary or else \code{51} points if at
+   least one item is ordered categorical.}
+   \item{optim.method}{Character value indicating which optimization method
+   to use. Default is "multi", which updates the impact and item parameter
+   estimates using multivariate Newton-Raphson. Another option is "uni",
+   which updates estimates one-at-a-time using univariate Newton-Raphson, or
+   a single iteration of coordinate descent. "Multi" will be faster in most
+   cases, although "uni" may achieve faster results when the number of
+   predictors is large.}
+   }}
 }
 \value{
 Function returns an object of class \code{regDIF}

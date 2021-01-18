@@ -19,42 +19,42 @@ coef.regDIF <-
 
       # Which tau/model to show.
       if(is.null(tau)){
-        table <- list("tau.parms" = object$tau_vec,
-                      "impact.lv.parms" = object$impact.lv.parms,
-                      "base.item.parms" = object$base.item.parms,
-                      "dif.item.parms" = object$dif.item.parms)
+        table <- list("tau" = object$tau_vec,
+                      "impact" = object$impact,
+                      "base" = object$base,
+                      "dif" = object$dif)
 
       } else if(tau == "tau.min") {
         if(method == "aic") {
-          table <- list("tau.parms" =
+          table <- list("tau" =
                           object$tau_vec[which.min(object$aic)],
-                        "impact.lv.parms" =
-                          object$impact.lv.parms[,which.min(object$aic)],
-                        "base.item.parms" =
-                          object$base.item.parms[,which.min(object$aic)],
-                        "dif.item.parms" =
-                          object$dif.item.parms[,which.min(object$aic)])
+                        "impact" =
+                          object$impact[,which.min(object$aic)],
+                        "base" =
+                          object$base[,which.min(object$aic)],
+                        "dif" =
+                          object$dif[,which.min(object$aic)])
 
         } else if(method == "bic") {
-          table <- list("tau.parms" =
+          table <- list("tau" =
                           object$tau_vec[which.min(object$bic)],
-                        "impact.lv.parms" =
-                          object$impact.lv.parms[,which.min(object$bic)],
-                        "base.item.parms" =
-                          object$base.item.parms[,which.min(object$bic)],
-                        "dif.item.parms" =
-                          object$dif.item.parms[,which.min(object$bic)])
+                        "impact" =
+                          object$impact[,which.min(object$bic)],
+                        "base" =
+                          object$base[,which.min(object$bic)],
+                        "dif" =
+                          object$dif[,which.min(object$bic)])
         }
 
       } else if(is.numeric(tau)) {
-        table <- list("tau.parms" =
+        table <- list("tau" =
                         object$tau_vec[tau],
-                      "impact.lv.parms" =
-                        object$impact.lv.parms[,tau],
-                      "base.item.parms" =
-                        object$base.item.parms[,tau],
-                      "dif.item.parms" =
-                        object$dif.item.parms[,tau])
+                      "impact" =
+                        object$impact[,tau],
+                      "base" =
+                        object$base[,tau],
+                      "dif" =
+                        object$dif[,tau])
       }
 
 

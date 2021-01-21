@@ -32,6 +32,7 @@ Estep <-
     # Make space for the trace lines and the E-tables.
     itemtrace <- rep(list(NA),num_items)
     etable <- matrix(0,nrow=samp_size,ncol=num_quad)
+    observed_ll <- 0
 
     # Impact.
     alpha <- mean_predictors %*% p[[num_items+1]]
@@ -103,6 +104,7 @@ Estep <-
 
       # Normalize posterior.
       marginal <- sum(posterior, na.rm = TRUE)
+      observed_ll <- observed_ll + log(marginal)
       if(marginal == 0) marginal <- 1
       etable[i,] <- posterior/marginal
 
@@ -110,7 +112,7 @@ Estep <-
 
     # E-table matrix to be used in Q function and (possibly adaptive)
     # theta values.
-    return(list(etable=etable,theta=theta))
+    return(list(etable=etable,theta=theta,observed_ll=observed_ll))
 
 
   }

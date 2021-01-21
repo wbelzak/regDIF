@@ -179,8 +179,10 @@ preprocess <-
 
   p[[(num_items+1)]] <- rep(0,ncol(mean_predictors))
   p[[(num_items+2)]] <- rep(0,ncol(var_predictors))
-  names(p[[(num_items+1)]]) <- paste0(rep(paste0('m',1:ncol(mean_predictors))))
-  names(p[[(num_items+2)]]) <- paste0(rep(paste0('v',1:ncol(var_predictors))))
+  names(p[[(num_items+1)]]) <- paste0(rep(paste0('mean',
+                                                 1:ncol(mean_predictors))))
+  names(p[[(num_items+2)]]) <- paste0(rep(paste0('var',
+                                                 1:ncol(var_predictors))))
 
   if(any(item.type == "cfa")){
     num_base_parms <- length(c(unlist(p)[grep('c0',names(unlist(p)))],
@@ -207,11 +209,18 @@ preprocess <-
                 dif = matrix(NA,ncol=final_length,
                              nrow=num_dif_parms),
                 em_history = lapply(1:num.tau,
-                                    function(x)matrix(0,
-                                                      ncol=1,
-                                                      nrow=length(unlist(p)))),
+                                    function(x) {
+                                      mat <- matrix(0,
+                                                    ncol=1,
+                                                    nrow=length(unlist(p))+1)
+                                      rownames(mat) <- c(names(unlist(p)),
+                                                         "observed_ll")
+                                      return(mat)
+                                    }),
+                # log_like = matrix(0,nrow=2,ncol=num.tau),
+                complete_ll_info <- list(),
+                data = vector("list",2),
                 call = call)
-
   return(list(p = p,
               final = final,
               item_data = item_data,

@@ -1,8 +1,12 @@
 #' Maximization step.
 #'
 #' @param estimates List of converged parameters.
-#' @param item_data Matrix or dataframe of item responses.
-#' @param pred_data Matrix or dataframe of DIF and/or impact predictors.
+#' @param item.data User-given matrix or data.frame of DIF and/or impact
+#' predictors.
+#' @param pred.data User-given matrix or data.frame of item responses.
+#' @param item_data Processed matrix or data.frame of item responses.
+#' @param pred_data Processed matrix or data.frame of DIF and/or impact
+#' predictors.
 #' @param mean_predictors Possibly different matrix of predictors for the mean
 #' impact equation.
 #' @param var_predictors Possibly different matrix of predictors for the
@@ -19,13 +23,15 @@
 #' @param num_responses Number of responses for each item.
 #' @param num_predictors Number of predictors.
 #' @param num_items Number of items in dataset.
-#' @param num_quadpts Number of quadrature points used for approximating the
+#' @param num_quad Number of quadrature points used for approximating the
 #' latent variable.
 #'
 #' @keywords internal
 #'
 postprocess <-
   function(estimates,
+           item.data,
+           pred.data,
            item_data,
            pred_data,
            mean_predictors,
@@ -47,6 +53,7 @@ postprocess <-
   p <- estimates$p
   infocrit <- estimates$infocrit
   em_history <- estimates$em_history
+  complete_info <- estimates$complete_info
 
   # Organize impact parameters.
   if(is.null(control$impact.mean.data)) {
@@ -173,15 +180,25 @@ postprocess <-
 
   # Assign output to final list.
   final$tau_vec[pen] <- tau_vec[pen]
-  final$aic[pen] <- round(infocrit[1],3)
-  final$bic[pen] <- round(infocrit[2],3)
+  final$aic[pen] <- round(infocrit$aic,3)
+  final$bic[pen] <- round(infocrit$bic,3)
   final$impact[,pen] <- round(lv_parms,3)
   final$base[,pen] <- round(all_items_parms_base,3)
   final$dif[,pen] <- round(all_items_parms_dif,3)
   final$em_history[[pen]] <- em_history[[pen]]
+  final$complete_ll_info <- complete_info
+  # final$log_like[,pen] <- c(round(infocrit$complete_ll,3),
+  #                           round(infocrit$observed_ll,3))
+  final$data <- list(item.data=item.data, pred.data=pred.data)
   rownames(final$impact) <- lv_names
   rownames(final$base) <- all_items_names_base
   rownames(final$dif) <- all_items_names_dif
+  for(item in 1:num_items) {
+    names(final$complete_ll_info[[item]]) <- names(p[[item]])
+  }
+  names(final$complete_ll_info[[num_items+1]]) <- names(p[[num_items+1]])
+  names(final$complete_ll_info[[num_items+2]]) <- names(p[[num_items+2]])
+  # rownames(final$log_like) <- c("complete","observed")
 
   # Order item parms.
   final_int_thr_base <-
@@ -204,14 +221,14 @@ postprocess <-
   rownames(final$base) <- final_names_base
 
   final_int_dif <- final$dif[grep(".int",
-                                             rownames(final$dif)),
-                                        pen]
+                                  rownames(final$dif)),
+                             pen]
   final_slp_dif <- final$dif[grep(".slp",
-                                             rownames(final$dif)),
-                                        pen]
+                                  rownames(final$dif)),
+                             pen]
   final_res_dif <- final$dif[grep(".res",
-                                             rownames(final$dif)),
-                                        pen]
+                                  rownames(final$dif)),
+                             pen]
   final_names_dif <- names(c(final_int_dif,final_slp_dif,final_res_dif))
   final$dif[,pen] <-
     matrix(c(final_int_dif,final_slp_dif,final_res_dif), ncol = 1)

@@ -15,6 +15,7 @@ em_estimation(
   pen_type,
   tau_vec,
   id_tau,
+  num_tau,
   alpha,
   gamma,
   pen,
@@ -57,6 +58,9 @@ model.}
 
 \item{id_tau}{Logical indicating whether to identify the minimum value of tau
 in which all DIF parameters are removed from the model.}
+
+\item{num_tau}{Numeric value indicating the number of tau values to run
+regDIF on.}
 
 \item{alpha}{Numeric value indicating the alpha parameter in the elastic net
 penalty function.}

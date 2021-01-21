@@ -4,40 +4,26 @@
 \alias{se.regDIF}
 \title{Standard Errors for regDIF Model(s)}
 \usage{
-se.regDIF(model.obj,
+se.regDIF(fit,
           se.type = "sem",
-          item.data = NULL,
-          pred.data = NULL,
           tau = NULL,
           ...)
 }
 \arguments{
-\item{model.obj}{A regDIF fitted model object of class \code{regDIF}.
-Upon designating "model.obj", the default is to obtain standard errors for
-the best-fitting model according to the minimum BIC model.}
+\item{fit}{A regDIF fitted model object of class \code{regDIF}.
+Upon designating \code{fit}, the default is to obtain standard errors
+for the best-fitting model according to the minimum BIC model.}
 
 \item{se.type}{Character value indicating the method of computing standard
 errors for a regDIF fitted model. Default is "sem", or the supplemental EM
-algorithm. Other options are not currently supported.}
+algorithm (see Cai, 2008). Other options are in development and not yet
+supported.}
 
-\item{item.data}{Optional data frame or matrix of item response data to fit
-regDIF model(s) and obtain standard errors. Default is NULL when
-\code{model.obj} is provided. If providing \code{item.data}, then
-\code{pred.data} and \code{tau} must also be provided.}
+\item{tau}{Optional numeric or vector of tau values corresponding to those
+already fit in \code{fit}.}
 
-\item{pred.data}{Optional data frame or matrix of predictor data to fit
-regDIF model(s) and obtain standard errors. Default is NULL when
-\code{model.obj} is provided. If providing \code{pred.data}, then
-\code{item.data} and \code{tau} must also be provided.}
-
-\item{tau}{Optional numeric or vector of tau values to fit regDIF model(s)
-and obtain standard errors. If providing \code{tau}, then either a
-\code{model.obj} with a corresponding \code{tau} value (i.e., already fitted
-to \code{tau}) must be provided or \code{item.data} and \code{pred.data}
-must be provided.}
-
-\item{...}{Additional arguments to pass to regDIF when \code{item.data},
-\code{pred.data}, and \code{tau} are provided.}
+\item{...}{Additional arguments to pass to regDIF function if different
+settings are desired.}
 }
 \value{
 Function returns an object of class \code{se.regDIF}

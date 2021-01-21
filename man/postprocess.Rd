@@ -6,6 +6,8 @@
 \usage{
 postprocess(
   estimates,
+  item.data,
+  pred.data,
   item_data,
   pred_data,
   mean_predictors,
@@ -27,9 +29,15 @@ postprocess(
 \arguments{
 \item{estimates}{List of converged parameters.}
 
-\item{item_data}{Matrix or dataframe of item responses.}
+\item{item.data}{User-given matrix or data.frame of DIF and/or impact
+predictors.}
 
-\item{pred_data}{Matrix or dataframe of DIF and/or impact predictors.}
+\item{pred.data}{User-given matrix or data.frame of item responses.}
+
+\item{item_data}{Processed matrix or data.frame of item responses.}
+
+\item{pred_data}{Processed matrix or data.frame of DIF and/or impact
+predictors.}
 
 \item{mean_predictors}{Possibly different matrix of predictors for the mean
 impact equation.}
@@ -60,7 +68,7 @@ penalty function.}
 
 \item{num_items}{Number of items in dataset.}
 
-\item{num_quadpts}{Number of quadrature points used for approximating the
+\item{num_quad}{Number of quadrature points used for approximating the
 latent variable.}
 }
 \description{

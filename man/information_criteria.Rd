@@ -23,9 +23,9 @@ information_criteria(
 
 \item{p}{List of parameters.}
 
-\item{item_data}{Matrix or dataframe of item responses.}
+\item{item_data}{Matrix or data.frame of item responses.}
 
-\item{pred_data}{Matrix or dataframe of DIF and/or impact predictors.}
+\item{pred_data}{Matrix or data.frame of DIF and/or impact predictors.}
 
 \item{mean_predictors}{Possibly different matrix of predictors for the mean
 impact equation.}

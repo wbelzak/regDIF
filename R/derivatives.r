@@ -27,8 +27,8 @@ d_alpha <-
            num_quad) {
 
   # Get latent mean and variance vectors.
-  alpha <- mean_predictors %*% p_impact[grep("m",names(p_impact),fixed=T)]
-  phi <- exp(var_predictors %*% p_impact[grep("v",names(p_impact),fixed=T)])
+  alpha <- mean_predictors %*% p_impact[grep("mean",names(p_impact),fixed=T)]
+  phi <- exp(var_predictors %*% p_impact[grep("var",names(p_impact),fixed=T)])
 
   d1_trace <- vapply(1:num_quad,
                        function(x) {
@@ -75,8 +75,8 @@ d_phi <-
            num_quad) {
 
   # Get latent mean and variance vectors
-  alpha <- mean_predictors %*% p_impact[grep("m",names(p_impact),fixed=T)]
-  phi <- exp(var_predictors %*% p_impact[grep("v",names(p_impact),fixed=T)])
+  alpha <- mean_predictors %*% p_impact[grep("mean",names(p_impact),fixed=T)]
+  phi <- exp(var_predictors %*% p_impact[grep("var",names(p_impact),fixed=T)])
 
   eta_d1 <- .5*sqrt(phi)*var_predictors[,cov]
   eta_d2 <- .5*sqrt(phi)*var_predictors[,cov]**2

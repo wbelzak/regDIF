@@ -59,8 +59,11 @@ Mstep_block <-
                                        num_items,
                                        num_quad,
                                        num_predictors)
+
+    inv_hess_impact <- solve(anl_deriv_impact[[2]])
+    inv_hess_impact_diag <- -diag(inv_hess_impact)
     m <- c(p[[num_items+1]],p[[num_items+2]]) -
-      solve(anl_deriv_impact[[2]]) %*% anl_deriv_impact[[1]]
+      inv_hess_impact %*% anl_deriv_impact[[1]]
 
     for(cov in 1:ncol(mean_predictors)){
       p[[num_items+1]][[cov]] <- m[cov]
@@ -70,6 +73,7 @@ Mstep_block <-
     }
 
 
+    inv_hess_diag <- vector('list',num_items+2)
     # Item response updates.
     for (item in 1:num_items) {
     # foreach(item=1:num_items) %do% {
@@ -87,7 +91,9 @@ Mstep_block <-
                                                 num_predictors,
                                                 num_quad)
 
-        z <- p[[item]] - solve(anl_deriv_item[[2]]) %*% anl_deriv_item[[1]]
+        inv_hess_item <- solve(anl_deriv_item[[2]])
+        inv_hess_diag[[item]] <- -diag(inv_hess_item)
+        z <- p[[item]] - inv_hess_item %*% anl_deriv_item[[1]]
 
         # c0 update.
         p[[item]][[1]] <- z[1]
@@ -415,7 +421,13 @@ Mstep_block <-
 
     }
 
-    return(p)
+    inv_hess_diag[[num_items+1]] <-
+      inv_hess_impact_diag[1:ncol(mean_predictors)]
+    inv_hess_diag[[num_items+2]] <-
+      inv_hess_impact_diag[-(1:ncol(mean_predictors))]
+
+    return(list(p=p,
+                inv_hess_diag=inv_hess_diag))
 
   }
 
@@ -526,9 +538,7 @@ Mstep_block_idtau <-
       } else if(num_responses[item] > 2) {
 
         # Get posterior probabilities.
-        etable_item <- replicate(n=num_responses[item],
-                                 etable,
-                                 simplify = F)
+        etable_item <- lapply(1:num_responses[item], function(x) etable)
 
         # Obtain E-tables for each response category.
         if(num_responses[item] > 1) {

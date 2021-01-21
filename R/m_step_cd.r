@@ -87,9 +87,7 @@ Mstep_cd <-
   for (item in 1:num_items) {
 
     # Get posterior probabilities.
-    etable_item <- replicate(n=num_responses[item],
-                             etable,
-                             simplify = F)
+    etable_item <- lapply(1:num_responses[item], function(x) etable)
 
     # Obtain E-tables for each response category.
     if(num_responses[item] > 1) {

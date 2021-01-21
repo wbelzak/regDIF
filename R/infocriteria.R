@@ -2,8 +2,8 @@
 #'
 #' @param etable Matrix of E-table values for item and impact equations.
 #' @param p List of parameters.
-#' @param item_data Matrix or dataframe of item responses.
-#' @param pred_data Matrix or dataframe of DIF and/or impact predictors.
+#' @param item_data Matrix or data.frame of item responses.
+#' @param pred_data Matrix or data.frame of DIF and/or impact predictors.
 #' @param mean_predictors Possibly different matrix of predictors for the mean
 #' impact equation.
 #' @param var_predictors Possibly different matrix of predictors for the
@@ -34,14 +34,17 @@ information_criteria <-
   # Update theta and etable.
   theta <- etable$theta
   etable <- etable$etable
+  theta_mat <- t(matrix(theta,
+                        ncol=samp_size,
+                        nrow=num_quad))
 
-  ll_dif <- 0
+  complete_ll_dif <- 0
+  observed_ll_dif <- 0
   for (item in 1:num_items) {
 
     # Obtain E-tables for each response category.
-    etable_item <- replicate(n=num_responses[item],
-                             etable,
-                             simplify = F)
+    etable_item <- lapply(1:num_responses[item], function(x) etable)
+
     for(resp in 1:num_responses[item]) {
       etable_item[[resp]][which(
         !(item_data[,item] == resp)), ] <- 0
@@ -54,16 +57,24 @@ information_criteria <-
                                           item_data[,item],
                                           pred_data,
                                           samp_size)
-      ll_dif_item <- -1*sum(etable[[1]]*log(itemtrace[[1]]), na.rm = TRUE)
+      complete_ll_dif_item <- -1*sum(etable[[1]]*log(itemtrace[[1]]),
+                                     na.rm = TRUE)
+      observed_ll_dif_item <- -1*sum(log(itemtrace[[1]]),
+                                     na.rm = TRUE)
 
     } else if (num_responses[item] == 2) {
-      itemtrace <- bernoulli_traceline_cpp(p[[item]],
+      itemtrace <- bernoulli_traceline_pts(p[[item]],
                                            theta,
                                            pred_data,
-                                           samp_size,
-                                           num_quad)
-      ll_dif_item <- -1*(sum(etable_item[[1]]*log(1-itemtrace), na.rm = TRUE) +
-                           sum(etable_item[[2]]*log(itemtrace), na.rm = TRUE))
+                                           samp_size)
+      complete_ll_dif_item <- -1*(sum(etable_item[[1]]*log(1-itemtrace),
+                                      na.rm = TRUE) +
+                                    sum(etable_item[[2]]*log(itemtrace),
+                                        na.rm = TRUE))
+      observed_ll_dif_item <- -1*(sum(theta_mat*log(1-itemtrace),
+                                      na.rm = TRUE) +
+                                    sum(theta_mat*log(itemtrace),
+                                        na.rm = TRUE))
 
     } else if (num_responses[item] > 2){
       itemtrace <- cumulative_traceline_pts(p[[item]],
@@ -72,7 +83,8 @@ information_criteria <-
                                              samp_size,
                                              num_responses[item],
                                              num_quad)
-      ll_dif_item <- 0
+      complete_ll_dif_item <- 0
+      observed_ll_dif_item <- 0
       for(resp in 1:num_responses[item]){
       if(resp < num_responses[item] && all(itemtrace[[resp]] == 0)){
         log_itemtrace_cat <- 0
@@ -86,12 +98,15 @@ information_criteria <-
         }
       }
         log_itemtrace_cat[is.infinite(log_itemtrace_cat)] <- NA
-        ll_dif_item <- ll_dif_item +
+        complete_ll_dif_item <- complete_ll_dif_item +
           -1*sum(etable[[resp]]*log_itemtrace_cat, na.rm = TRUE)
+        observed_ll_dif_item <- observed_ll_dif_item +
+          -1*sum(log_itemtrace_cat, na.rm = TRUE)
       }
     }
 
-    ll_dif <- ll_dif + ll_dif_item
+    complete_ll_dif <- complete_ll_dif + complete_ll_dif_item
+    observed_ll_dif <- observed_ll_dif + observed_ll_dif_item
   }
 
   # Obtain likelihood value for latent variable model
@@ -103,7 +118,8 @@ information_criteria <-
                                    mean = alpha[x],
                                    sd = sqrt(phi[x]))
                              }))
-  ll_impact <- -1*sum(etable*log(prior_scores))
+  complete_ll_impact <- -1*sum(etable*log(prior_scores))
+  observed_ll_impact <- -1*sum(log(prior_scores))
 
   # Remove DIF parameters that equal zero from information crit calculation.
   p2 <- unlist(p)
@@ -111,12 +127,13 @@ information_criteria <-
   p2_cov <- p2[c(grep("c1",names(p2)),grep("a1",names(p2)))]
   p2_cov <- p2_cov[p2_cov != 0]
   p2 <- c(p2_base,p2_cov,p[[num_items+1]],p[[num_items+2]])
-  ll <- ll_impact + ll_dif
+  complete_ll <- complete_ll_impact + complete_ll_dif
+  observed_ll <- observed_ll_impact + observed_ll_dif
 
   # Compute AIC and BIC.
-  aic <- 2*length(p2) + 2*ll
-  bic <- log(samp_size)*length(p2) + 2*ll
+  aic <- 2*length(p2) + 2*complete_ll
+  bic <- log(samp_size)*length(p2) + 2*complete_ll
 
-  return(c(aic,bic))
+  return(list(aic=aic,bic=bic,complete_ll=complete_ll,observed_ll=observed_ll))
 
 }

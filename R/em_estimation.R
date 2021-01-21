@@ -17,6 +17,8 @@
 #' model.
 #' @param id_tau Logical indicating whether to identify the minimum value of tau
 #' in which all DIF parameters are removed from the model.
+#' @param num_tau Numeric value indicating the number of tau values to run
+#' regDIF on.
 #' @param alpha Numeric value indicating the alpha parameter in the elastic net
 #' penalty function.
 #' @param gamma Numeric value indicating the gamma parameter in the MCP
@@ -48,6 +50,7 @@ em_estimation <- function(p,
                           pen_type,
                           tau_vec,
                           id_tau,
+                          num_tau,
                           alpha,
                           gamma,
                           pen,
@@ -62,10 +65,11 @@ em_estimation <- function(p,
                           optim_method,
                           em_history) {
 
-  # Maximization settings.
+  # Maximization and print settings.
   lastp <- p
   eps <- Inf
   iter <- 1
+  models_to_fit <- ifelse(id_tau,num_tau,length(tau_vec))
 
   # Loop until convergence or maximum number of iterations.
   while(eps > final_control$tol && iter < final_control$maxit){
@@ -86,26 +90,26 @@ em_estimation <- function(p,
 
     if(optim_method == "multi") {
       # M-step: Optimize parameters using multivariate NR.
-      p <- Mstep_block(p,
-                       item_data,
-                       pred_data,
-                       mean_predictors,
-                       var_predictors,
-                       etable,
-                       item_type,
-                       pen_type,
-                       tau_vec[pen],
-                       alpha,
-                       gamma,
-                       anchor,
-                       samp_size,
-                       num_responses,
-                       num_items,
-                       num_quad,
-                       num_predictors)
+      mout <- Mstep_block(p,
+                         item_data,
+                         pred_data,
+                         mean_predictors,
+                         var_predictors,
+                         etable,
+                         item_type,
+                         pen_type,
+                         tau_vec[pen],
+                         alpha,
+                         gamma,
+                         anchor,
+                         samp_size,
+                         num_responses,
+                         num_items,
+                         num_quad,
+                         num_predictors)
     } else if(optim_method == "uni") {
       # M-step: Optimize parameters using one round of coordinate descent.
-      p <- Mstep_cd(p,
+      mout <- Mstep_cd(p,
                     item_data,
                     pred_data,
                     mean_predictors,
@@ -124,15 +128,20 @@ em_estimation <- function(p,
                     num_predictors)
     }
 
+    # Obtain parameter estimates.
+    p <- mout$p
+
     # Update and check for convergence: Calculate the difference
     # in parameter estimates from current to previous.
     eps = sqrt(sum((unlist(p)-unlist(lastp))^2))
 
-    # Save parameter estimates for supplemental em.
-    em_history[[pen]][,iter] <- unlist(p)
+    # Save parameter estimates and observed log-likelihood for supplemental em.
+    em_history[[pen]][,iter] <- c(unlist(p),etable$observed_ll)
+
+    # Add row for next EM step.
     if(eps > final_control$tol) {
       em_history[[pen]] <- cbind(em_history[[pen]],
-                                 matrix(0,ncol=1,nrow=length(unlist(p))))
+                                 matrix(0,ncol=1,nrow=length(unlist(p))+1))
     }
 
 
@@ -147,7 +156,7 @@ em_estimation <- function(p,
 
     cat('\r', sprintf("Models Completed: %d of %d  Iteration: %d  Change: %f",
                      pen-1,
-                     length(tau_vec),
+                     models_to_fit,
                      iter,
                      round(eps, nchar(final_control$tol))))
 
@@ -212,12 +221,19 @@ em_estimation <- function(p,
     }
 
     # Return model results for maximum tau value.
-    return(list(p=p,infocrit=infocrit,max_tau=max_tau,em_history=em_history))
+    return(list(p=p,
+                obs_information=mout$inv_hess_diag,
+                infocrit=infocrit,
+                max_tau=max_tau,
+                em_history=em_history))
 
   } else {
 
     # Return model results for all other tau values.
-    return(list(p=p,infocrit=infocrit,em_history=em_history))
+    return(list(p=p,
+                complete_info=mout$inv_hess_diag,
+                infocrit=infocrit,
+                em_history=em_history))
   }
 
 }

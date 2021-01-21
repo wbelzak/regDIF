@@ -122,7 +122,6 @@ regDIF <- function(item.data,
                    stdz = TRUE,
                    control = list()) {
 
-
     # Pre-process data.
     call <- match.call()
     data_scrub <- preprocess(item.data,
@@ -150,6 +149,7 @@ regDIF <- function(item.data,
                                  data_scrub$pen_type,
                                  data_scrub$tau_vec,
                                  data_scrub$id_tau,
+                                 data_scrub$num_tau,
                                  alpha,
                                  gamma,
                                  pen,
@@ -174,6 +174,8 @@ regDIF <- function(item.data,
 
       # Post-process data.
       data_final <- postprocess(estimates,
+                                item.data,
+                                pred.data,
                                 data_scrub$item_data,
                                 data_scrub$pred_data,
                                 data_scrub$mean_predictors,

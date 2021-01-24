@@ -116,7 +116,7 @@ library(regDIF)
 head(ida)
 item.data <- ida[,1:6]
 pred.data <- ida[,7:9]
-fit <- regDIF(item.data, pred.data, num.tau = 10)
+fit <- regDIF(item.data, pred.data, num.tau = 50)
 summary(fit)
 
 }

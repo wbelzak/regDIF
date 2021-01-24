@@ -110,31 +110,46 @@ postprocess <-
 
   for(item in 1:num_items) {
     if(num_responses[item] == 1) {
-      item_parms_base <- c(p2[grep(paste0("c0_item",item),names(p2))],
-                           p2[grep(paste0("a0_item",item),names(p2))],
-                           p2[grep(paste0("s0_item",item),names(p2))])
+      item_parms_base <- c(p2[grep(paste0("c0_item",item,"_"),names(p2))],
+                           p2[grep(paste0("a0_item",item,"_"),names(p2))],
+                           p2[grep(paste0("s0_item",item,"_"),names(p2))])
       item_names_base <- c(paste0(item_names[item],".int"),
                            paste0(item_names[item],".slp"),
                            paste0(item_names[item],".res"))
 
     } else if(num_responses[item] == 2) {
-      item_parms_base <- c(p2[grep(paste0("c0_item",item),names(p2))],
-                           p2[grep(paste0("a0_item",item),names(p2))])
+      item_parms_base <- c(p2[grep(paste0("c0_item",item,"_"),names(p2))],
+                           p2[grep(paste0("a0_item",item,"_"),names(p2))])
       item_names_base <- c(paste0(item_names[item],".int"),
                            paste0(item_names[item],".slp"))
 
     } else if(num_responses[item] > 2) {
-      item_parms_base <- c(p2[grep(paste0("c0_item",item),names(p2))],
-                           p2[grep(paste0("a0_item",item),names(p2))])
-      item_names_base <- c(paste0(item_names[item],".int"),
-                           paste0(item_names[item],".thr",
-                                  1:(num_responses[item]-2)),
+      item_parms_base <- c(p2[grep(paste0("c0_item",item,"_"),names(p2))],
+                           p2[grep(paste0("a0_item",item,"_"),names(p2))])
+      item_names_base <- c(paste0(item_names[item],".int",
+                                  1:(num_responses[item]-1)),
                            paste0(item_names[item],".slp"))
 
     }
     all_items_parms_base <- c(all_items_parms_base,item_parms_base)
     all_items_names_base <- c(all_items_names_base,item_names_base)
 
+  }
+
+  # Transform threshold values if ordered categorical item
+  for(item in 1:num_items) {
+    if(num_responses[item] > 2) {
+      threshold_parms <- p2[grep(paste0("c0_item",item,"_"),
+                            names(p2))][2:(num_responses[item]-1)]
+      intercept_parm <- p2[grep(paste0("c0_item",item,"_"),names(p2))][1]
+
+      all_items_parms_base[grep(paste0("c0_item",item,"_"),
+                                names(all_items_parms_base))][2:(
+                                  num_responses[item]-1)] <-
+        intercept_parm - threshold_parms
+    } else {
+      next
+    }
   }
 
 
@@ -153,9 +168,9 @@ postprocess <-
 
   for(item in 1:num_items) {
     if(num_responses[item] == 1) {
-      item_parms_dif <- c(p2[grep(paste0("c1_item",item),names(p2),fixed=T)],
-                          p2[grep(paste0("a1_item",item),names(p2),fixed=T)],
-                          p2[grep(paste0("s1_item",item),names(p2),fixed=T)])
+      item_parms_dif <- c(p2[grep(paste0("c1_item",item,"_"),names(p2),fixed=T)],
+                          p2[grep(paste0("a1_item",item,"_"),names(p2),fixed=T)],
+                          p2[grep(paste0("s1_item",item,"_"),names(p2),fixed=T)])
       item_names_dif <- c(paste0(rep(item_names[item],
                                      each = num_predictors),'.int.',cov_names),
                           paste0(rep(item_names[item],
@@ -164,8 +179,10 @@ postprocess <-
                                      each = num_predictors),'.res.',cov_names))
 
     } else {
-      item_parms_dif <- c(p2[grep(paste0("c1_item",item),names(p2),fixed=T)],
-                          p2[grep(paste0("a1_item",item),names(p2),fixed=T)])
+      item_parms_dif <- c(p2[grep(paste0("c1_item",item,"_"),names(p2),fixed=T)],
+                          p2[grep(paste0("a1_item",item,"_"),
+                                  names(p2),
+                                  fixed=T)])
       item_names_dif <- c(paste0(rep(item_names[item],
                                      each = num_predictors),'.int.',cov_names),
                           paste0(rep(item_names[item],
@@ -193,11 +210,13 @@ postprocess <-
   rownames(final$impact) <- lv_names
   rownames(final$base) <- all_items_names_base
   rownames(final$dif) <- all_items_names_dif
-  for(item in 1:num_items) {
-    names(final$complete_ll_info[[item]]) <- names(p[[item]])
+  if(!(any(num_responses > 2))) {
+    for(item in 1:num_items) {
+      names(final$complete_ll_info[[item]]) <- names(p[[item]])
+    }
+    names(final$complete_ll_info[[num_items+1]]) <- names(p[[num_items+1]])
+    names(final$complete_ll_info[[num_items+2]]) <- names(p[[num_items+2]])
   }
-  names(final$complete_ll_info[[num_items+1]]) <- names(p[[num_items+1]])
-  names(final$complete_ll_info[[num_items+2]]) <- names(p[[num_items+2]])
   # rownames(final$log_like) <- c("complete","observed")
 
   # Order item parms.

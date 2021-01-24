@@ -149,7 +149,7 @@ preprocess <-
                      rep(0, num_predictors))
       names(p[[item]]) <- c(paste0('c0_item',item,"_int",
                                    1:(num_responses[item]-1)),
-                            paste0('a0_item',item),
+                            paste0('a0_item',item,"_"),
                             paste0('c1_item',item,"_cov",1:num_predictors),
                             paste0('a1_item',item,"_cov",1:num_predictors))
     } else if(num_responses[item] == 2) {
@@ -158,7 +158,7 @@ preprocess <-
                      rep(0, num_predictors),
                      rep(0, num_predictors))
       names(p[[item]]) <- c(paste0('c0_item',item,"_int1"),
-                            paste0('a0_item',item),
+                            paste0('a0_item',item,"_"),
                             paste0('c1_item',item,"_cov",1:num_predictors),
                             paste0('a1_item',item,"_cov",1:num_predictors))
     } else if(num_responses[item] == 1) {
@@ -169,10 +169,10 @@ preprocess <-
                      .5*var(item_data[,item]),
                      rep(0, num_predictors))
       names(p[[item]]) <- c(paste0('c0_item',item,"_int"),
-                            paste0('a0_item',item),
+                            paste0('a0_item',item, "_"),
                             paste0('c1_item',item,"_cov",1:num_predictors),
                             paste0('a1_item',item,"_cov",1:num_predictors),
-                            paste0('s0_item',item),
+                            paste0('s0_item',item, "_"),
                             paste0('s1_item',item,"_cov",1:num_predictors))
     }
   }

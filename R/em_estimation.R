@@ -76,17 +76,17 @@ em_estimation <- function(p,
 
 
     # E-step: Evaluate Q function with current parameter estimates p.
-    etable <- Estep(p,
-                    item_data,
-                    pred_data,
-                    mean_predictors,
-                    var_predictors,
-                    theta,
-                    samp_size,
-                    num_items,
-                    num_responses,
-                    adapt_quad,
-                    num_quad)
+    eout <- Estep(p,
+                  item_data,
+                  pred_data,
+                  mean_predictors,
+                  var_predictors,
+                  theta,
+                  samp_size,
+                  num_items,
+                  num_responses,
+                  adapt_quad,
+                  num_quad)
 
     if(optim_method == "multi") {
       # M-step: Optimize parameters using multivariate NR.
@@ -95,7 +95,7 @@ em_estimation <- function(p,
                          pred_data,
                          mean_predictors,
                          var_predictors,
-                         etable,
+                         eout,
                          item_type,
                          pen_type,
                          tau_vec[pen],
@@ -114,7 +114,7 @@ em_estimation <- function(p,
                     pred_data,
                     mean_predictors,
                     var_predictors,
-                    etable,
+                    eout,
                     item_type,
                     pen_type,
                     tau_vec[pen],
@@ -136,7 +136,7 @@ em_estimation <- function(p,
     eps = sqrt(sum((unlist(p)-unlist(lastp))^2))
 
     # Save parameter estimates and observed log-likelihood for supplemental em.
-    em_history[[pen]][,iter] <- c(unlist(p),etable$observed_ll)
+    em_history[[pen]][,iter] <- c(unlist(p),eout$observed_ll)
 
     # Add row for next EM step.
     if(eps > final_control$tol) {
@@ -166,7 +166,7 @@ em_estimation <- function(p,
   }
 
   # Get information criteria.
-  infocrit <- information_criteria(etable,
+  infocrit <- information_criteria(eout,
                                    p,
                                    item_data,
                                    pred_data,
@@ -188,7 +188,7 @@ em_estimation <- function(p,
                                    pred_data,
                                    mean_predictors,
                                    var_predictors,
-                                   etable,
+                                   eout,
                                    item_type,
                                    pen_type,
                                    tau_vec[1],
@@ -206,7 +206,7 @@ em_estimation <- function(p,
                                 pred_data,
                                 mean_predictors,
                                 var_predictors,
-                                etable,
+                                eout,
                                 item_type,
                                 pen_type,
                                 tau_vec[1],

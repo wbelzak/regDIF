@@ -7,8 +7,8 @@
 #' impact equation.
 #' @param var_predictors Possibly different matrix of predictors for the
 #' variance impact equation.
-#' @param etable E-table matrix for item and impact equations, in addition to
-#' theta values (possibly adaptive).
+#' @param eout E-step output, including matrix for item and impact equations,
+#' in addition to theta values (possibly adaptive).
 #' @param item_type Optional character value or vector indicating the type of
 #' item to be modeled.
 #' @param pen_type Character value indicating the penalty function to use.
@@ -35,7 +35,7 @@ Mstep_block <-
            pred_data,
            mean_predictors,
            var_predictors,
-           etable,
+           eout,
            item_type,
            pen_type,
            tau_current,
@@ -51,8 +51,8 @@ Mstep_block <-
     # Latent impact updates.
     anl_deriv_impact <- d_impact_block(p[[num_items+1]],
                                        p[[num_items+2]],
-                                       etable$etable,
-                                       etable$theta,
+                                       eout$etable,
+                                       eout$theta,
                                        mean_predictors,
                                        var_predictors,
                                        samp_size,
@@ -82,8 +82,8 @@ Mstep_block <-
       if(num_responses[item] == 2) {
 
         anl_deriv_item <- d_bernoulli_itemblock(p[[item]],
-                                                etable$etable,
-                                                etable$theta,
+                                                eout$etable,
+                                                eout$theta,
                                                 pred_data,
                                                 item_data[,item],
                                                 samp_size,
@@ -157,7 +157,7 @@ Mstep_block <-
 
         # Get posterior probabilities for each response.
         etable_item <- replicate(n=num_responses[item],
-                                 etable$etable,
+                                 eout$etable,
                                  simplify = F)
 
         # Obtain E-tables for each response category.
@@ -170,7 +170,7 @@ Mstep_block <-
         anl_deriv <- d_categorical("c0",
                                    p[[item]],
                                    etable_item,
-                                   etable$theta,
+                                   eout$theta,
                                    pred_data,
                                    thr=-1,
                                    cov=-1,
@@ -185,7 +185,7 @@ Mstep_block <-
           anl_deriv <- d_categorical("c0",
                                      p[[item]],
                                      etable_item,
-                                     etable$theta,
+                                     eout$theta,
                                      pred_data,
                                      thr=thr,
                                      cov=-1,
@@ -201,7 +201,7 @@ Mstep_block <-
           anl_deriv <- d_categorical("a0",
                                      p[[item]],
                                      etable_item,
-                                     etable$theta,
+                                     eout$theta,
                                      pred_data,
                                      thr=-1,
                                      cov=-1,
@@ -232,7 +232,7 @@ Mstep_block <-
           anl_deriv <- d_categorical("c1",
                                      p[[item]],
                                      etable_item,
-                                     etable$theta,
+                                     eout$theta,
                                      pred_data,
                                      thr=-1,
                                      cov,
@@ -264,7 +264,7 @@ Mstep_block <-
             anl_deriv <- d_categorical("a1",
                                        p[[item]],
                                        etable_item,
-                                       etable$theta,
+                                       eout$theta,
                                        pred_data,
                                        thr=-1,
                                        cov,
@@ -289,8 +289,8 @@ Mstep_block <-
         # Intercept updates.
         anl_deriv <- d_mu_gaussian("c0",
                                    p[[item]],
-                                   etable$etable,
-                                   etable$theta,
+                                   eout$etable,
+                                   eout$theta,
                                    item_data[,item],
                                    pred_data,
                                    cov=NULL,
@@ -304,8 +304,8 @@ Mstep_block <-
           a0_parms <- grep(paste0("a0_itm",item,"_"),names(p[[item]]),fixed=T)
           anl_deriv <- d_mu_gaussian("a0",
                                      p[[item]],
-                                     etable$etable,
-                                     etable$theta,
+                                     eout$etable,
+                                     eout$theta,
                                      item_data[,item],
                                      pred_data,
                                      cov=NULL,
@@ -319,8 +319,8 @@ Mstep_block <-
         s0_parms <- grep(paste0("s0_itm",item,"_"),names(p[[item]]),fixed=T)
         anl_deriv <- d_sigma_gaussian("s0",
                                       p[[item]],
-                                      etable$etable,
-                                      etable$theta,
+                                      eout$etable,
+                                      eout$theta,
                                       item_data[,item],
                                       pred_data,
                                       cov=NULL,
@@ -339,8 +339,8 @@ Mstep_block <-
               grep(paste0("s1_itm",item,"_cov",cov),names(p[[item]]),fixed=T)
             anl_deriv <- d_sigma_gaussian("s1",
                                           p[[item]],
-                                          etable$etable,
-                                          etable$theta,
+                                          eout$etable,
+                                          eout$theta,
                                           item_data[,item],
                                           pred_data,
                                           cov=cov,
@@ -369,8 +369,8 @@ Mstep_block <-
               grep(paste0("c1_itm",item,"_cov",cov),names(p[[item]]),fixed=T)
             anl_deriv <- d_mu_gaussian("c1",
                                        p[[item]],
-                                       etable$etable,
-                                       etable$theta,
+                                       eout$etable,
+                                       eout$theta,
                                        item_data[,item],
                                        pred_data,
                                        cov,
@@ -401,8 +401,8 @@ Mstep_block <-
                 grep(paste0("a1_itm",item,"_cov",cov),names(p[[item]]),fixed=T)
               anl_deriv <- d_mu_gaussian("a1",
                                          p[[item]],
-                                         etable$etable,
-                                         etable$theta,
+                                         eout$etable,
+                                         eout$theta,
                                          item_data[,item],
                                          pred_data,
                                          cov,
@@ -440,7 +440,7 @@ Mstep_block <-
 #' impact equation.
 #' @param var_predictors Possibly different matrix of predictors for the
 #' variance impact equation.
-#' @param etable Etable for item and impact equations, in addition to
+#' @param eout Etable for item and impact equations, in addition to
 #' theta values.
 #' @param item_type Optional character value or vector indicating the type of
 #' item to be modeled.
@@ -468,7 +468,7 @@ Mstep_block_idtau <-
            pred_data,
            mean_predictors,
            var_predictors,
-           etable,
+           eout,
            item_type,
            pen_type,
            tau_current,
@@ -486,8 +486,8 @@ Mstep_block_idtau <-
     id_max_z <- 0
 
     # Update theta and etable.
-    theta <- etable$theta
-    etable <- etable$etable
+    theta <- eout$theta
+    etable <- eout$etable
 
     # Maximize independent logistic regressions.
     for (item in 1:num_items) {

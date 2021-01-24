@@ -1,6 +1,6 @@
 #' Maximization step.
 #'
-#' @param etable Matrix of E-table values for item and impact equations.
+#' @param eout E-table output.
 #' @param p List of parameters.
 #' @param item_data Matrix or data.frame of item responses.
 #' @param pred_data Matrix or data.frame of DIF and/or impact predictors.
@@ -19,7 +19,7 @@
 #' @keywords internal
 #'
 information_criteria <-
-  function(etable,
+  function(eout,
            p,
            item_data,
            pred_data,
@@ -32,8 +32,8 @@ information_criteria <-
            num_quad) {
 
   # Update theta and etable.
-  theta <- etable$theta
-  etable <- etable$etable
+  theta <- eout$theta
+  etable <- eout$etable
   theta_mat <- t(matrix(theta,
                         ncol=samp_size,
                         nrow=num_quad))
@@ -57,7 +57,7 @@ information_criteria <-
                                           item_data[,item],
                                           pred_data,
                                           samp_size)
-      complete_ll_dif_item <- -1*sum(etable[[1]]*log(itemtrace[[1]]),
+      complete_ll_dif_item <- -1*sum(etable_item[[1]]*log(itemtrace[[1]]),
                                      na.rm = TRUE)
       observed_ll_dif_item <- -1*sum(log(itemtrace[[1]]),
                                      na.rm = TRUE)
@@ -99,7 +99,7 @@ information_criteria <-
       }
         log_itemtrace_cat[is.infinite(log_itemtrace_cat)] <- NA
         complete_ll_dif_item <- complete_ll_dif_item +
-          -1*sum(etable[[resp]]*log_itemtrace_cat, na.rm = TRUE)
+          -1*sum(etable_item[[resp]]*log_itemtrace_cat, na.rm = TRUE)
         observed_ll_dif_item <- observed_ll_dif_item +
           -1*sum(log_itemtrace_cat, na.rm = TRUE)
       }
@@ -118,8 +118,8 @@ information_criteria <-
                                    mean = alpha[x],
                                    sd = sqrt(phi[x]))
                              }))
-  complete_ll_impact <- -1*sum(etable*log(prior_scores))
-  observed_ll_impact <- -1*sum(log(prior_scores))
+  complete_ll_impact <- -1*sum(etable*log(prior_scores), na.rm = TRUE)
+  observed_ll_impact <- -1*sum(log(prior_scores), na.rm = TRUE)
 
   # Remove DIF parameters that equal zero from information crit calculation.
   p2 <- unlist(p)

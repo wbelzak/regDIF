@@ -5,7 +5,7 @@
 \title{Maximization step.}
 \usage{
 information_criteria(
-  etable,
+  eout,
   p,
   item_data,
   pred_data,
@@ -19,7 +19,7 @@ information_criteria(
 )
 }
 \arguments{
-\item{etable}{Matrix of E-table values for item and impact equations.}
+\item{eout}{E-table output.}
 
 \item{p}{List of parameters.}
 

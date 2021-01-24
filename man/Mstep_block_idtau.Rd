@@ -10,7 +10,7 @@ Mstep_block_idtau(
   pred_data,
   mean_predictors,
   var_predictors,
-  etable,
+  eout,
   item_type,
   pen_type,
   tau_current,
@@ -37,7 +37,7 @@ impact equation.}
 \item{var_predictors}{Possibly different matrix of predictors for the
 variance impact equation.}
 
-\item{etable}{Etable for item and impact equations, in addition to
+\item{eout}{Etable for item and impact equations, in addition to
 theta values.}
 
 \item{item_type}{Optional character value or vector indicating the type of

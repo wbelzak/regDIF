@@ -7,8 +7,8 @@
 #' impact equation.
 #' @param var_predictors Possibly different matrix of predictors for the
 #' variance impact equation.
-#' @param etable E-table matrix for item and impact equations, in addition to
-#' theta values (possibly adaptive).
+#' @param eout E step output, including matrix for item and impact equations,
+#' in addition to theta values (possibly adaptive).
 #' @param item_type Optional character value or vector indicating the type of
 #' item to be modeled.
 #' @param pen_type Character value indicating the penalty function to use.
@@ -35,7 +35,7 @@ Mstep_cd <-
            pred_data,
            mean_predictors,
            var_predictors,
-           etable,
+           eout,
            item_type,
            pen_type,
            tau_current,
@@ -49,8 +49,8 @@ Mstep_cd <-
            num_predictors) {
 
   # Update theta and etable.
-  theta <- etable$theta
-  etable <- etable$etable
+  theta <- eout$theta
+  etable <- eout$etable
 
   # Latent mean impact updates.
   for(cov in 1:ncol(mean_predictors)) {
@@ -463,8 +463,8 @@ Mstep_cd <-
 #' impact equation.
 #' @param var_predictors Possibly different matrix of predictors for the
 #' variance impact equation.
-#' @param etable Etable for item and impact equations, in addition to
-#' theta values.
+#' @param eout E step output, including item and impact equations, in addition
+#' to theta values.
 #' @param item_type Optional character value or vector indicating the type of
 #' item to be modeled.
 #' @param pen_type Character value indicating the penalty function to use.
@@ -491,7 +491,7 @@ Mstep_cd_idtau <-
            pred_data,
            mean_predictors,
            var_predictors,
-           etable,
+           eout,
            item_type,
            pen_type,
            tau_current,
@@ -509,8 +509,8 @@ Mstep_cd_idtau <-
     id_max_z <- 0
 
     # Update theta and etable.
-    theta <- etable$theta
-    etable <- etable$etable
+    theta <- eout$theta
+    etable <- eout$etable
 
     # Maximize independent logistic regressions.
     for (item in 1:num_items) {

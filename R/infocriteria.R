@@ -57,9 +57,9 @@ information_criteria <-
                                           item_data[,item],
                                           pred_data,
                                           samp_size)
-      complete_ll_dif_item <- -1*sum(etable_item[[1]]*log(itemtrace[[1]]),
+      complete_ll_dif_item <- sum(etable_item[[1]]*log(itemtrace[[1]]),
                                      na.rm = TRUE)
-      observed_ll_dif_item <- -1*sum(log(itemtrace[[1]]),
+      observed_ll_dif_item <- sum(log(itemtrace[[1]]),
                                      na.rm = TRUE)
 
     } else if (num_responses[item] == 2) {
@@ -67,14 +67,14 @@ information_criteria <-
                                            theta,
                                            pred_data,
                                            samp_size)
-      complete_ll_dif_item <- -1*(sum(etable_item[[1]]*log(1-itemtrace),
+      complete_ll_dif_item <- sum(etable_item[[1]]*log(1-itemtrace),
                                       na.rm = TRUE) +
                                     sum(etable_item[[2]]*log(itemtrace),
-                                        na.rm = TRUE))
-      observed_ll_dif_item <- -1*(sum(theta_mat*log(1-itemtrace),
+                                        na.rm = TRUE)
+      observed_ll_dif_item <- sum(theta_mat*log(1-itemtrace),
                                       na.rm = TRUE) +
                                     sum(theta_mat*log(itemtrace),
-                                        na.rm = TRUE))
+                                        na.rm = TRUE)
 
     } else if (num_responses[item] > 2){
       itemtrace <- cumulative_traceline_pts(p[[item]],
@@ -86,22 +86,22 @@ information_criteria <-
       complete_ll_dif_item <- 0
       observed_ll_dif_item <- 0
       for(resp in 1:num_responses[item]){
-      if(resp < num_responses[item] && all(itemtrace[[resp]] == 0)){
-        log_itemtrace_cat <- 0
-      } else{
-        if(resp == 1) {
-          log_itemtrace_cat <- log(1-itemtrace[[resp]])
-        } else if(resp == num_responses[item]) {
-          log_itemtrace_cat <- log(itemtrace[[resp-1]])
-        } else {
-          log_itemtrace_cat <- log(itemtrace[[resp-1]]-itemtrace[[resp]])
+        if(resp < num_responses[item] && all(itemtrace[[resp]] == 0)){
+          log_itemtrace_cat <- 0
+        } else{
+          if(resp == 1) {
+            log_itemtrace_cat <- log(1-itemtrace[[resp]])
+          } else if(resp == num_responses[item]) {
+            log_itemtrace_cat <- log(itemtrace[[resp-1]])
+          } else {
+            log_itemtrace_cat <- log(itemtrace[[resp-1]]-itemtrace[[resp]])
+          }
         }
-      }
         log_itemtrace_cat[is.infinite(log_itemtrace_cat)] <- NA
         complete_ll_dif_item <- complete_ll_dif_item +
-          -1*sum(etable_item[[resp]]*log_itemtrace_cat, na.rm = TRUE)
+          sum(etable_item[[resp]]*log_itemtrace_cat, na.rm = TRUE)
         observed_ll_dif_item <- observed_ll_dif_item +
-          -1*sum(log_itemtrace_cat, na.rm = TRUE)
+          sum(log_itemtrace_cat, na.rm = TRUE)
       }
     }
 
@@ -118,8 +118,8 @@ information_criteria <-
                                    mean = alpha[x],
                                    sd = sqrt(phi[x]))
                              }))
-  complete_ll_impact <- -1*sum(etable*log(prior_scores), na.rm = TRUE)
-  observed_ll_impact <- -1*sum(log(prior_scores), na.rm = TRUE)
+  complete_ll_impact <- sum(etable*log(prior_scores), na.rm = TRUE)
+  observed_ll_impact <- sum(log(prior_scores), na.rm = TRUE)
 
   # Remove DIF parameters that equal zero from information crit calculation.
   p2 <- unlist(p)
@@ -131,8 +131,8 @@ information_criteria <-
   observed_ll <- observed_ll_impact + observed_ll_dif
 
   # Compute AIC and BIC.
-  aic <- 2*length(p2) + 2*complete_ll
-  bic <- log(samp_size)*length(p2) + 2*complete_ll
+  aic <- 2*length(p2) - 2*complete_ll
+  bic <- log(samp_size)*length(p2) - 2*complete_ll
 
   return(list(aic=aic,bic=bic,complete_ll=complete_ll,observed_ll=observed_ll))
 

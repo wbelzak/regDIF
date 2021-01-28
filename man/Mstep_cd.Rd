@@ -17,11 +17,13 @@ Mstep_cd(
   alpha,
   gamma,
   anchor,
+  final_control,
   samp_size,
   num_responses,
   num_items,
   num_quad,
-  num_predictors
+  num_predictors,
+  max_tau
 )
 }
 \arguments{
@@ -57,6 +59,8 @@ function.}
 \item{anchor}{Optional numeric value or vector indicating which item
 response(s) are anchors (e.g., \code{anchor = 1}).}
 
+\item{final_control}{Control parameters.}
+
 \item{samp_size}{Sample size in data set.}
 
 \item{num_responses}{Number of responses for each item.}
@@ -67,6 +71,9 @@ response(s) are anchors (e.g., \code{anchor = 1}).}
 latent variable.}
 
 \item{num_predictors}{Number of predictors.}
+
+\item{max_tau}{Logical indicating whether to output the maximum tau value
+needed to remove all DIF from the model.}
 }
 \description{
 Maximization step using coordinate descent optimization.

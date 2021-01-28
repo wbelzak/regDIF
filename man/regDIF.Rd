@@ -101,6 +101,20 @@ optimization parameters. May be:
    a single iteration of coordinate descent. "Multi" will be faster in most
    cases, although "uni" may achieve faster results when the number of
    predictors is large.}
+   \item{start.values}{List of numbers assigned as starting values to the
+   regDIF procedure. List must contain the following names: \code{mean}, for
+   mean impact parameters; \code{var}, for variance impact parameters;
+   \code{base.int}, for base intercept parameters; \code{base.slp}, for base
+   slope parameters; \code{dif.int}, for DIF intercept parameters; and
+   \code{dif.slp}, for DIF slope parameters. Finally, for each list element,
+   there must be an equal number of numeric values that correspond to the
+   parameters in the model. If there are 3 predictors and 6 binary item
+   responses, for instance, there will need to be 3 starting values for
+   \code{mean}, 3 starting values for \code{var}, 6 starting values for
+   \code{base.int}, 6 starting values for \code{base.slp}, 18 starting
+   values (6 items * 3 covariates) for \code{dif.int}, and 18 starting
+   values (6 items * 3 covariates) starting values for \code{dif.slp}.
+   }
    }}
 }
 \value{

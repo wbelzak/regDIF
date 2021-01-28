@@ -36,7 +36,8 @@ preprocess <-
                         maxit = 5000,
                         adapt.quad = FALSE,
                         num.quad = 21,
-                        optim.method = "multi")
+                        optim.method = "multi",
+                        start.values = list())
   if(length(control) > 0) final_control[names(control)] <- control
 
   # Pre-process warnings.
@@ -183,6 +184,26 @@ preprocess <-
                                                  1:ncol(mean_predictors))))
   names(p[[(num_items+2)]]) <- paste0(rep(paste0('var',
                                                  1:ncol(var_predictors))))
+
+  # Update starting values if provided by the user.
+  if(length(final_control$start.values) > 0) {
+    for(parm in 1:ncol(mean_predictors)) {
+      p[[(num_items+1)]][[parm]] <- final_control$start.values$mean[parm]
+    }
+    for(parm in 1:ncol(var_predictors)) {
+      p[[(num_items+2)]][[parm]] <- final_control$start.values$var[parm]
+    }
+    for(item in 1:num_items) {
+      p[[item]][[1]] <- final_control$start.values$base.int[item]
+      p[[item]][[2]] <- final_control$start.values$base.slp[item]
+      for(cov in 1:num_predictors) {
+        p[[item]][[2+cov]] <-
+          final_control$start.values$dif.int[((item-1)*num_predictors)+cov]
+        p[[item]][[length(p[[item]])-num_predictors+1]] <-
+          final_control$start.values$dif.slp[((item-1)*num_predictors)+cov]
+      }
+    }
+  }
 
   if(any(item.type == "cfa")){
     num_base_parms <- length(c(unlist(p)[grep('c0',names(unlist(p)))],

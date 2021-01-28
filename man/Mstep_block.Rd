@@ -14,14 +14,17 @@ Mstep_block(
   item_type,
   pen_type,
   tau_current,
+  pen,
   alpha,
   gamma,
   anchor,
+  final_control,
   samp_size,
   num_responses,
   num_items,
   num_quad,
-  num_predictors
+  num_predictors,
+  max_tau
 )
 }
 \arguments{
@@ -48,6 +51,8 @@ item to be modeled.}
 \item{tau_current}{A single numeric value of tau that exists within
 \code{tau_vec}.}
 
+\item{pen}{Current penalty index.}
+
 \item{alpha}{Numeric value indicating the alpha parameter in the elastic net
 penalty function.}
 
@@ -56,6 +61,8 @@ function.}
 
 \item{anchor}{Optional numeric value or vector indicating which item
 response(s) are anchors (e.g., \code{anchor = 1}).}
+
+\item{final_control}{Control parameters.}
 
 \item{samp_size}{Sample size in data set.}
 
@@ -67,6 +74,9 @@ response(s) are anchors (e.g., \code{anchor = 1}).}
 latent variable.}
 
 \item{num_predictors}{Number of predictors.}
+
+\item{max_tau}{Logical indicating whether to output the maximum tau value
+needed to remove all DIF from the model.}
 }
 \description{
 Maximization step using latent variable and item response blocks.

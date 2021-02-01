@@ -188,19 +188,20 @@ preprocess <-
   # Update starting values if provided by the user.
   if(length(final_control$start.values) > 0) {
     for(parm in 1:ncol(mean_predictors)) {
-      p[[(num_items+1)]][[parm]] <- final_control$start.values$mean[parm]
+      p[[(num_items+1)]][[parm]] <- final_control$start.values$impact[parm]
     }
     for(parm in 1:ncol(var_predictors)) {
-      p[[(num_items+2)]][[parm]] <- final_control$start.values$var[parm]
+      p[[(num_items+2)]][[parm]] <-
+        final_control$start.values$impact[ncol(mean_predictors)+parm]
     }
     for(item in 1:num_items) {
-      p[[item]][[1]] <- final_control$start.values$base.int[item]
-      p[[item]][[2]] <- final_control$start.values$base.slp[item]
+      p[[item]][[1]] <- final_control$start.values$base[item]
+      p[[item]][[2]] <- final_control$start.values$base[num_items+item]
       for(cov in 1:num_predictors) {
         p[[item]][[2+cov]] <-
-          final_control$start.values$dif.int[((item-1)*num_predictors)+cov]
-        p[[item]][[length(p[[item]])-num_predictors+1]] <-
-          final_control$start.values$dif.slp[((item-1)*num_predictors)+cov]
+          final_control$start.values$dif[((item-1)*num_predictors)+cov]
+        p[[item]][[length(p[[item]])-num_predictors+cov]] <-
+          final_control$start.values$dif[(num_items*num_predictors)+((item-1)*num_predictors)+cov]
       }
     }
   }

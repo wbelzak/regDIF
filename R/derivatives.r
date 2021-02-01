@@ -199,6 +199,7 @@ d_impact_block <-
             sum(etable*d2_trace_cross_mean,
                 na.rm = TRUE)
 
+          if(cov2 <= length(p_var)) {
           # Cross derivatives for variance parameters with different predictors.
           d2_trace_cross_var <-
             vapply(1:num_quad,
@@ -206,9 +207,10 @@ d_impact_block <-
                      -.5*var_predictors[,cov]*var_predictors[,cov2]*(
                        theta[x]-alpha)**2/phi
                    },numeric(samp_size))
-          d2[num_predictors+cov2,num_predictors+cov] <-
+          d2[ncol(mean_predictors)+cov2,ncol(mean_predictors)+cov] <-
             sum(etable*d2_trace_cross_var,
                 na.rm = TRUE)
+          }
         }
 
 
@@ -537,6 +539,128 @@ d_categorical <-
             cum_traceline[[thr]]**2*(1-cum_traceline[[thr]])**2 /
             cat_traceline
           ), na.rm = TRUE)
+
+    }
+
+    dlist <- list(d1,d2)
+
+  }
+
+#' Partial derivatives for ordinal items.
+#'
+#' @param parm Item parameter being maximized.
+#' @param p_item Vector of item parameters.
+#' @param etable_item E-table for impact.
+#' @param theta Matrix of adaptive theta values.
+#' @param pred.data Matrix or dataframe of DIF and/or impact predictors.
+#' @param thr Threshold value being maximized.
+#' @param cov Covariate being maximized.
+#' @param samp_size Sample size in dataset.
+#' @param num_items Number of items in dataset.
+#' @param num.quad Number of quadrature points used for approximating the
+#' latent variable.
+#'
+#' @keywords internal
+#'
+d_categorical_itemblock <-
+  function(parm,
+           p_item,
+           etable_item,
+           theta,
+           pred_data,
+           thr,
+           cov,
+           samp_size,
+           num_responses_item,
+           num_items,
+           num_quad) {
+
+    # Make space for first and second derivatives.
+    d1 <- matrix(0,nrow=length(p_item),ncol=1)
+    d2 <- matrix(0,nrow=length(p_item),ncol=length(p_item))
+
+    # First derivative for linear predictor w.r.t. theta.
+    eta_d_a0 <- t(matrix(theta,
+                         ncol=samp_size,
+                         nrow=num_quad))
+
+    # Get item response function.
+    cum_traceline <- cumulative_traceline_pts(p_item,
+                                              theta,
+                                              pred_data,
+                                              samp_size,
+                                              num_responses_item,
+                                              num_quad)
+
+    # Get posterior probabilities for each response.
+    etable_item <- lapply(1:num_responses_item, function(x) etable)
+
+    # Obtain E-tables for each response category.
+    for(resp in 1:num_responses_item) {
+      etable_item[[resp]][which(
+        !(item_data_current == resp)), ] <- 0
+    }
+
+    # Calculate first and second base derivatives.
+    d1_base <- traceline*(etable_item[[2]]/traceline -
+                            etable_item[[2]] -
+                            etable_item[[1]])
+    d2_base <- (-traceline + traceline**2)*etable
+
+    # Non-threshold derivatives.
+    if(thr < 0){
+      d1 <- eta_d*(-etable_item[[1]]*cum_traceline[[1]] +
+                     etable_item[[num_responses_item]]*(
+                       1 - cum_traceline[[num_responses_item-1]]))
+      d2 <- eta_d**2*(-etable_item[[1]]*(cum_traceline[[1]]*(
+        1-cum_traceline[[1]])) +
+          etable_item[[num_responses_item]]*(
+            -cum_traceline[[num_responses_item-1]]*(
+              1-cum_traceline[[num_responses_item-1]])))
+
+      for(i in 2:(num_responses_item-1)){
+
+        # Skip intermediate derivative calculations for constrained theshold.
+        d1 <- d1 + eta_d*etable_item[[i]]*((1-cum_traceline[[i]]) -
+                                             cum_traceline[[i-1]])
+        d2 <- d2 + eta_d**2*etable_item[[i]]*(cum_traceline[[i-1]]**2 +
+                                                cum_traceline[[i]]**2 -
+                                                cum_traceline[[i-1]] -
+                                                cum_traceline[[i]])
+      }
+
+
+      d1 <- sum(d1, na.rm = TRUE)
+      d2 <- sum(d2, na.rm = TRUE)
+
+      # Threshold derivatives.
+    } else {
+      if(thr < (num_responses_item-1)) {
+        cat_traceline <- (cum_traceline[[thr]] - cum_traceline[[thr+1]])
+      } else{
+        cat_traceline <- cum_traceline[[thr]]
+      }
+      d1 <-
+        sum(-etable_item[[thr]]*cum_traceline[[thr]]*(
+          1 - cum_traceline[[thr]]
+        ) / (cum_traceline[[thr-1]] - cum_traceline[[thr]]), na.rm = TRUE) +
+        sum(etable_item[[thr+1]]*cum_traceline[[thr]]*(
+          1 - cum_traceline[[thr]]
+        ) / cat_traceline, na.rm = TRUE)
+      d2 <- sum(etable_item[[thr]] /
+                  (cum_traceline[[thr-1]] -
+                     cum_traceline[[thr]])*(
+                       cum_traceline[[thr]]*(1 - cum_traceline[[thr]])**2 -
+                         cum_traceline[[thr]]**2*(1 - cum_traceline[[thr]]) +
+                         cum_traceline[[thr]]**2*(1 - cum_traceline[[thr]])**2 /
+                         (cum_traceline[[thr-1]] - cum_traceline[[thr]])
+                     ), na.rm = TRUE) -
+        sum(etable_item[[thr+1]] / cat_traceline*(
+          cum_traceline[[thr]]*(1 - cum_traceline[[thr]])**2 -
+            cum_traceline[[thr]]**2*(1-cum_traceline[[thr]]) -
+            cum_traceline[[thr]]**2*(1-cum_traceline[[thr]])**2 /
+            cat_traceline
+        ), na.rm = TRUE)
 
     }
 

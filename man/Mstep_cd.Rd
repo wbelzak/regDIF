@@ -14,6 +14,7 @@ Mstep_cd(
   item_type,
   pen_type,
   tau_current,
+  pen,
   alpha,
   gamma,
   anchor,
@@ -23,6 +24,7 @@ Mstep_cd(
   num_items,
   num_quad,
   num_predictors,
+  num_tau,
   max_tau
 )
 }
@@ -50,6 +52,8 @@ item to be modeled.}
 \item{tau_current}{A single numeric value of tau that exists within
 \code{tau_vec}.}
 
+\item{pen}{Current penalty index.}
+
 \item{alpha}{Numeric value indicating the alpha parameter in the elastic net
 penalty function.}
 
@@ -71,6 +75,9 @@ response(s) are anchors (e.g., \code{anchor = 1}).}
 latent variable.}
 
 \item{num_predictors}{Number of predictors.}
+
+\item{num_tau}{Logical indicating whether the minimum tau value needs to be
+identified during the regDIF procedure.}
 
 \item{max_tau}{Logical indicating whether to output the maximum tau value
 needed to remove all DIF from the model.}

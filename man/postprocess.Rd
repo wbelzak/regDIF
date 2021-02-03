@@ -13,6 +13,7 @@ postprocess(
   mean_predictors,
   var_predictors,
   tau_vec,
+  num_tau,
   alpha,
   pen,
   anchor,
@@ -46,6 +47,9 @@ impact equation.}
 variance impact equation.}
 
 \item{tau_vec}{Optional numeric vector of tau values.}
+
+\item{num_tau}{Logical indicating whether the minimum tau value needs to be
+identified during the regDIF procedure.}
 
 \item{alpha}{Numeric value indicating the alpha parameter in the elastic net
 penalty function.}

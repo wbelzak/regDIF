@@ -12,6 +12,8 @@
 #' @param var_predictors Possibly different matrix of predictors for the
 #' variance impact equation.
 #' @param tau_vec Optional numeric vector of tau values.
+#' @param num_tau Logical indicating whether the minimum tau value needs to be
+#' identified during the regDIF procedure.
 #' @param alpha Numeric value indicating the alpha parameter in the elastic net
 #' penalty function.
 #' @param pen Tuning parameter index.
@@ -37,6 +39,7 @@ postprocess <-
            mean_predictors,
            var_predictors,
            tau_vec,
+           num_tau,
            alpha,
            pen,
            anchor,
@@ -54,6 +57,7 @@ postprocess <-
   infocrit <- estimates$infocrit
   em_history <- estimates$em_history
   complete_info <- estimates$complete_info
+  under_identified <- estimates$under_identified
 
   # Organize impact parameters.
   if(is.null(control$impact.mean.data)) {
@@ -194,8 +198,19 @@ postprocess <-
 
   }
 
+  # If model becomes under-identified, return NA values.
+  if(under_identified) {
+    # Print information about optimization.
+    cat('\r',
+        sprintf(paste0("Models Completed: %d of %d  Iteration: %d  Change: %d",
+                       "              "),
+                pen, length(tau_vec), 0, 0))
 
-  # Assign output to final list.
+    if(pen != length(tau_vec)) utils::flush.console()
+    return(final)
+    }
+
+  # Assign rest of output to final list.
   final$tau_vec[pen] <- tau_vec[pen]
   final$aic[pen] <- round(infocrit$aic,3)
   final$bic[pen] <- round(infocrit$bic,3)
@@ -280,7 +295,8 @@ postprocess <-
   if(is.null(anchor) &&
      pen == 1 &&
      sum(abs(dif_parms)) > 0 &&
-     alpha == 1) {
+     alpha == 1 &&
+     num_tau >= 10) {
     warning(paste0("\nAutomatically-generated or user-defined ",
                    "tau value is too small to penalize all parameters to ",
                    "zero without anchor item. Larger values of tau are ",

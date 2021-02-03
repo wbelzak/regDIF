@@ -28,7 +28,9 @@
 #' @param num_quad Number of quadrature points used for approximating the
 #' latent variable.
 #' @param num_predictors Number of predictors.
-#' @param max_tau Logical indicating whether to output the maximum tau value
+#' @param num_tau Logical indicating whether the minimum tau value needs to be
+#' identified during the regDIF procedure.
+#' @param max_tau Logical indicating whether to output the minimum tau value
 #' needed to remove all DIF from the model.
 #'
 #' @keywords internal
@@ -53,7 +55,11 @@ Mstep_block <-
            num_items,
            num_quad,
            num_predictors,
+           num_tau,
            max_tau) {
+
+    # Set under-identified model to FALSE until proven TRUE.
+    under_identified <- FALSE
 
     # Last Mstep
     if(max_tau) id_max_z <- 0
@@ -122,10 +128,12 @@ Mstep_block <-
           # for each item parameter.
           if(is.null(anchor) &&
              sum(p2[grep(paste0("c1(.*?)cov",cov),names(p2))] != 0) >
-             (num_items - 2) &&
+             (num_items - 1) &&
              alpha == 1 &&
-             (length(final_control$start.values) == 0 || pen > 1)){
-            next
+             (length(final_control$start.values) == 0 || pen > 1) &&
+             num_tau >= 10){
+            under_identified <- TRUE
+            break
           }
 
           if(max_tau) {
@@ -152,10 +160,12 @@ Mstep_block <-
           # for each item parameter.
           if(is.null(anchor) &&
              sum(p2[grep(paste0("a1(.*?)cov",cov),names(p2))] != 0) >
-             (num_items - 2) &&
+             (num_items - 1) &&
              alpha == 1 &&
-             (length(final_control$start.values) == 0 || pen > 1)){
-            next
+             (length(final_control$start.values) == 0 || pen > 1) &&
+             num_tau >= 10){
+            under_identified <- TRUE
+            break
           }
 
           p[[item]][[2+num_predictors+cov]] <-
@@ -169,7 +179,7 @@ Mstep_block <-
                                    gamma))
 
         }
-
+        if(under_identified) break
 
       } else if(num_responses[item] > 2) {
 
@@ -242,10 +252,12 @@ Mstep_block <-
           # for each item parameter.
           if(is.null(anchor) &
              sum(p2[grep(paste0("c1(.*?)cov",cov),names(p2))] != 0) >
-             (num_items - 2) &&
+             (num_items - 1) &&
              alpha == 1 &&
-             length(final_control$start.values) == 0){
-            next
+             (length(final_control$start.values) == 0 || pen > 1) &&
+             num_tau >= 10){
+            under_identified <- TRUE
+            break
           }
 
           anl_deriv <- d_categorical("c1",
@@ -275,10 +287,12 @@ Mstep_block <-
           # for each item parameter.
           if(is.null(anchor) &
              sum(p2[grep(paste0("a1(.*?)cov",cov),names(p2))] != 0) >
-             (num_items - 2) &
+             (num_items - 1) &
              alpha == 1 &&
-             length(final_control$start.values) == 0){
-            next
+             (length(final_control$start.values) == 0 || pen > 1) &&
+             num_tau >= 10){
+            under_identified <- TRUE
+            break
           }
 
           if(item_type[item] != "Rasch") {
@@ -382,10 +396,12 @@ Mstep_block <-
             # for each item parameter.
             if(is.null(anchor) &
                sum(p2[grep(paste0("c1(.*?)cov",cov),names(p2))] != 0) >
-               (num_items - 2) &
+               (num_items - 1) &
                alpha == 1 &&
-               length(final_control$start.values) == 0){
-              next
+               (length(final_control$start.values) == 0 || pen > 1) &&
+               num_tau >= 10){
+              under_identified <- TRUE
+              break
             }
 
             c1_parms <-
@@ -415,10 +431,12 @@ Mstep_block <-
             # for each item parameter.
             if(is.null(anchor) &
                sum(p2[grep(paste0("a1(.*?)cov",cov),names(p2))] != 0) >
-               (num_items - 2) &
+               (num_items - 1) &
                alpha == 1 &&
-               length(final_control$start.values) == 0){
-              next
+               (length(final_control$start.values) == 0 || pen > 1) &&
+               num_tau >= 10){
+              under_identified <- TRUE
+              break
             }
 
             if(item_type[item] != "Rasch"){
@@ -457,7 +475,8 @@ Mstep_block <-
       return(id_max_z)
     } else {
       return(list(p=p,
-                  inv_hess_diag=inv_hess_diag))
+                  inv_hess_diag=inv_hess_diag,
+                  under_identified=under_identified))
     }
 
   }

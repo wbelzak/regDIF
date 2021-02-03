@@ -189,6 +189,7 @@ regDIF <- function(item.data,
                                 data_scrub$mean_predictors,
                                 data_scrub$var_predictors,
                                 data_scrub$tau_vec,
+                                data_scrub$num_tau,
                                 alpha,
                                 pen,
                                 anchor,
@@ -204,6 +205,7 @@ regDIF <- function(item.data,
       # Update parameter estimates for next tau value.
       data_scrub$p <- estimates$p
       data_scrub$final <- data_final
+
     }
 
 

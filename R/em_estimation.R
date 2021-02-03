@@ -109,6 +109,7 @@ em_estimation <- function(p,
                          num_items,
                          num_quad,
                          num_predictors,
+                         num_tau,
                          max_tau = FALSE)
     } else if(optim_method == "uni") {
       # M-step: Optimize parameters using one round of coordinate descent.
@@ -121,6 +122,7 @@ em_estimation <- function(p,
                     item_type,
                     pen_type,
                     tau_vec[pen],
+                    pen,
                     alpha,
                     gamma,
                     anchor,
@@ -130,6 +132,7 @@ em_estimation <- function(p,
                     num_items,
                     num_quad,
                     num_predictors,
+                    num_tau,
                     max_tau = FALSE)
     }
 
@@ -149,7 +152,6 @@ em_estimation <- function(p,
                                  matrix(0,ncol=1,nrow=length(unlist(p))+1))
     }
 
-
     # Update parameter list.
     lastp <- p
 
@@ -166,6 +168,10 @@ em_estimation <- function(p,
                      round(eps, nchar(final_control$tol))))
 
     utils::flush.console()
+
+    # Stop estimation if model would become under-identified because of tau
+    # being too small.
+    if(mout$under_identified) break
 
 
   }
@@ -207,6 +213,7 @@ em_estimation <- function(p,
                              num_items,
                              num_quad,
                              num_predictors,
+                             num_tau,
                              max_tau = TRUE)
     } else if(optim_method == "uni") {
       max_tau <- Mstep_cd(p,
@@ -218,6 +225,7 @@ em_estimation <- function(p,
                           item_type,
                           pen_type,
                           tau_vec[1],
+                          pen,
                           alpha,
                           gamma,
                           anchor,
@@ -227,6 +235,7 @@ em_estimation <- function(p,
                           num_items,
                           num_quad,
                           num_predictors,
+                          num_tau,
                           max_tau = TRUE)
     }
 
@@ -235,7 +244,8 @@ em_estimation <- function(p,
                 complete_info=mout$inv_hess_diag,
                 infocrit=infocrit,
                 max_tau=max_tau,
-                em_history=em_history))
+                em_history=em_history,
+                under_identified=mout$under_identified))
 
   } else {
 
@@ -243,7 +253,8 @@ em_estimation <- function(p,
     return(list(p=p,
                 complete_info=mout$inv_hess_diag,
                 infocrit=infocrit,
-                em_history=em_history))
+                em_history=em_history,
+                under_identified=mout$under_identified))
   }
 
 }

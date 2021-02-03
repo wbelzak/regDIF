@@ -14,6 +14,7 @@
 #' @param pen_type Character value indicating the penalty function to use.
 #' @param tau_current A single numeric value of tau that exists within
 #' \code{tau_vec}.
+#' @param pen Current penalty index.
 #' @param alpha Numeric value indicating the alpha parameter in the elastic net
 #' penalty function.
 #' @param gamma Numeric value indicating the gamma parameter in the MCP
@@ -27,6 +28,8 @@
 #' @param num_quad Number of quadrature points used for approximating the
 #' latent variable.
 #' @param num_predictors Number of predictors.
+#' @param num_tau Logical indicating whether the minimum tau value needs to be
+#' identified during the regDIF procedure.
 #' @param max_tau Logical indicating whether to output the maximum tau value
 #' needed to remove all DIF from the model.
 #'
@@ -42,6 +45,7 @@ Mstep_cd <-
            item_type,
            pen_type,
            tau_current,
+           pen,
            alpha,
            gamma,
            anchor,
@@ -51,7 +55,11 @@ Mstep_cd <-
            num_items,
            num_quad,
            num_predictors,
+           num_tau,
            max_tau) {
+
+    # Set under-identified model to FALSE until proven TRUE.
+    under_identified <- FALSE
 
   # Update theta and etable.
   theta <- eout$theta
@@ -144,12 +152,14 @@ Mstep_cd <-
 
           # End routine if only one anchor item is left on each covariate
           # for each item parameter.
-          if(is.null(anchor) &&
+          if(is.null(anchor) &
              sum(p2[grep(paste0("c1(.*?)cov",cov),names(p2))] != 0) >
-             (num_items - 2) &&
+             (num_items - 1) &
              alpha == 1 &&
-             length(final_control$start.values) == 0){
-            next
+             (length(final_control$start.values) == 0 || pen > 1) &&
+             num_tau >= 10){
+            under_identified <- TRUE
+            break
           }
 
           anl_deriv <- d_bernoulli("c1",
@@ -175,10 +185,12 @@ Mstep_cd <-
           # for each item parameter.
           if(is.null(anchor) &
              sum(p2[grep(paste0("a1(.*?)cov",cov),names(p2))] != 0) >
-             (num_items - 2) &
+             (num_items - 1) &
              alpha == 1 &&
-             length(final_control$start.values) == 0){
-            next
+             (length(final_control$start.values) == 0 || pen > 1) &&
+             num_tau >= 10){
+            under_identified <- TRUE
+            break
           }
 
           if(item_type[item] != "Rasch") {
@@ -264,10 +276,12 @@ Mstep_cd <-
           # for each item parameter.
           if(is.null(anchor) &
              sum(p2[grep(paste0("c1(.*?)cov",cov),names(p2))] != 0) >
-             (num_items - 2) &&
+             (num_items - 1) &
              alpha == 1 &&
-             length(final_control$start.values) == 0){
-            next
+             (length(final_control$start.values) == 0 || pen > 1) &&
+             num_tau >= 10){
+            under_identified <- TRUE
+            break
           }
 
           anl_deriv <- d_categorical("c1",
@@ -297,10 +311,12 @@ Mstep_cd <-
           # for each item parameter.
           if(is.null(anchor) &
              sum(p2[grep(paste0("a1(.*?)cov",cov),names(p2))] != 0) >
-             (num_items - 2) &
+             (num_items - 1) &
              alpha == 1 &&
-             length(final_control$start.values) == 0){
-            next
+             (length(final_control$start.values) == 0 || pen > 1) &&
+             num_tau >= 10){
+            under_identified <- TRUE
+            break
           }
 
           if(item_type[item] != "Rasch") {
@@ -404,10 +420,12 @@ Mstep_cd <-
           # for each item parameter.
           if(is.null(anchor) &
              sum(p2[grep(paste0("c1(.*?)cov",cov),names(p2))] != 0) >
-             (num_items - 2) &
+             (num_items - 1) &
              alpha == 1 &&
-             length(final_control$start.values) == 0){
-            next
+             (length(final_control$start.values) == 0 || pen > 1) &&
+             num_tau >= 10){
+            under_identified <- TRUE
+            break
           }
 
           c1_parms <-
@@ -437,10 +455,12 @@ Mstep_cd <-
           # for each item parameter.
           if(is.null(anchor) &
              sum(p2[grep(paste0("a1(.*?)cov",cov),names(p2))] != 0) >
-             (num_items - 2) &
+             (num_items - 1) &
              alpha == 1 &&
-             length(final_control$start.values) == 0){
-            next
+             (length(final_control$start.values) == 0 || pen > 1) &&
+             num_tau >= 10){
+            under_identified <- TRUE
+            break
           }
 
           if(item_type[item] != "Rasch"){
@@ -473,7 +493,8 @@ Mstep_cd <-
     id_max_z <- max(abs(id_max_z))
     return(id_max_z)
   } else {
-    return(p)
+    return(p,
+           under_identified=under_identified)
   }
 
 }

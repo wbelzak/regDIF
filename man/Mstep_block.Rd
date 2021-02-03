@@ -24,6 +24,7 @@ Mstep_block(
   num_items,
   num_quad,
   num_predictors,
+  num_tau,
   max_tau
 )
 }
@@ -75,7 +76,10 @@ latent variable.}
 
 \item{num_predictors}{Number of predictors.}
 
-\item{max_tau}{Logical indicating whether to output the maximum tau value
+\item{num_tau}{Logical indicating whether the minimum tau value needs to be
+identified during the regDIF procedure.}
+
+\item{max_tau}{Logical indicating whether to output the minimum tau value
 needed to remove all DIF from the model.}
 }
 \description{

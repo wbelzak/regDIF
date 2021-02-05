@@ -239,7 +239,7 @@ preprocess <-
                                                          "observed_ll")
                                       return(mat)
                                     }),
-                # log_like = matrix(0,nrow=2,ncol=num.tau),
+                log_like = NA,
                 complete_ll_info <- list(),
                 data = vector("list",2),
                 call = call)

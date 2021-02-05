@@ -219,8 +219,7 @@ postprocess <-
   final$dif[,pen] <- round(all_items_parms_dif,3)
   final$em_history[[pen]] <- em_history[[pen]]
   final$complete_ll_info <- complete_info
-  # final$log_like[,pen] <- c(round(infocrit$complete_ll,3),
-  #                           round(infocrit$observed_ll,3))
+  final$log_like[pen] <- infocrit$complete_ll
   final$data <- list(item.data=item.data, pred.data=pred.data)
   rownames(final$impact) <- lv_names
   rownames(final$base) <- all_items_names_base
@@ -232,7 +231,6 @@ postprocess <-
     names(final$complete_ll_info[[num_items+1]]) <- names(p[[num_items+1]])
     names(final$complete_ll_info[[num_items+2]]) <- names(p[[num_items+2]])
   }
-  # rownames(final$log_like) <- c("complete","observed")
 
   # Order item parms.
   final_int_thr_base <-

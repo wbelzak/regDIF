@@ -7,14 +7,14 @@
 d_categorical_itemblock(
   parm,
   p_item,
-  etable_item,
+  etable,
   theta,
   pred_data,
-  thr,
-  cov,
+  item_data_current,
   samp_size,
   num_responses_item,
   num_items,
+  num_predictors,
   num_quad
 )
 }
@@ -23,21 +23,21 @@ d_categorical_itemblock(
 
 \item{p_item}{Vector of item parameters.}
 
-\item{etable_item}{E-table for impact.}
+\item{etable}{E-table for impact.}
 
 \item{theta}{Matrix of adaptive theta values.}
 
-\item{thr}{Threshold value being maximized.}
+\item{pred_data}{Matrix or dataframe of DIF and/or impact predictors.}
 
-\item{cov}{Covariate being maximized.}
+\item{item_data_current}{Vector of current item responses.}
 
 \item{samp_size}{Sample size in dataset.}
 
 \item{num_items}{Number of items in dataset.}
 
-\item{pred.data}{Matrix or dataframe of DIF and/or impact predictors.}
+\item{num_predictors}{Number of predictors in dataset.}
 
-\item{num.quad}{Number of quadrature points used for approximating the
+\item{num_quad}{Number of quadrature points used for approximating the
 latent variable.}
 }
 \description{

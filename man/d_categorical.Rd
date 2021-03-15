@@ -27,6 +27,8 @@ d_categorical(
 
 \item{theta}{Matrix of adaptive theta values.}
 
+\item{pred_data}{Matrix or dataframe of DIF and/or impact predictors.}
+
 \item{thr}{Threshold value being maximized.}
 
 \item{cov}{Covariate being maximized.}
@@ -35,9 +37,7 @@ d_categorical(
 
 \item{num_items}{Number of items in dataset.}
 
-\item{pred.data}{Matrix or dataframe of DIF and/or impact predictors.}
-
-\item{num.quad}{Number of quadrature points used for approximating the
+\item{num_quad}{Number of quadrature points used for approximating the
 latent variable.}
 }
 \description{

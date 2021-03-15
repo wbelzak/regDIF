@@ -437,12 +437,12 @@ d_bernoulli_itemblock <-
 #' @param p_item Vector of item parameters.
 #' @param etable_item E-table for impact.
 #' @param theta Matrix of adaptive theta values.
-#' @param pred.data Matrix or dataframe of DIF and/or impact predictors.
+#' @param pred_data Matrix or dataframe of DIF and/or impact predictors.
 #' @param thr Threshold value being maximized.
 #' @param cov Covariate being maximized.
 #' @param samp_size Sample size in dataset.
 #' @param num_items Number of items in dataset.
-#' @param num.quad Number of quadrature points used for approximating the
+#' @param num_quad Number of quadrature points used for approximating the
 #' latent variable.
 #'
 #' @keywords internal
@@ -550,14 +550,14 @@ d_categorical <-
 #'
 #' @param parm Item parameter being maximized.
 #' @param p_item Vector of item parameters.
-#' @param etable_item E-table for impact.
+#' @param etable E-table for impact.
 #' @param theta Matrix of adaptive theta values.
-#' @param pred.data Matrix or dataframe of DIF and/or impact predictors.
-#' @param thr Threshold value being maximized.
-#' @param cov Covariate being maximized.
+#' @param pred_data Matrix or dataframe of DIF and/or impact predictors.
+#' @param item_data_current Vector of current item responses.
 #' @param samp_size Sample size in dataset.
 #' @param num_items Number of items in dataset.
-#' @param num.quad Number of quadrature points used for approximating the
+#' @param num_predictors Number of predictors in dataset.
+#' @param num_quad Number of quadrature points used for approximating the
 #' latent variable.
 #'
 #' @keywords internal
@@ -565,14 +565,14 @@ d_categorical <-
 d_categorical_itemblock <-
   function(parm,
            p_item,
-           etable_item,
+           etable,
            theta,
            pred_data,
-           thr,
-           cov,
+           item_data_current,
            samp_size,
            num_responses_item,
            num_items,
+           num_predictors,
            num_quad) {
 
     # Make space for first and second derivatives.
@@ -601,68 +601,172 @@ d_categorical_itemblock <-
         !(item_data_current == resp)), ] <- 0
     }
 
-    # Calculate first and second base derivatives.
-    d1_base <- traceline*(etable_item[[2]]/traceline -
-                            etable_item[[2]] -
-                            etable_item[[1]])
-    d2_base <- (-traceline + traceline**2)*etable
 
-    # Non-threshold derivatives.
-    if(thr < 0){
-      d1 <- eta_d*(-etable_item[[1]]*cum_traceline[[1]] +
-                     etable_item[[num_responses_item]]*(
-                       1 - cum_traceline[[num_responses_item-1]]))
-      d2 <- eta_d**2*(-etable_item[[1]]*(cum_traceline[[1]]*(
-        1-cum_traceline[[1]])) +
+    # Calculate first and second base derivatives (non-thresholds).
+    d1_base <- d2_base <- 0
+    for(resp in 1:num_responses_item) {
+
+      if(resp == 1) {
+        d1_base <- d1_base +
+          -etable_item[[1]]*cum_traceline[[1]]
+        d2_base <- d2_base +
+          -etable_item[[1]]*(cum_traceline[[1]]*(1-cum_traceline[[1]]))
+      } else if(resp == num_responses_item) {
+        d1_base <- d1_base +
+          etable_item[[num_responses_item]]*(
+            1-cum_traceline[[num_responses_item-1]])
+        d2_base <- d2_base +
           etable_item[[num_responses_item]]*(
             -cum_traceline[[num_responses_item-1]]*(
-              1-cum_traceline[[num_responses_item-1]])))
-
-      for(i in 2:(num_responses_item-1)){
-
-        # Skip intermediate derivative calculations for constrained theshold.
-        d1 <- d1 + eta_d*etable_item[[i]]*((1-cum_traceline[[i]]) -
-                                             cum_traceline[[i-1]])
-        d2 <- d2 + eta_d**2*etable_item[[i]]*(cum_traceline[[i-1]]**2 +
-                                                cum_traceline[[i]]**2 -
-                                                cum_traceline[[i-1]] -
-                                                cum_traceline[[i]])
+              1-cum_traceline[[num_responses_item-1]]))
+      } else {
+        d1_base <- d1_base +
+          etable_item[[resp]]*((1-cum_traceline[[resp]]) -
+                                 cum_traceline[[resp-1]])
+        d2_base <- d2_base +
+          etable_item[[resp]]*(cum_traceline[[resp-1]]**2 +
+                              cum_traceline[[resp]]**2 -
+                              cum_traceline[[resp-1]] -
+                              cum_traceline[[resp]])
       }
-
-
-      d1 <- sum(d1, na.rm = TRUE)
-      d2 <- sum(d2, na.rm = TRUE)
-
-      # Threshold derivatives.
-    } else {
-      if(thr < (num_responses_item-1)) {
-        cat_traceline <- (cum_traceline[[thr]] - cum_traceline[[thr+1]])
-      } else{
-        cat_traceline <- cum_traceline[[thr]]
-      }
-      d1 <-
-        sum(-etable_item[[thr]]*cum_traceline[[thr]]*(
-          1 - cum_traceline[[thr]]
-        ) / (cum_traceline[[thr-1]] - cum_traceline[[thr]]), na.rm = TRUE) +
-        sum(etable_item[[thr+1]]*cum_traceline[[thr]]*(
-          1 - cum_traceline[[thr]]
-        ) / cat_traceline, na.rm = TRUE)
-      d2 <- sum(etable_item[[thr]] /
-                  (cum_traceline[[thr-1]] -
-                     cum_traceline[[thr]])*(
-                       cum_traceline[[thr]]*(1 - cum_traceline[[thr]])**2 -
-                         cum_traceline[[thr]]**2*(1 - cum_traceline[[thr]]) +
-                         cum_traceline[[thr]]**2*(1 - cum_traceline[[thr]])**2 /
-                         (cum_traceline[[thr-1]] - cum_traceline[[thr]])
-                     ), na.rm = TRUE) -
-        sum(etable_item[[thr+1]] / cat_traceline*(
-          cum_traceline[[thr]]*(1 - cum_traceline[[thr]])**2 -
-            cum_traceline[[thr]]**2*(1-cum_traceline[[thr]]) -
-            cum_traceline[[thr]]**2*(1-cum_traceline[[thr]])**2 /
-            cat_traceline
-        ), na.rm = TRUE)
 
     }
+
+    # First and second derivative for c0.
+    d1[1,1] <- sum(d1_base, na.rm = TRUE) #d1
+    d2[1,1] <- sum(d2_base, na.rm = TRUE) #d2
+
+    # First and second derivative for a0.
+    d1[num_responses_item,1] <-
+      sum(eta_d_a0*d1_base, na.rm = TRUE) #d1
+    d2[num_responses_item,num_responses_item] <-
+      sum(eta_d_a0**2*d2_base, na.rm = TRUE) #d2
+
+    # Cross derivative for c0 and a0.
+    d2[num_responses_item,1] <- sum(eta_d_a0*d2_base, na.rm = TRUE) #d2
+
+    # Cycle through predictors (outer cycle).
+    for(cov in 1:num_predictors) {
+
+      # First derivative for linear predictor w.r.t. covariate.
+      cov_matrix <- matrix(pred_data[,cov],
+                           ncol = num_quad,
+                           nrow = samp_size)
+
+      # First and second derivatives for c1.
+      d1[num_responses_item+cov,1] <-
+        sum(cov_matrix*d1_base,
+            na.rm = TRUE) #d1
+      d2[num_responses_item+cov,num_responses_item+cov] <-
+        sum(cov_matrix**2*d2_base,
+            na.rm = TRUE) #d2
+
+      # First and second derivatives for a1.
+      d1[num_responses_item+num_predictors+cov,1] <-
+        sum(cov_matrix*eta_d_a0*d1_base,
+            na.rm = TRUE) #d1
+      d2[num_responses_item+num_predictors+cov,
+         num_responses_item+num_predictors+cov] <-
+        sum((cov_matrix*eta_d_a0)**2*d2_base,
+            na.rm = TRUE) #d2
+
+      # Cross derivatives for c0 and c1.
+      d2[num_responses_item+cov,1] <-
+        sum(cov_matrix*d2_base,
+            na.rm = TRUE) #d2
+
+      # Cross derivatives for c0 and a1, as well as a0 and c1.
+      d2[num_responses_item+num_predictors+cov,1] <-
+        d2[num_responses_item+cov,num_responses_item] <-
+        sum(cov_matrix*eta_d_a0*d2_base,
+            na.rm = TRUE) #d2
+
+      # Cross derivatives for a0 and a1.
+      d2[num_responses_item+num_predictors+cov,num_responses_item] <-
+        sum(cov_matrix*eta_d_a0**2*d2_base,
+            na.rm = TRUE) #d2
+
+      # Cycle through predictors (inner cycle).
+      for(cov2 in 1:num_predictors) {
+
+
+        if(cov == cov2) {
+
+          # Cross derivatives with same predictor for c1 and a1.
+          d2[num_responses_item+num_predictors+cov,num_responses_item+cov2] <-
+            sum(cov_matrix**2*eta_d_a0*d2_base,
+                na.rm = TRUE) #d2
+
+        } else {
+
+          # First derivatives for linear predictor w.r.t. second covariate.
+          cov2_matrix <- matrix(pred_data[,cov2],
+                                ncol = num_quad,
+                                nrow = samp_size)
+
+          # Cross derivatives with different predictor for c1 and a1.
+          d2[num_responses_item+num_predictors+cov,num_responses_item+cov2] <-
+            sum(cov_matrix*cov2_matrix*eta_d_a0*d2_base,
+                na.rm = TRUE) #d2
+
+          if(cov2 > 1 && cov < cov2) {
+
+            # Cross derivatives with different predictor for c1 and c1.
+            d2[num_responses_item+cov2,num_responses_item+cov] <-
+              sum(cov_matrix*cov2_matrix*d2_base, #d2
+                  na.rm = TRUE)
+
+            # Cross derivatives with different predictor for a1 and a1.
+            d2[num_responses_item+num_predictors+cov2,
+               num_responses_item+num_predictors+cov] <-
+              sum(cov_matrix*cov2_matrix*eta_d_a0**2*d2_base, #a1a1
+                  na.rm = TRUE)
+          }
+        }
+
+      }
+
+    }
+
+    # Threshold derivatives.
+    for(thr in 2:(num_responses_item-1)) {
+      d1_base_thr <- cum_traceline[[thr]]*(1-cum_traceline[[thr]])
+      d2_base_thr <- d1_base_thr*(1 - 2*cum_traceline[[thr]])
+
+      cat_traceline1 <- cum_traceline[[thr-1]] - cum_traceline[[thr]]
+      cat_traceline2 <- cum_traceline[[thr]]
+      if(thr < (num_responses_item-1)) {
+        cat_traceline2 <- cat_traceline2 - cum_traceline[[thr+1]]
+      }
+
+      d1[thr,1] <-
+        sum(d1_base_thr*(-etable_item[[thr]] / cat_traceline1 +
+                           etable_item[[thr+1]] / cat_traceline2),
+            na.rm = TRUE)
+
+      d2[thr,thr] <-
+        sum(etable_item[[thr]] / cat_traceline1 *
+              (d2_base_thr + d1_base_thr**2/cat_traceline1),
+            na.rm = TRUE) -
+        sum(etable_item[[thr+1]] / cat_traceline2 *
+              (d2_base_thr - d1_base_thr**2/cat_traceline2),
+            na.rm = TRUE)
+
+      d2[thr,1] <-
+        sum(etable_item[[thr]])
+
+
+      # for(thr2 in 3:(num_responses_item-1))
+      #
+      # for(cov in 1:num_predictors) {
+      #   # First derivative for linear predictor w.r.t. covariate.
+      #   cov_matrix <- matrix(pred_data[,cov],
+      #                        ncol = num_quad,
+      #                        nrow = samp_size)
+      # }
+
+    }
+
 
     dlist <- list(d1,d2)
 

@@ -58,8 +58,8 @@ Mstep_cd <-
            num_tau,
            max_tau) {
 
-    # Set under-identified model to FALSE until proven TRUE.
-    under_identified <- FALSE
+  # Set under-identified model to FALSE until proven TRUE.
+  under_identified <- FALSE
 
   # Update theta and etable.
   theta <- eout$theta
@@ -493,8 +493,8 @@ Mstep_cd <-
     id_max_z <- max(abs(id_max_z))
     return(id_max_z)
   } else {
-    return(p,
-           under_identified=under_identified)
+    return(list(p=p,
+                under_identified=under_identified))
   }
 
 }

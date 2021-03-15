@@ -36,7 +36,7 @@ preprocess <-
                         maxit = 5000,
                         adapt.quad = FALSE,
                         num.quad = 21,
-                        optim.method = "multi",
+                        optim.method = "MNR",
                         start.values = list())
   if(length(control) > 0) final_control[names(control)] <- control
 
@@ -107,6 +107,15 @@ preprocess <-
       apply(item_data[,which(cat_items)],
             2,
             function(x) length(unique(na.omit(x))))
+  }
+
+  if(any(num_responses > 2)) {
+    if(is.null(control$optim.method) || control$optim.method == "MNR") {
+      warning(paste0("Ordered categorical item responses are not yet supported with ",
+                     "Multivariate Newton-Raphson (MNR). Using Univariate Newton-Raphson ",
+                     "(UNR) instead."))
+    }
+    final_control$optim.method <- "UNR"
   }
 
   # Update number of quad pts for ordered categorical or guassian items.

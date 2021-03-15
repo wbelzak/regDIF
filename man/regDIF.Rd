@@ -44,7 +44,11 @@ The options include:
    operator (LASSO), which controls DIF selection through \eqn{\tau} (tau).}
    \item{\code{"mcp"} - The minimax concave penalty (MCP), which controls
    DIF selection through \eqn{\tau} (tau) and estimator bias through
-   \eqn{\gamma} (gamma). Uses the firm-thresholding penalty function.}}}
+   \eqn{\gamma} (gamma). Uses the firm-thresholding penalty function.}
+   \item{\code{"grp.lasso"} - The group version of the LASSO penalty, which
+   selects intercept and slope DIF effects on each background characteristic
+   together.}
+   \item{\code{"grp.mcp"} - The group version of the MCP function.}}}
 
 \item{tau}{Optional numeric vector of tau values \eqn{\ge} 0. If tau is
 supplied, this overrides the automatic construction of tau values.
@@ -95,11 +99,13 @@ optimization parameters. May be:
    points when all item responses are binary or else \code{51} points if at
    least one item is ordered categorical.}
    \item{optim.method}{Character value indicating which optimization method
-   to use. Default is "multi", which updates the impact and item parameter
-   estimates using multivariate Newton-Raphson. Another option is "uni",
+   to use. Default is "MNR", which updates the impact and item parameter
+   estimates using Multivariate Newton-Raphson. Another option is "UNR",
    which updates estimates one-at-a-time using univariate Newton-Raphson, or
-   a single iteration of coordinate descent. "Multi" will be faster in most
-   cases, although "uni" may achieve faster results when the number of
+   a single iteration of coordinate descent. A third option is "CD", or
+   coordinate descent with complete iterations through all parameters
+   until convergence. "MNR" will be faster in most cases,
+   although "UNR" may achieve faster results when the number of
    predictors is large.}
    \item{start.values}{List of numbers assigned as starting values to the
    regDIF procedure. List must contain only the following names:

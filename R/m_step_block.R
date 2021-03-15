@@ -124,6 +124,51 @@ Mstep_block <-
 
         for(cov in 1:num_predictors) {
 
+          # If penalty type is a group function.
+          if(pen_type == "grp.lasso" ||
+             pen_type == "grp.mcp") {
+
+            # End routine if only one anchor item is left on each covariate
+            # for each item parameter.
+            if(is.null(anchor) &&
+               sum(p2[c(grep(paste0("c1(.*?)cov",cov),names(p2)),
+                        grep(paste0("a1(.*?)cov",cov),names(p2)))] != 0) >
+               (num_items*2 - 1) &&
+               (length(final_control$start.values) == 0 || pen > 1) &&
+               num_tau >= 10){
+              under_identified <- TRUE
+              break
+            }
+
+            if(max_tau) {
+              id_max_z <- c(id_max_z,
+                            z[2+cov],
+                            z[2+num_predictors+cov])
+            }
+
+
+            # group update.
+            grp.update <-
+              if(pen_type == "grp.lasso") {
+                grp_soft_threshold(z[c(2+cov,
+                                       2+num_predictors+cov)],
+                                   tau_current)
+              } else if(pen_type == "grp.mcp") {
+                grp_firm_threshold(z[c(2+cov,
+                                       2+num_predictors+cov)],
+                                   tau_current,
+                                   gamma)
+              }
+
+            # c1 updates.
+            p[[item]][[2+cov]] <- grp.update[[1]]
+            # a1 updates.
+            p[[item]][[2+num_predictors+cov]] <- grp.update[[2]]
+
+            next
+
+          }
+
           # End routine if only one anchor item is left on each covariate
           # for each item parameter.
           if(is.null(anchor) &&
@@ -144,14 +189,17 @@ Mstep_block <-
 
           # c1 updates.
           p[[item]][[2+cov]] <-
-            ifelse(pen_type == "lasso",
-                   soft_threshold(z[2+cov],
-                                   alpha,
-                                   tau_current),
-                   firm_threshold(z[2+cov],
-                                   alpha,
-                                   tau_current,
-                                   gamma))
+            if(pen_type == "lasso") {
+              soft_threshold(z[2+cov],
+                              alpha,
+                              tau_current)
+            } else if(pen_type == "mcp") {
+              firm_threshold(z[2+cov],
+                             alpha,
+                             tau_current,
+                             gamma)
+            }
+
 
           # a1 updates.
           if(item_type[item] == "Rasch") next

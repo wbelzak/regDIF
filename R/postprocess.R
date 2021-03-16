@@ -224,7 +224,7 @@ postprocess <-
   rownames(final$impact) <- lv_names
   rownames(final$base) <- all_items_names_base
   rownames(final$dif) <- all_items_names_dif
-  if(!(any(num_responses > 2))) {
+  if(!(any(num_responses > 2)) && !is.null(complete_info)) {
     for(item in 1:num_items) {
       names(final$complete_ll_info[[item]]) <- names(p[[item]])
     }

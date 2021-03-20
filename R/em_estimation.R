@@ -37,6 +37,8 @@
 #' @param optim_method Character value indicating the type of optimization
 #' method to use.
 #' @param em_history List to save EM iterations for supplemental EM algorithm.
+#' @param em_limit Logical value indicating whether the EM algorithm reached
+#' the maxit limit in the previous estimation round.
 #'
 #' @keywords internal
 #'
@@ -63,7 +65,8 @@ em_estimation <- function(p,
                           num_quad,
                           adapt_quad,
                           optim_method,
-                          em_history) {
+                          em_history,
+                          em_limit) {
 
   # Maximization and print settings.
   lastp <- p
@@ -181,6 +184,7 @@ em_estimation <- function(p,
     iter = iter + 1
     if(iter == final_control$maxit) {
       warning("EM iteration limit reached without convergence")
+      em_limit <- T
     }
 
     cat('\r', sprintf("Models Completed: %d of %d  Iteration: %d  Change: %f",
@@ -194,6 +198,8 @@ em_estimation <- function(p,
     # Stop estimation if model would become under-identified because of tau
     # being too small.
     if(mout$under_identified) break
+
+    #
 
 
   }
@@ -289,7 +295,8 @@ em_estimation <- function(p,
                 infocrit=infocrit,
                 max_tau=max_tau,
                 em_history=em_history,
-                under_identified=mout$under_identified))
+                under_identified=mout$under_identified,
+                em_limit=em_limit))
 
   } else {
 
@@ -298,7 +305,8 @@ em_estimation <- function(p,
                 complete_info=mout$inv_hess_diag,
                 infocrit=infocrit,
                 em_history=em_history,
-                under_identified=mout$under_identified))
+                under_identified=mout$under_identified,
+                em_limit=em_limit))
   }
 
 }

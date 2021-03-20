@@ -90,7 +90,7 @@ optimization parameters. May be:
    variance impact. See above. Default includes all predictors in pred.data.}
    \item{tol}{Convergence threshold of EM algorithm. Default is
    \code{10^-5}.}
-   \item{maxiter}{Maximum number of EM iterations. Default is \code{5000}.}
+   \item{maxit}{Maximum number of EM iterations. Default is \code{5000}.}
    \item{adapt.quad}{Logical value indicating whether to use adaptive
    quadrature to approximate the latent variable. The default is
    \code{FALSE}. NOTE: Adaptive quadrature is not supported yet.}
@@ -130,7 +130,7 @@ library(regDIF)
 head(ida)
 item.data <- ida[,1:6]
 pred.data <- ida[,7:9]
-fit <- regDIF(item.data, pred.data, num.tau = 50)
+fit <- regDIF(item.data, pred.data)
 summary(fit)
 
 }

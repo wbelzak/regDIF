@@ -28,7 +28,8 @@ em_estimation(
   num_quad,
   adapt_quad,
   optim_method,
-  em_history
+  em_history,
+  em_limit
 )
 }
 \arguments{
@@ -92,6 +93,9 @@ needs to be identified.}
 method to use.}
 
 \item{em_history}{List to save EM iterations for supplemental EM algorithm.}
+
+\item{em_limit}{Logical value indicating whether the EM algorithm reached
+the maxit limit in the previous estimation round.}
 }
 \description{
 Penalized expectation-maximization algorithm.

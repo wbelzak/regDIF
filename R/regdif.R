@@ -78,7 +78,7 @@
 #'    variance impact. See above. Default includes all predictors in pred.data.}
 #'    \item{tol}{Convergence threshold of EM algorithm. Default is
 #'    \code{10^-5}.}
-#'    \item{maxiter}{Maximum number of EM iterations. Default is \code{5000}.}
+#'    \item{maxit}{Maximum number of EM iterations. Default is \code{5000}.}
 #'    \item{adapt.quad}{Logical value indicating whether to use adaptive
 #'    quadrature to approximate the latent variable. The default is
 #'    \code{FALSE}. NOTE: Adaptive quadrature is not supported yet.}
@@ -114,7 +114,7 @@
 #' head(ida)
 #' item.data <- ida[,1:6]
 #' pred.data <- ida[,7:9]
-#' fit <- regDIF(item.data, pred.data, num.tau = 50)
+#' fit <- regDIF(item.data, pred.data)
 #' summary(fit)
 #'
 #' }
@@ -176,7 +176,8 @@ regDIF <- function(item.data,
                                  data_scrub$num_quad,
                                  data_scrub$adapt_quad,
                                  data_scrub$optim_method,
-                                 data_scrub$em_history)
+                                 data_scrub$em_history,
+                                 data_scrub$em_limit)
 
       # Update vector of tau values based on identification of minimum tau value
       # which removes all DIF from the model.
@@ -184,6 +185,14 @@ regDIF <- function(item.data,
         data_scrub$tau_vec <- seq((estimates$max_tau)**(1/3),0,
                                   length.out = data_scrub$num_tau)**3
         data_scrub$id_tau <- FALSE
+      }
+
+
+      # EM limit.
+      if(estimates$em_limit && (data_scrub$pen_type == "mcp" ||
+                                data_scrub$pen_type == "grp.mcp")) {
+        warning("regDIF procedure stopped because MCP penalty is likely non-convex in this region.")
+        break
       }
 
       # Post-process data.
@@ -211,6 +220,7 @@ regDIF <- function(item.data,
       # Update parameter estimates for next tau value.
       data_scrub$p <- estimates$p
       data_scrub$final <- data_final
+
 
     }
 

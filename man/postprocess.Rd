@@ -24,7 +24,8 @@ postprocess(
   num_responses,
   num_predictors,
   num_items,
-  num_quad
+  num_quad,
+  exit_code
 )
 }
 \arguments{
@@ -74,6 +75,8 @@ penalty function.}
 
 \item{num_quad}{Number of quadrature points used for approximating the
 latent variable.}
+
+\item{exit_code}{An integer indicating whether the regDIF procedure finished normally}
 }
 \description{
 Maximization step.

@@ -273,6 +273,7 @@ preprocess <-
               adapt_quad = final_control$adapt.quad,
               optim_method = final_control$optim.method,
               em_history = final$em_history,
-              em_limit = F))
+              em_limit = F,
+              exit_code = 0))
 
 }

@@ -27,6 +27,7 @@
 #' @param num_items Number of items in dataset.
 #' @param num_quad Number of quadrature points used for approximating the
 #' latent variable.
+#' @param exit_code An integer indicating whether the regDIF procedure finished normally
 #'
 #' @keywords internal
 #'
@@ -50,7 +51,8 @@ postprocess <-
            num_responses,
            num_predictors,
            num_items,
-           num_quad) {
+           num_quad,
+           exit_code) {
 
   # Get estimates and information criteria.
   p <- estimates$p
@@ -231,6 +233,7 @@ postprocess <-
     names(final$complete_ll_info[[num_items+1]]) <- names(p[[num_items+1]])
     names(final$complete_ll_info[[num_items+2]]) <- names(p[[num_items+2]])
   }
+  final$exit_code <- ifelse(exit_code == 0, 0, 1)
 
   # Order item parms.
   final_int_thr_base <-

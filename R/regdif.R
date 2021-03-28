@@ -188,13 +188,6 @@ regDIF <- function(item.data,
       }
 
 
-      # EM limit.
-      if(estimates$em_limit && (data_scrub$pen_type == "mcp" ||
-                                data_scrub$pen_type == "grp.mcp")) {
-        warning("regDIF procedure stopped because MCP penalty is likely non-convex in this region.")
-        break
-      }
-
       # Post-process data.
       data_final <- postprocess(estimates,
                                 item.data,
@@ -215,7 +208,16 @@ regDIF <- function(item.data,
                                 data_scrub$num_responses,
                                 data_scrub$num_predictors,
                                 data_scrub$num_items,
-                                data_scrub$num_quad)
+                                data_scrub$num_quad,
+                                data_scrub$exit_code)
+
+      # EM limit.
+      if(estimates$em_limit && (data_scrub$pen_type == "mcp" ||
+                                data_scrub$pen_type == "grp.mcp")) {
+        warning("regDIF procedure stopped because MCP penalty is likely non-convex in this region.")
+        data_final$exit_code <- 1
+        break
+      }
 
       # Update parameter estimates for next tau value.
       data_scrub$p <- estimates$p

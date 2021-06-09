@@ -80,13 +80,11 @@ Mstep_block <-
     inv_hess_impact_diag <- -diag(inv_hess_impact)
     m <- c(p[[num_items+1]],p[[num_items+2]]) -
       inv_hess_impact %*% anl_deriv_impact[[1]]
+    names(m) <- names(c(p[[num_items+1]],p[[num_items+2]]))
 
-    for(cov in 1:ncol(mean_predictors)){
-      p[[num_items+1]][[cov]] <- m[cov]
-    }
-    for(cov in 1:ncol(var_predictors)){
-      p[[num_items+2]][[cov]] <- m[ncol(mean_predictors)+cov]
-    }
+
+    p[[num_items+1]] <- m[1:ncol(mean_predictors)]
+    p[[num_items+2]] <- m[(ncol(mean_predictors)+1):length(m)]
 
 
     inv_hess_diag <- vector('list',num_items+2)

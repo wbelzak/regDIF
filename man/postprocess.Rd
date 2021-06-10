@@ -25,7 +25,8 @@ postprocess(
   num_predictors,
   num_items,
   num_quad,
-  exit_code
+  exit_code,
+  NA_cases
 )
 }
 \arguments{
@@ -77,6 +78,8 @@ penalty function.}
 latent variable.}
 
 \item{exit_code}{An integer indicating whether the regDIF procedure finished normally}
+
+\item{NA_cases}{Logical vector indicating NA cases.}
 }
 \description{
 Maximization step.

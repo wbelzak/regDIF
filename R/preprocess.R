@@ -72,7 +72,7 @@ preprocess <-
     warning(paste0("Adaptive quadrature is not fully supported. Fixed-point ",
                    "quadrature is recommended at this time."))
   }
-  if(any(non_NA_cases)) {
+  if(any(NA_cases)) {
     warning(paste0("Removed observations with missing values (NA)."))
   }
 

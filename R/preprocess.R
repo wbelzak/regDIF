@@ -29,6 +29,13 @@ preprocess <-
            control,
            call){
 
+  options(warn = 1)
+
+  # Remove observations with any NA.
+  NA_cases <- apply(cbind(pred.data, item.data), 1, function(x) any(is.na(x)))
+  item.data <- item.data[!NA_cases,]
+  pred.data <- pred.data[!NA_cases,]
+
   # Control parameters.
   final_control <- list(impact.mean.data = pred.data,
                         impact.var.data = pred.data,
@@ -64,6 +71,9 @@ preprocess <-
   if(final_control$adapt.quad == T) {
     warning(paste0("Adaptive quadrature is not fully supported. Fixed-point ",
                    "quadrature is recommended at this time."))
+  }
+  if(any(non_NA_cases)) {
+    warning(paste0("Removed observations with missing values (NA)."))
   }
 
   # Define number of tau values.
@@ -274,6 +284,7 @@ preprocess <-
               optim_method = final_control$optim.method,
               em_history = final$em_history,
               em_limit = F,
-              exit_code = 0))
+              exit_code = 0,
+              NA_cases = NA_cases))
 
 }

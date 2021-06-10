@@ -209,7 +209,8 @@ regDIF <- function(item.data,
                                 data_scrub$num_predictors,
                                 data_scrub$num_items,
                                 data_scrub$num_quad,
-                                data_scrub$exit_code)
+                                data_scrub$exit_code,
+                                data_scrub$NA_cases)
 
       # EM limit.
       if(estimates$em_limit && (data_scrub$pen_type == "mcp" ||

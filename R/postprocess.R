@@ -28,6 +28,7 @@
 #' @param num_quad Number of quadrature points used for approximating the
 #' latent variable.
 #' @param exit_code An integer indicating whether the regDIF procedure finished normally
+#' @param NA_cases Logical vector indicating NA cases.
 #'
 #' @keywords internal
 #'
@@ -52,7 +53,8 @@ postprocess <-
            num_predictors,
            num_items,
            num_quad,
-           exit_code) {
+           exit_code,
+           NA_cases) {
 
   # Get estimates and information criteria.
   p <- estimates$p
@@ -234,6 +236,7 @@ postprocess <-
     names(final$complete_ll_info[[num_items+2]]) <- names(p[[num_items+2]])
   }
   final$exit_code <- ifelse(exit_code == 0, 0, 1)
+  final$missing_obs <- which(NA_cases)
 
   # Order item parms.
   final_int_thr_base <-

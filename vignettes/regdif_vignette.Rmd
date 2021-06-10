@@ -20,8 +20,8 @@ With a large tau parameter, there should be no DIF effects.
 ```{r,eval=T,message=F,echo=F}
 library(regDIF)
 head(ida)
-item.data <- ida[,1:6]
-pred.data <- ida[,7:9]
+item.data <- regDIF::ida[,1:6]
+pred.data <- regDIF::ida[,7:9]
 fit <- regDIF(item.data, pred.data, tau = 2)
 summary(fit)
 ```

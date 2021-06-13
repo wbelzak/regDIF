@@ -272,7 +272,7 @@ preprocess <-
                                     }),
                 log_lik = NA,
                 complete_ll_info = list(),
-                data = vector("list",2),
+                data = vector("list",3),
                 call = call)
   return(list(p = p,
               final = final,

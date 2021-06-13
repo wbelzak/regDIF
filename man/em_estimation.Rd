@@ -8,6 +8,7 @@ em_estimation(
   p,
   item_data,
   pred_data,
+  prox_data,
   mean_predictors,
   var_predictors,
   item_type,
@@ -29,7 +30,8 @@ em_estimation(
   adapt_quad,
   optim_method,
   em_history,
-  em_limit
+  em_limit,
+  NA_cases
 )
 }
 \arguments{
@@ -38,6 +40,8 @@ em_estimation(
 \item{item_data}{Matrix or data frame of item responses.}
 
 \item{pred_data}{Matrix or data frame of DIF and/or impact predictors.}
+
+\item{prox_data}{Vector of observed proxy scores.}
 
 \item{mean_predictors}{Possibly different matrix of predictors for the mean
 impact equation.}
@@ -96,6 +100,8 @@ method to use.}
 
 \item{em_limit}{Logical value indicating whether the EM algorithm reached
 the maxit limit in the previous estimation round.}
+
+\item{NA_cases}{Logical vector indicating if observation is missing.}
 }
 \description{
 Penalized expectation-maximization algorithm.

@@ -26,6 +26,28 @@ bernoulli_traceline_pts <-
 
   }
 
+#' Binary item tracelines for proxy scores.
+#'
+#' @param p_item Vector of item parameters.
+#' @param prox_data Vector of observed proxy scores.
+#' @param pred_data Matrix or dataframe of DIF and/or impact predictors.
+#'
+#' @keywords internal
+#'
+bernoulli_traceline_pts_proxy <-
+  function(p_item,
+           prox_data,
+           pred_data) {
+
+    traceline <-
+      1 / (1 + exp(
+        -((p_item[1] + pred_data %*% p_item[3:(2+ncol(pred_data))]) +
+            (p_item[2] + pred_data %*% p_item[(3+ncol(pred_data)):length(p_item)])*prox_data)))
+
+    return(traceline)
+
+  }
+
 #' Ordinal tracelines (for derivatives).
 #'
 #' @param p_item Vector of item parameters.

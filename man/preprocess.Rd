@@ -7,6 +7,7 @@
 preprocess(
   item.data,
   pred.data,
+  prox.data,
   item.type,
   pen.type,
   tau,
@@ -21,6 +22,8 @@ preprocess(
 \item{item.data}{Matrix or data frame of item responses.}
 
 \item{pred.data}{Matrix or data frame of DIF and/or impact predictors.}
+
+\item{prox.data}{Vector of observed proxy scores.}
 
 \item{item.type}{Character value or vector indicating the item response
 distributions.}

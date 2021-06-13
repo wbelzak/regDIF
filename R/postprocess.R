@@ -4,9 +4,11 @@
 #' @param item.data User-given matrix or data.frame of DIF and/or impact
 #' predictors.
 #' @param pred.data User-given matrix or data.frame of item responses.
+#' @param prox.data User-given matrix or data.frame of observed proxy scores.
 #' @param item_data Processed matrix or data.frame of item responses.
 #' @param pred_data Processed matrix or data.frame of DIF and/or impact
 #' predictors.
+#' @param prox_data Processed matrix or data.frame of observed proxy scores.
 #' @param mean_predictors Possibly different matrix of predictors for the mean
 #' impact equation.
 #' @param var_predictors Possibly different matrix of predictors for the
@@ -36,8 +38,10 @@ postprocess <-
   function(estimates,
            item.data,
            pred.data,
+           prox.data,
            item_data,
            pred_data,
+           prox_data,
            mean_predictors,
            var_predictors,
            tau_vec,
@@ -62,6 +66,7 @@ postprocess <-
   em_history <- estimates$em_history
   complete_info <- estimates$complete_info
   under_identified <- estimates$under_identified
+  eap_scores <- estimates$eap_scores
 
   # Organize impact parameters.
   if(is.null(control$impact.mean.data)) {
@@ -221,10 +226,13 @@ postprocess <-
   final$impact[,pen] <- round(lv_parms,3)
   final$base[,pen] <- round(all_items_parms_base,3)
   final$dif[,pen] <- round(all_items_parms_dif,3)
-  final$em_history[[pen]] <- em_history[[pen]]
+  if(is.null(prox.data)) {
+    final$eap_scores[,pen] <- eap_scores
+    final$em_history[[pen]] <- em_history[[pen]]
+  }
   final$complete_ll_info <- complete_info
   final$log_like[pen] <- infocrit$complete_ll
-  final$data <- list(item.data=item.data, pred.data=pred.data)
+  final$data <- list(item.data=item.data, pred.data=pred.data, prox.data=prox.data)
   rownames(final$impact) <- lv_names
   rownames(final$base) <- all_items_names_base
   rownames(final$dif) <- all_items_names_dif
@@ -308,10 +316,12 @@ postprocess <-
   }
 
   # Print information about optimization.
-  cat('\r',
-      sprintf(paste0("Models Completed: %d of %d  Iteration: %d  Change: %d",
-                     "              "),
-              pen, length(tau_vec), 0, 0))
+  if(is.null(prox.data)) {
+    cat('\r',
+        sprintf(paste0("Models Completed: %d of %d  Iteration: %d  Change: %d",
+                       "              "),
+                pen, length(tau_vec), 0, 0))
+  }
 
   if(pen != length(tau_vec)) utils::flush.console()
 

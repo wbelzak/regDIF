@@ -3,6 +3,7 @@
 #' @param p List of parameters with starting values obtained from preprocess.
 #' @param item_data Matrix or data frame of item responses.
 #' @param pred_data Matrix or data frame of DIF and/or impact predictors.
+#' @param prox_data Vector of observed proxy scores.
 #' @param mean_predictors Possibly different matrix of predictors for the mean
 #' impact equation.
 #' @param var_predictors Possibly different matrix of predictors for the
@@ -39,12 +40,14 @@
 #' @param em_history List to save EM iterations for supplemental EM algorithm.
 #' @param em_limit Logical value indicating whether the EM algorithm reached
 #' the maxit limit in the previous estimation round.
+#' @param NA_cases Logical vector indicating if observation is missing.
 #'
 #' @keywords internal
 #'
 em_estimation <- function(p,
                           item_data,
                           pred_data,
+                          prox_data,
                           mean_predictors,
                           var_predictors,
                           item_type,
@@ -66,7 +69,8 @@ em_estimation <- function(p,
                           adapt_quad,
                           optim_method,
                           em_history,
-                          em_limit) {
+                          em_limit,
+                          NA_cases) {
 
   # Maximization and print settings.
   lastp <- p
@@ -79,23 +83,28 @@ em_estimation <- function(p,
 
 
     # E-step: Evaluate Q function with current parameter estimates p.
-    eout <- Estep(p,
-                  item_data,
-                  pred_data,
-                  mean_predictors,
-                  var_predictors,
-                  theta,
-                  samp_size,
-                  num_items,
-                  num_responses,
-                  adapt_quad,
-                  num_quad)
+    eout <- if(is.null(prox_data)) Estep(p,
+                                        item_data,
+                                        pred_data,
+                                        mean_predictors,
+                                        var_predictors,
+                                        theta,
+                                        samp_size,
+                                        num_items,
+                                        num_responses,
+                                        adapt_quad,
+                                        num_quad,
+                                        get_eap = FALSE,
+                                        NA_cases = NA_cases)
+
+
 
     if(optim_method == "MNR") {
       # M-step: Optimize parameters using multivariate NR.
       mout <- Mstep_block(p,
                           item_data,
                           pred_data,
+                          prox_data,
                           mean_predictors,
                           var_predictors,
                           eout,
@@ -169,10 +178,17 @@ em_estimation <- function(p,
     eps = sqrt(sum((unlist(p)-unlist(lastp))^2))
 
     # Save parameter estimates and observed log-likelihood for supplemental em.
-    em_history[[pen]][,iter] <- c(unlist(p),eout$observed_ll)
+    eout_obs_ll <- ifelse(is.null(eout), NA, eout$observed_ll)
+
+    if(!is.null(eout)) {
+      em_history[[pen]][,iter] <- c(unlist(p), eout_obs_ll)
+    } else {
+      em_history[[pen]][,iter] <- NA
+    }
+
 
     # Add row for next EM step.
-    if(eps > final_control$tol) {
+    if(eps > final_control$tol && !is.null(eout)) {
       em_history[[pen]] <- cbind(em_history[[pen]],
                                  matrix(0,ncol=1,nrow=length(unlist(p))+1))
     }
@@ -187,17 +203,25 @@ em_estimation <- function(p,
       em_limit <- T
     }
 
-    cat('\r', sprintf("Models Completed: %d of %d  Iteration: %d  Change: %f",
-                     pen-1,
-                     models_to_fit,
-                     iter,
-                     round(eps, nchar(final_control$tol))))
+    if(is.null(prox_data)) {
+      cat('\r', sprintf("Models Completed: %d of %d  Iteration: %d  Change: %f",
+                        pen-1,
+                        models_to_fit,
+                        iter,
+                        round(eps, nchar(final_control$tol))))
+    } else {
+      cat('\r', sprintf("Models Completed: %d of %d   ",
+                        pen-1,
+                        models_to_fit))
+    }
+
 
     utils::flush.console()
 
     # Stop estimation if model would become under-identified because of tau
     # being too small.
     if(mout$under_identified) break
+    if(!is.null(prox_data)) break
 
     #
 
@@ -209,6 +233,7 @@ em_estimation <- function(p,
                                    p,
                                    item_data,
                                    pred_data,
+                                   prox_data,
                                    mean_predictors,
                                    var_predictors,
                                    gamma,
@@ -216,6 +241,25 @@ em_estimation <- function(p,
                                    num_responses,
                                    num_items,
                                    num_quad)
+
+  # Get EAP score.
+  eout_eap <- if(is.null(prox_data)) {
+    Estep(p,
+          item_data,
+          pred_data,
+          mean_predictors,
+          var_predictors,
+          theta,
+          samp_size,
+          num_items,
+          num_responses,
+          adapt_quad,
+          num_quad,
+          get_eap = TRUE,
+          NA_cases = NA_cases)
+  } else {
+    NULL
+  }
 
   # Option to identify maximum value of tau which removes all DIF from model.
   if(id_tau) {
@@ -225,6 +269,7 @@ em_estimation <- function(p,
       max_tau <- Mstep_block(p,
                              item_data,
                              pred_data,
+                             prox_data,
                              mean_predictors,
                              var_predictors,
                              eout,
@@ -289,24 +334,18 @@ em_estimation <- function(p,
                            max_tau = TRUE)
     }
 
-    # Return model results for maximum tau value.
-    return(list(p=p,
-                complete_info=mout$inv_hess_diag,
-                infocrit=infocrit,
-                max_tau=max_tau,
-                em_history=em_history,
-                under_identified=mout$under_identified,
-                em_limit=em_limit))
-
   } else {
-
-    # Return model results for all other tau values.
-    return(list(p=p,
-                complete_info=mout$inv_hess_diag,
-                infocrit=infocrit,
-                em_history=em_history,
-                under_identified=mout$under_identified,
-                em_limit=em_limit))
+    max_tau <- NULL
   }
+
+  # Return model results.
+  return(list(p=p,
+              complete_info=mout$inv_hess_diag,
+              infocrit=infocrit,
+              max_tau=max_tau,
+              em_history=em_history,
+              under_identified=mout$under_identified,
+              em_limit=em_limit,
+              eap_scores=eout_eap$eap_scores))
 
 }

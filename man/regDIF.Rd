@@ -6,6 +6,7 @@
 \usage{
 regDIF(item.data,
        pred.data,
+       prox.data = NULL,
        item.type = NULL,
        pen.type = NULL,
        tau = NULL,
@@ -23,6 +24,11 @@ supported item types.}
 \item{pred.data}{Matrix or data frame of predictors affecting item responses
 (DIF) and latent variable (impact). See \code{control} option below to
 specify different predictors for impact model.}
+
+\item{prox.data}{Optional vector of observed scores to serve as a proxy for
+the latent variable. If a vector is supplied, a multivariate regression model
+will be fit to the data. The default is NULL, indicating that latent scores
+will be estimated during model estimation.}
 
 \item{item.type}{Optional character value or vector indicating the type of
 item to be modeled. The default is NULL, corresponding to a 2PL or graded

@@ -3,6 +3,7 @@
 #' @param p List of parameters.
 #' @param item_data Matrix or data frame of item responses.
 #' @param pred_data Matrix or data frame of DIF and/or impact predictors.
+#' @param prox_data Vector of observed proxy scores.
 #' @param mean_predictors Possibly different matrix of predictors for the mean
 #' impact equation.
 #' @param var_predictors Possibly different matrix of predictors for the
@@ -39,6 +40,7 @@ Mstep_block <-
   function(p,
            item_data,
            pred_data,
+           prox_data,
            mean_predictors,
            var_predictors,
            eout,
@@ -65,16 +67,29 @@ Mstep_block <-
     if(max_tau) id_max_z <- 0
 
     # Latent impact updates.
-    anl_deriv_impact <- d_impact_block(p[[num_items+1]],
-                                       p[[num_items+2]],
-                                       eout$etable,
-                                       eout$theta,
-                                       mean_predictors,
-                                       var_predictors,
-                                       samp_size,
-                                       num_items,
-                                       num_quad,
-                                       num_predictors)
+    if(is.null(prox_data)) {
+      anl_deriv_impact <- d_impact_block(p[[num_items+1]],
+                                         p[[num_items+2]],
+                                         eout$etable,
+                                         eout$theta,
+                                         mean_predictors,
+                                         var_predictors,
+                                         samp_size,
+                                         num_items,
+                                         num_quad,
+                                         num_predictors)
+    } else {
+      anl_deriv_impact <- d_impact_block_proxy(p[[num_items+1]],
+                                               p[[num_items+2]],
+                                               prox_data,
+                                               mean_predictors,
+                                               var_predictors,
+                                               samp_size,
+                                               num_items,
+                                               num_quad,
+                                               num_predictors)
+    }
+
 
     inv_hess_impact <- solve(anl_deriv_impact[[2]])
     inv_hess_impact_diag <- -diag(inv_hess_impact)
@@ -95,15 +110,27 @@ Mstep_block <-
       # Bernoulli responses.
       if(num_responses[item] == 2) {
 
-        anl_deriv_item <- d_bernoulli_itemblock(p[[item]],
-                                                eout$etable,
-                                                eout$theta,
-                                                pred_data,
-                                                item_data[,item],
-                                                samp_size,
-                                                num_items,
-                                                num_predictors,
-                                                num_quad)
+        if(is.null(prox_data)) {
+          anl_deriv_item <- d_bernoulli_itemblock(p[[item]],
+                                                  eout$etable,
+                                                  eout$theta,
+                                                  pred_data,
+                                                  item_data[,item],
+                                                  samp_size,
+                                                  num_items,
+                                                  num_predictors,
+                                                  num_quad)
+        } else {
+          anl_deriv_item <- d_bernoulli_itemblock_proxy(p[[item]],
+                                                        pred_data,
+                                                        item_data[,item],
+                                                        prox_data,
+                                                        samp_size,
+                                                        num_items,
+                                                        num_predictors,
+                                                        num_quad)
+        }
+
 
         inv_hess_item <- solve(anl_deriv_item[[2]])
         inv_hess_diag[[item]] <- -diag(inv_hess_item)

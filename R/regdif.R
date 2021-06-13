@@ -5,6 +5,7 @@
 #' @usage
 #' regDIF(item.data,
 #'        pred.data,
+#'        prox.data = NULL,
 #'        item.type = NULL,
 #'        pen.type = NULL,
 #'        tau = NULL,
@@ -20,6 +21,10 @@
 #' @param pred.data Matrix or data frame of predictors affecting item responses
 #' (DIF) and latent variable (impact). See \code{control} option below to
 #' specify different predictors for impact model.
+#' @param prox.data Optional vector of observed scores to serve as a proxy for
+#' the latent variable. If a vector is supplied, a multivariate regression model
+#' will be fit to the data. The default is NULL, indicating that latent scores
+#' will be estimated during model estimation.
 #' @param item.type Optional character value or vector indicating the type of
 #' item to be modeled. The default is NULL, corresponding to a 2PL or graded
 #' item type. Different item types may be specified for a single model
@@ -126,6 +131,7 @@
 #' @export
 regDIF <- function(item.data,
                    pred.data,
+                   prox.data = NULL,
                    item.type = NULL,
                    pen.type = NULL,
                    tau = NULL,
@@ -136,10 +142,16 @@ regDIF <- function(item.data,
                    stdz = TRUE,
                    control = list()) {
 
+    # Set up options.
+    default_options <- options(stringsAsFactors=FALSE)
+    on.exit(options(default_options))
+    options(warn = 1)
+
     # Pre-process data.
     call <- match.call()
     data_scrub <- preprocess(item.data,
                              pred.data,
+                             prox.data,
                              item.type,
                              pen.type,
                              tau,
@@ -156,6 +168,7 @@ regDIF <- function(item.data,
       estimates <- em_estimation(data_scrub$p,
                                  data_scrub$item_data,
                                  data_scrub$pred_data,
+                                 data_scrub$prox_data,
                                  data_scrub$mean_predictors,
                                  data_scrub$var_predictors,
                                  data_scrub$item_type,
@@ -177,7 +190,8 @@ regDIF <- function(item.data,
                                  data_scrub$adapt_quad,
                                  data_scrub$optim_method,
                                  data_scrub$em_history,
-                                 data_scrub$em_limit)
+                                 data_scrub$em_limit,
+                                 data_scrub$NA_cases)
 
       # Update vector of tau values based on identification of minimum tau value
       # which removes all DIF from the model.
@@ -192,8 +206,10 @@ regDIF <- function(item.data,
       data_final <- postprocess(estimates,
                                 item.data,
                                 pred.data,
+                                prox.data,
                                 data_scrub$item_data,
                                 data_scrub$pred_data,
+                                data_scrub$prox_data,
                                 data_scrub$mean_predictors,
                                 data_scrub$var_predictors,
                                 data_scrub$tau_vec,

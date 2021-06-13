@@ -8,6 +8,7 @@ Mstep_block(
   p,
   item_data,
   pred_data,
+  prox_data,
   mean_predictors,
   var_predictors,
   eout,
@@ -34,6 +35,8 @@ Mstep_block(
 \item{item_data}{Matrix or data frame of item responses.}
 
 \item{pred_data}{Matrix or data frame of DIF and/or impact predictors.}
+
+\item{prox_data}{Vector of observed proxy scores.}
 
 \item{mean_predictors}{Possibly different matrix of predictors for the mean
 impact equation.}

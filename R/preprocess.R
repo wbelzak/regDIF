@@ -2,6 +2,7 @@
 #'
 #' @param item.data Matrix or data frame of item responses.
 #' @param pred.data Matrix or data frame of DIF and/or impact predictors.
+#' @param prox.data Vector of observed proxy scores.
 #' @param item.type Character value or vector indicating the item response
 #' distributions.
 #' @param pen.type Character indicating type of penalty.
@@ -20,6 +21,7 @@
 preprocess <-
   function(item.data,
            pred.data,
+           prox.data,
            item.type,
            pen.type,
            tau,
@@ -29,12 +31,16 @@ preprocess <-
            control,
            call){
 
-  options(warn = 1)
-
   # Remove observations with any NA.
-  NA_cases <- apply(cbind(pred.data, item.data), 1, function(x) any(is.na(x)))
+  if(is.null(prox.data)) {
+    combined.data <- cbind(pred.data, item.data)
+  } else {
+    combined.data <- cbind(pred.data, item.data, prox.data)
+  }
+  NA_cases <- apply(combined.data, 1, function(x) any(is.na(x)))
   item.data <- item.data[!NA_cases,]
   pred.data <- pred.data[!NA_cases,]
+  prox.data <- if(!is.null(prox.data)) prox.data[!NA_cases]
 
   # Control parameters.
   final_control <- list(impact.mean.data = pred.data,
@@ -68,6 +74,9 @@ preprocess <-
   if(!is.null(anchor) && !is.numeric(anchor)) {
     stop("Anchor items must be numeric (e.g., anchor = 1).", call. = TRUE)
   }
+  if(!is.null(prox.data) && final_control$optim.method == "UNR") {
+    stop("Coordinate descent is not yet supported when using observed proxy scores.")
+  }
   if(final_control$adapt.quad == T) {
     warning(paste0("Adaptive quadrature is not fully supported. Fixed-point ",
                    "quadrature is recommended at this time."))
@@ -89,6 +98,7 @@ preprocess <-
   # Speed up computation.
   item_data <- as.matrix(sapply(item.data,as.numeric))
   pred_data <- as.matrix(sapply(pred.data,as.numeric))
+  prox_data <- if(!is.null(prox.data)) scale(as.matrix(as.numeric(prox.data)))
   mean_predictors <-
     as.matrix(sapply(final_control$impact.mean.data,as.numeric))
   var_predictors <-
@@ -249,6 +259,8 @@ preprocess <-
                               nrow=num_base_parms),
                 dif = matrix(NA,ncol=final_length,
                              nrow=num_dif_parms),
+                eap_scores = matrix(NA,ncol=final_length,
+                                    nrow=length(NA_cases)),
                 em_history = lapply(1:num.tau,
                                     function(x) {
                                       mat <- matrix(0,
@@ -258,14 +270,15 @@ preprocess <-
                                                          "observed_ll")
                                       return(mat)
                                     }),
-                log_like = NA,
-                complete_ll_info <- list(),
+                log_lik = NA,
+                complete_ll_info = list(),
                 data = vector("list",2),
                 call = call)
   return(list(p = p,
               final = final,
               item_data = item_data,
               pred_data = pred_data,
+              prox_data = prox_data,
               mean_predictors = mean_predictors,
               var_predictors = var_predictors,
               item_type = item_type,

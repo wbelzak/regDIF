@@ -8,8 +8,10 @@ postprocess(
   estimates,
   item.data,
   pred.data,
+  prox.data,
   item_data,
   pred_data,
+  prox_data,
   mean_predictors,
   var_predictors,
   tau_vec,
@@ -37,10 +39,14 @@ predictors.}
 
 \item{pred.data}{User-given matrix or data.frame of item responses.}
 
+\item{prox.data}{User-given matrix or data.frame of observed proxy scores.}
+
 \item{item_data}{Processed matrix or data.frame of item responses.}
 
 \item{pred_data}{Processed matrix or data.frame of DIF and/or impact
 predictors.}
+
+\item{prox_data}{Processed matrix or data.frame of observed proxy scores.}
 
 \item{mean_predictors}{Possibly different matrix of predictors for the mean
 impact equation.}

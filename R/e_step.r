@@ -13,6 +13,8 @@
 #' @param num_responses Number of responses for each item.
 #' @param num_quad Number of quadrature points used for approximating the
 #' latent variable.
+#' @param get_eap Logical indicating whether to compute EAP scores.
+#' @param NA_cases Logical vector indicating missing observations.
 #'
 #' @keywords internal
 #'
@@ -27,12 +29,15 @@ Estep <-
            num_items,
            num_responses,
            adapt_quad,
-           num_quad) {
+           num_quad,
+           get_eap,
+           NA_cases) {
 
     # Make space for the trace lines and the E-tables.
-    itemtrace <- rep(list(NA),num_items)
-    etable <- matrix(0,nrow=samp_size,ncol=num_quad)
     observed_ll <- 0
+    itemtrace <- rep(list(NA),num_items)
+    etable <- matrix(0, nrow = samp_size, ncol = num_quad)
+    eap_scores <- if(get_eap) matrix(NA, nrow = length(NA_cases), ncol = 1)
 
     # Impact.
     alpha <- mean_predictors %*% p[[num_items+1]]
@@ -108,11 +113,14 @@ Estep <-
       if(marginal == 0) marginal <- 1
       etable[i,] <- posterior/marginal
 
+      # EAPs.
+      if(get_eap) eap_scores[which(!NA_cases)[i]] <- sum(posterior*theta)/marginal
+
     }
 
     # E-table matrix to be used in Q function and (possibly adaptive)
     # theta values.
-    return(list(etable=etable,theta=theta,observed_ll=observed_ll))
+    return(list(etable=etable,eap_scores=eap_scores,theta=theta,observed_ll=observed_ll))
 
 
   }

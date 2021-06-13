@@ -15,7 +15,9 @@ Estep(
   num_items,
   num_responses,
   adapt_quad,
-  num_quad
+  num_quad,
+  get_eap,
+  NA_cases
 )
 }
 \arguments{
@@ -41,6 +43,10 @@ variance impact equation.}
 
 \item{num_quad}{Number of quadrature points used for approximating the
 latent variable.}
+
+\item{get_eap}{Logical indicating whether to compute EAP scores.}
+
+\item{NA_cases}{Logical vector indicating missing observations.}
 }
 \description{
 Expectation step.

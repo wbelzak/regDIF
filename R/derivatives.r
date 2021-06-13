@@ -221,6 +221,93 @@ d_impact_block <-
 
   }
 
+
+#' Partial derivatives for mean and variance impact equation using observed score proxy.
+#'
+#' @param p_mean Vector of mean impact parameters.
+#' @param p_var Vector of variance impact parameters.
+#' @param prox_data Vector of observed proxy scores.
+#' @param mean_predictors Possibly different matrix of predictors for the mean
+#' impact equation.
+#' @param var_predictors Possibly different matrix of predictors for the
+#' variance impact equation.
+#' @param samp_size Sample size in data set.
+#' @param num_items Number of items in data set.
+#' @param num_predictors Number of predictors in dataset.
+#'
+#' @keywords internal
+#'
+d_impact_block_proxy <-
+  function(p_mean,
+           p_var,
+           prox_data,
+           mean_predictors,
+           var_predictors,
+           samp_size,
+           num_items,
+           num_quad,
+           num_predictors) {
+
+    # Obtain number of impact parameters.
+    num_impact_parms <- length(p_mean) + length(p_var)
+
+    # Make space for first and second derivatives.
+    d1 <- matrix(0,nrow=num_impact_parms,ncol=1)
+    d2 <- matrix(0,nrow=num_impact_parms,ncol=num_impact_parms)
+
+    # Get latent mean and variance vectors.
+    alpha <- mean_predictors %*% p_mean
+    phi <- exp(var_predictors %*% p_var)
+
+    # First and second derivatives for mean impact parameters.
+    for(cov in 1:ncol(mean_predictors)) {
+      d1_trace_mean <- mean_predictors[,cov]/phi*(prox_data-alpha)
+      d2_trace_mean <- -mean_predictors[,cov]**2/phi
+
+      d1[cov,1] <- sum(d1_trace_mean, na.rm = TRUE)
+      d2[cov,cov] <- sum(d2_trace_mean, na.rm = TRUE)
+    }
+
+    # First and second derivatives for variance impact parameters.
+    for(cov in 1:ncol(var_predictors)) {
+      d1_trace_var <- .5*var_predictors[,cov]*((prox_data-alpha)**2/phi - 1)
+      d2_trace_var <- -.5*var_predictors[,cov]**2*(prox_data-alpha)**2/phi
+      d1[ncol(mean_predictors)+cov,1] <- sum(d1_trace_var, na.rm = TRUE)
+      d2[ncol(mean_predictors)+cov,ncol(mean_predictors)+cov] <- sum(d2_trace_var, na.rm = TRUE)
+    }
+
+    # Cross derivatives for mean and impact variance parameters.
+    for(cov in 1:ncol(var_predictors)) {
+      for(cov2 in 1:ncol(mean_predictors)) {
+
+        d2_trace_cross <- var_predictors[,cov]*mean_predictors[,cov2]/phi*(alpha-prox_data)
+        d2[ncol(mean_predictors)+cov,cov2] <- sum(d2_trace_cross, na.rm = TRUE)
+
+        if(cov2 > 1 && cov < cov2) {
+
+
+          # Cross derivatives for mean parameters with different predictors.
+          d2_trace_cross_mean <- -mean_predictors[,cov]*mean_predictors[,cov2]/phi
+          d2[cov2,cov] <- sum(d2_trace_cross_mean, na.rm = TRUE)
+
+          if(cov2 <= length(p_var)) {
+            # Cross derivatives for variance parameters with different predictors.
+            d2_trace_cross_var <-
+              -.5*var_predictors[,cov]*var_predictors[,cov2]*(prox_data-alpha)**2/phi
+            d2[ncol(mean_predictors)+cov2,ncol(mean_predictors)+cov] <- sum(d2_trace_cross_var,
+                                                                            na.rm = TRUE)
+          }
+        }
+
+
+      }
+    }
+
+    dlist <- list(d1,d2)
+
+  }
+
+
 #' Partial derivatives for binary items.
 #'
 #' @param parm Item parameter being maximized.
@@ -428,6 +515,142 @@ d_bernoulli_itemblock <-
     }
 
     dlist <- list(d1,d2)
+
+  }
+
+#' Partial derivatives for binary items by item-blocks using observed score proxy.
+#'
+#' @param p_item Vector of item parameters.
+#' @param pred_data Matrix or dataframe of DIF and/or impact predictors.
+#' @param item_data_current Vector of current item responses.
+#' @param prox_data Vector of observed proxy scores.
+#' @param samp_size Sample size in dataset.
+#' @param num_items Number of items in dataset.
+#' @param num_predictors Number of predictors in dataset.
+#'
+#' @keywords internal
+#'
+d_bernoulli_itemblock_proxy <-
+  function(p_item,
+           pred_data,
+           item_data_current,
+           prox_data,
+           samp_size,
+           num_items,
+           num_predictors,
+           num_quad) {
+
+    # Make space for first and second derivatives.
+    d1 <- matrix(0,nrow=length(p_item),ncol=1)
+    d2 <- matrix(0,nrow=length(p_item),ncol=length(p_item))
+
+    # First derivative for linear predictor w.r.t. theta.
+    eta_d_a0 <- prox_data
+
+    # Get item response function.
+    traceline <- bernoulli_traceline_pts_proxy(p_item,
+                                               prox_data,
+                                               pred_data)
+
+    # Obtain tracelines for each response category.
+
+
+    # Calculate first and second base derivatives.
+    d1_base <- matrix(0, nrow = nrow(traceline), ncol = 1)
+    d1_base[item_data_current == 1,] <- -traceline[item_data_current == 1,]
+    d1_base[item_data_current == 2,] <- (1 - traceline)[item_data_current == 2,]
+
+    d2_base <- -traceline + traceline**2
+
+    # First and second derivative for c0.
+    d1[1,1] <- sum(d1_base, na.rm = TRUE) #d1
+    d2[1,1] <- sum(d2_base, na.rm = TRUE) #d2
+
+    # First and second derivative for a0.
+    d1[2,1] <- sum(eta_d_a0*d1_base, na.rm = TRUE) #d1
+    d2[2,2] <- sum(eta_d_a0**2*d2_base, na.rm = TRUE) #d2
+
+    # Cross derivative for c0 and a0.
+    d2[2,1] <- sum(eta_d_a0*d2_base, na.rm = TRUE) #d2
+
+    # Cycle through predictors (outer cycle).
+    for(cov in 1:num_predictors) {
+
+      # First derivative for linear predictor w.r.t. covariate.
+      cov_matrix <- pred_data[,cov]
+
+      # First and second derivatives for c1.
+      d1[2+cov,1] <-
+        sum(cov_matrix*d1_base,
+            na.rm = TRUE) #d1
+      d2[2+cov,2+cov] <-
+        sum(cov_matrix**2*d2_base,
+            na.rm = TRUE) #d2
+
+      # First and second derivatives for a1.
+      d1[2+num_predictors+cov,1] <-
+        sum(cov_matrix*eta_d_a0*d1_base,
+            na.rm = TRUE) #d1
+      d2[2+num_predictors+cov,2+num_predictors+cov] <-
+        sum((cov_matrix*eta_d_a0)**2*d2_base,
+            na.rm = TRUE) #d2
+
+      # Cross derivatives for c0 and c1.
+      d2[2+cov,1] <-
+        sum(cov_matrix*d2_base,
+            na.rm = TRUE) #d2
+
+      # Cross derivatives for c0 and a1, as well as a0 and c1.
+      d2[2+num_predictors+cov,1] <- d2[2+cov,2] <-
+        sum(cov_matrix*eta_d_a0*d2_base,
+            na.rm = TRUE) #d2
+
+      # Cross derivatives for a0 and a1.
+      d2[2+num_predictors+cov,2] <-
+        sum(cov_matrix*eta_d_a0**2*d2_base,
+            na.rm = TRUE) #d2
+
+      # Cycle through predictors (inner cycle).
+      for(cov2 in 1:num_predictors) {
+
+
+        if(cov == cov2) {
+
+          # Cross derivatives with same predictor for c1 and a1.
+          d2[2+num_predictors+cov,2+cov2] <-
+            sum(cov_matrix**2*eta_d_a0*d2_base,
+                na.rm = TRUE) #d2
+
+        } else {
+
+          # First derivatives for linear predictor w.r.t. second covariate.
+          cov2_matrix <- pred_data[,cov2]
+
+          # Cross derivatives with different predictor for c1 and a1.
+          d2[2+num_predictors+cov,2+cov2] <-
+            sum(cov_matrix*cov2_matrix*eta_d_a0*d2_base,
+                na.rm = TRUE) #d2
+
+          if(cov2 > 1 && cov < cov2) {
+
+            # Cross derivatives with different predictor for c1 and c1.
+            d2[2+cov2,2+cov] <-
+              sum(cov_matrix*cov2_matrix*d2_base, #d2
+                  na.rm = TRUE)
+
+            # Cross derivatives with different predictor for a1 and a1.
+            d2[2+num_predictors+cov2,2+num_predictors+cov] <-
+              sum(cov_matrix*cov2_matrix*eta_d_a0**2*d2_base, #a1a1
+                  na.rm = TRUE)
+          }
+        }
+
+      }
+
+    }
+
+    dlist <- list(d1,d2)
+
 
   }
 

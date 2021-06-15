@@ -38,6 +38,11 @@ preprocess <-
     combined.data <- cbind(pred.data, item.data, prox.data)
   }
   NA_cases <- apply(combined.data, 1, function(x) any(is.na(x)))
+  if(sum(NA_cases) == nrow(combined.data)) {
+    stop(paste0("No observations remain after performing listwise deletion. Consider removing ",
+                "variables with the greatest amount of missingness."),
+         call. = FALSE)
+  }
   item.data <- item.data[!NA_cases,]
   pred.data <- pred.data[!NA_cases,]
   prox.data <- if(!is.null(prox.data)) prox.data[!NA_cases]
@@ -58,31 +63,33 @@ preprocess <-
        any(item.type == "2PL") ||
        any(item.type == "Graded") ||
        any(is.null(item.type)))) {
-    stop(paste0("Item response types must either be Rasch, 2PL, or Graded."))
+    stop(paste0("Item response types must either be Rasch, 2PL, or Graded."),
+         call. = FALSE)
   }
   if(any(tau < 0)) {
-    stop("Tau values must be non-negative.", call. = TRUE)
+    stop("Tau values must be non-negative.", call. = FALSE)
   }
   if(length(tau) > 1 && all(diff(tau) >= 0)) {
-    stop("Tau values must be in descending order (e.g., tau = c(-2,-1,0)).")
+    stop("Tau values must be in descending order (e.g., tau = c(-2,-1,0)).", call. = FALSE)
   }
   if(is.null(anchor) && length(tau) == 1) {
     if(tau == 0) {
-      stop("Anchor item must be specified with tau = 0.", call. = TRUE)
+      stop("Anchor item must be specified with tau = 0.", call. = FALSE)
     }
   }
   if(!is.null(anchor) && !is.numeric(anchor)) {
-    stop("Anchor items must be numeric (e.g., anchor = 1).", call. = TRUE)
+    stop("Anchor items must be numeric (e.g., anchor = 1).", call. = FALSE)
   }
   if(!is.null(prox.data) && final_control$optim.method == "UNR") {
-    stop("Coordinate descent is not yet supported when using observed proxy scores.")
+    stop("Coordinate descent is not yet supported when using observed proxy scores.", call. = FALSE)
   }
   if(final_control$adapt.quad == T) {
     warning(paste0("Adaptive quadrature is not fully supported. Fixed-point ",
-                   "quadrature is recommended at this time."))
+                   "quadrature is recommended at this time."), call. = FALSE, immediate. = TRUE)
   }
   if(any(NA_cases)) {
-    warning(paste0("Removed observations with missing values (NA)."))
+    warning(paste0("Removed observations with missing values (NA)."), call. = FALSE,
+    immediate. = TRUE)
   }
 
   # Define number of tau values.
@@ -103,6 +110,32 @@ preprocess <-
     as.matrix(sapply(final_control$impact.mean.data,as.numeric))
   var_predictors <-
     as.matrix(sapply(final_control$impact.var.data,as.numeric))
+
+  # Remove any variables with no variance.
+  item_data_no_var <- apply(item.data, 2, var) == 0
+  pred_data_no_var <- apply(pred.data, 2, var) == 0
+
+  item_data <- item_data[, !item_data_no_var]
+  pred_data <- pred_data[, !pred_data_no_var]
+
+  if(any(item_data_no_var) || any(pred_data_no_var)) {
+    warning(paste0("Removing the following variables from analysis because they have no variance ",
+                   "(before or after list-wise deletion):"),
+            paste0("\n"),
+            paste0(names(item.data)[item_data_no_var],
+                   names(pred.data)[pred_data_no_var], collapse = " "),
+            call. = FALSE, immediate. = TRUE)
+  }
+
+  if(ncol(final_control$impact.mean.data) != ncol(pred_data)) {
+    mean_predictors <- mean_predictors[,!(names(pred.data) %in% names(pred.data)[pred_data_no_var])]
+  }
+
+  if(ncol(final_control$impact.var.data) != ncol(pred_data)) {
+    var_predictors <- var_predictors[,!(names(pred.data) %in% names(pred.data)[pred_data_no_var])]
+  }
+
+  # Get dimensions of data.
   samp_size <- dim(item_data)[1]
   num_items <- dim(item_data)[2]
   num_predictors <- dim(pred_data)[2]
@@ -133,7 +166,7 @@ preprocess <-
     if(is.null(control$optim.method) || control$optim.method == "MNR") {
       warning(paste0("Ordered categorical item responses are not yet supported with ",
                      "Multivariate Newton-Raphson (MNR). Using Univariate Newton-Raphson ",
-                     "(UNR) instead."))
+                     "(UNR) instead."), call. = FALSE, immediate. = TRUE)
     }
     final_control$optim.method <- "UNR"
   }
@@ -149,7 +182,8 @@ preprocess <-
   if(final_control$adapt.quad == F && final_control$num.quad < 21) {
     warning(paste0("When using fixed quadrature, greater than 20 points for ",
                    "binary item responses or 50 points for ordered ",
-                   "responses is recommended to yield precise estimates."))
+                   "responses is recommended to yield precise estimates."), call. = FALSE,
+            immediate. = TRUE)
   }
 
   # Standardize predictors.

@@ -142,11 +142,6 @@ regDIF <- function(item.data,
                    stdz = TRUE,
                    control = list()) {
 
-    # Set up options.
-    default_options <- options(stringsAsFactors=FALSE)
-    on.exit(options(default_options))
-    options(warn = 1)
-
     # Pre-process data.
     call <- match.call()
     data_scrub <- preprocess(item.data,

@@ -272,7 +272,7 @@ postprocess <-
   final_slp_dif <- final$dif[grep(".slp",
                                   rownames(final$dif)),
                              pen]
-  final_res_dif <- final$dif[grep(".res",
+  final_res_dif <- final$dif[grep(".res..",
                                   rownames(final$dif)),
                              pen]
   final_names_dif <- names(c(final_int_dif,final_slp_dif,final_res_dif))

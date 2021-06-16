@@ -2,7 +2,7 @@
 title: "Getting started with regDIF"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Vignette Title}
+  %\VignetteIndexEntry{Getting started with regDIF}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -16,13 +16,13 @@ cases.
 
 ## LASSO regularization for evaluating DIF in 2PL-IRT model.
 
-With a large tau parameter, there should be no DIF effects.
+In this example, the `ida` data were generated to mimic an integrative data analysis. The fastest method is to use sum scores as an observed proxy for the latent variable.
 ```{r,eval=T,message=F,echo=F}
 library(regDIF)
 head(ida)
 item.data <- regDIF::ida[,1:6]
 pred.data <- regDIF::ida[,7:9]
-fit <- regDIF(item.data, pred.data, tau = 2)
+fit <- regDIF(item.data, pred.data, prox.data = rowSums(item.data))
 summary(fit)
 ```
 

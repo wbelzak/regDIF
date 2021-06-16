@@ -174,8 +174,8 @@ Mstep_cd <-
           z <- p[[item]][[2+cov]] - anl_deriv[[1]]/anl_deriv[[2]]
           if(max_tau) id_max_z <- c(id_max_z,z)
           p[[item]][[2+cov]] <- ifelse(pen_type == "lasso",
-                                     soft_thresh_cpp(z,alpha,tau_current),
-                                     firm_thresh_cpp(z,alpha,tau_current,gamma))
+                                     soft_threshold(z,alpha,tau_current),
+                                     firm_threshold(z,alpha,tau_current,gamma))
         }
 
         # Slope DIF updates.
@@ -208,8 +208,8 @@ Mstep_cd <-
             if(max_tau) id_max_z <- c(id_max_z,z)
             p[[item]][[2+num_predictors+cov]] <-
               ifelse(pen_type == "lasso",
-                     soft_thresh_cpp(z,alpha,tau_current),
-                     firm_thresh_cpp(z,alpha,tau_current,gamma))
+                     soft_threshold(z,alpha,tau_current),
+                     firm_threshold(z,alpha,tau_current,gamma))
           }
 
         }
@@ -300,8 +300,8 @@ Mstep_cd <-
           if(max_tau) id_max_z <- c(id_max_z,z)
           p[[item]][[num_responses[[item]]+cov]] <-
             ifelse(pen_type == "lasso",
-                   soft_thresh_cpp(z,alpha,tau_current),
-                   firm_thresh_cpp(z,alpha,tau_current,gamma))
+                   soft_threshold(z,alpha,tau_current),
+                   firm_threshold(z,alpha,tau_current,gamma))
         }
 
         # Slope DIF updates.
@@ -336,8 +336,8 @@ Mstep_cd <-
             if(max_tau) id_max_z <- c(id_max_z,z)
             p[[item]][[length(p[[item]])-ncol(pred_data)+cov]] <-
               ifelse(pen_type == "lasso",
-                     soft_thresh_cpp(z,alpha,tau_current),
-                     firm_thresh_cpp(z,alpha,tau_current,gamma))
+                     soft_threshold(z,alpha,tau_current),
+                     firm_threshold(z,alpha,tau_current,gamma))
           }
         }
       }
@@ -444,8 +444,8 @@ Mstep_cd <-
           if(max_tau) id_max_z <- c(id_max_z,z)
           p[[item]][c1_parms] <-
             ifelse(pen_type == "lasso",
-                   soft_thresh_cpp(z,alpha,tau_current),
-                   firm_thresh_cpp(z,alpha,tau_current,gamma))
+                   soft_threshold(z,alpha,tau_current),
+                   firm_threshold(z,alpha,tau_current,gamma))
         }
 
         # Slope DIF updates.
@@ -479,8 +479,8 @@ Mstep_cd <-
             z <- p[[item]][a1_parms] - anl_deriv[[1]]/anl_deriv[[2]]
             if(max_tau) id_max_z <- c(id_max_z,z)
             p[[item]][a1_parms] <- ifelse(pen_type == "lasso",
-                            soft_thresh_cpp(z,alpha,tau_current),
-                            firm_thresh_cpp(z,alpha,tau_current,gamma))
+                            soft_threshold(z,alpha,tau_current),
+                            firm_threshold(z,alpha,tau_current,gamma))
           }
         }
       }

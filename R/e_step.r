@@ -38,6 +38,7 @@ Estep <-
     itemtrace <- rep(list(NA),num_items)
     etable <- matrix(0, nrow = samp_size, ncol = num_quad)
     eap_scores <- if(get_eap) matrix(NA, nrow = length(NA_cases), ncol = 1)
+    eap_sd <- if(get_eap) matrix(NA, nrow = length(NA_cases), ncol = 1)
 
     # Impact.
     alpha <- mean_predictors %*% p[[num_items+1]]
@@ -87,9 +88,9 @@ Estep <-
         if(is.na(item_data[i,j])) next
         x <- item_data[i,j]
 
-        if(num_responses[item] == 1) { # Continuous responses.
+        if(num_responses[j] == 1) { # Continuous responses.
           posterior <- posterior*itemtrace[[j]][i,]
-        } else if(num_responses[item] == 2) { # Binary responses.
+        } else if(num_responses[j] == 2) { # Binary responses.
           if(x == 1) {
             posterior <- posterior*(1-itemtrace[[j]][i,])
           } else {
@@ -98,8 +99,8 @@ Estep <-
         } else { # Ordered categorical responses.
           if(x == 1) {
             posterior <- posterior*(1-itemtrace[[j]][[1]][i,])
-          } else if(x == num_responses[item]) {
-            posterior <- posterior*itemtrace[[j]][[num_responses[item]-1]][i,]
+          } else if(x == num_responses[j]) {
+            posterior <- posterior*itemtrace[[j]][[num_responses[j]-1]][i,]
           } else {
             posterior <- posterior*(itemtrace[[j]][[x-1]][i,]-
                                         itemtrace[[j]][[x]][i,])
@@ -114,13 +115,17 @@ Estep <-
       etable[i,] <- posterior/marginal
 
       # EAPs.
-      if(get_eap) eap_scores[which(!NA_cases)[i]] <- sum(posterior*theta)/marginal
+      if(get_eap) {
+        eap_scores[which(!NA_cases)[i]] <- sum(posterior*theta)/marginal
+        eap_sd[which(!NA_cases)[i]] <-
+          sqrt(sum(posterior*(theta-eap_scores[which(!NA_cases)[i]])**2)/marginal)
+      }
 
     }
 
     # E-table matrix to be used in Q function and (possibly adaptive)
     # theta values.
-    return(list(etable=etable,eap_scores=eap_scores,theta=theta,observed_ll=observed_ll))
+    return(list(etable=etable,eap_scores=eap_scores,eap_sd=eap_sd,theta=theta,observed_ll=observed_ll))
 
 
   }

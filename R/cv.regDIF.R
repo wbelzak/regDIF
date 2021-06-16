@@ -36,8 +36,6 @@
 #' }
 #'
 #' @import stats utils
-#' @importFrom Rcpp sourceCpp
-#' @useDynLib regDIF, .registration = TRUE
 #'
 #' @export
 cv.regDIF <- function(item.data,

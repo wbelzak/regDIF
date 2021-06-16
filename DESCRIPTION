@@ -3,7 +3,7 @@ Title: Regularized Differential Item Functioning
 Version: 0.1.0
 Author: William Belzak
 Maintainer: William Belzak <wbelzak@live.unc.edu>
-Description: Performs regularization of differential item functioning (DIF) in item response theory (IRT) and confirmatory factor analysis (CFA) models using a penalized expectation-maximization algorithm.
+Description: Performs regularization of differential item functioning (DIF) in item response theory (IRT) models using a penalized expectation-maximization algorithm.
 License: GPL-2
 Encoding: UTF-8
 LazyData: true
@@ -12,11 +12,8 @@ VignetteBuilder: knitr
 Imports:
     stats (> 3.0.0),
     utils,
-    Rcpp (>= 1.0.0),
-    RcppArmadillo,
     ggplot2,
     statmod
-LinkingTo: Rcpp, RcppArmadillo
 Suggests:
     knitr,
     testthat (>= 2.1.0),

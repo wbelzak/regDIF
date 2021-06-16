@@ -8,7 +8,9 @@
 #' @param ... Additional arguments to be passed through to \code{plot}.
 #'
 #' @rdname plot.regDIF
+#'
 #' @importFrom graphics abline legend lines plot
+#'
 #' @export
 #'
 plot.regDIF <-

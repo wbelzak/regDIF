@@ -205,13 +205,13 @@ em_estimation <- function(p,
 
     if(is.null(prox_data)) {
       cat('\r', sprintf("Models Completed: %d of %d  Iteration: %d  Change: %f",
-                        pen-1,
+                        pen,
                         models_to_fit,
                         iter,
                         round(eps, nchar(final_control$tol))))
     } else {
       cat('\r', sprintf("Models Completed: %d of %d   ",
-                        pen-1,
+                        pen,
                         models_to_fit))
     }
 

@@ -37,14 +37,22 @@ preprocess <-
   } else {
     combined.data <- cbind(pred.data, item.data, prox.data)
   }
+
   NA_cases <- apply(combined.data, 1, function(x) any(is.na(x)))
   if(sum(NA_cases) == nrow(combined.data)) {
     stop(paste0("No observations remain after performing listwise deletion. Consider removing ",
                 "variables with the greatest amount of missingness."),
          call. = FALSE)
   }
+
   item.data <- item.data[!NA_cases,]
-  pred.data <- pred.data[!NA_cases,]
+  pred.data <-
+    if(is.null(dim(pred.data))) {
+      pred.data[!NA_cases]
+    } else {
+      pred.data[!NA_cases,]
+    }
+
   prox.data <- if(!is.null(prox.data)) prox.data[!NA_cases]
 
   # Control parameters.
@@ -112,11 +120,11 @@ preprocess <-
     as.matrix(sapply(final_control$impact.var.data,as.numeric))
 
   # Remove any variables with no variance.
-  item_data_no_var <- apply(item.data, 2, var) == 0
-  pred_data_no_var <- apply(pred.data, 2, var) == 0
+  item_data_no_var <- apply(item_data, 2, var) == 0
+  pred_data_no_var <- apply(pred_data, 2, var) == 0
 
   item_data <- item_data[, !item_data_no_var]
-  pred_data <- pred_data[, !pred_data_no_var]
+  pred_data <- pred_data[, !pred_data_no_var, drop = FALSE]
 
   if(any(item_data_no_var) || any(pred_data_no_var)) {
     warning(paste0("Removing the following variables from analysis because they have no variance ",
@@ -127,11 +135,11 @@ preprocess <-
             call. = FALSE, immediate. = TRUE)
   }
 
-  if(ncol(final_control$impact.mean.data) != ncol(pred_data)) {
+  if(ncol(as.matrix(final_control$impact.mean.data)) != ncol(pred_data)) {
     mean_predictors <- mean_predictors[,!(names(pred.data) %in% names(pred.data)[pred_data_no_var])]
   }
 
-  if(ncol(final_control$impact.var.data) != ncol(pred_data)) {
+  if(ncol(as.matrix(final_control$impact.var.data)) != ncol(pred_data)) {
     var_predictors <- var_predictors[,!(names(pred.data) %in% names(pred.data)[pred_data_no_var])]
   }
 

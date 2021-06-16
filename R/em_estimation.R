@@ -84,18 +84,18 @@ em_estimation <- function(p,
 
     # E-step: Evaluate Q function with current parameter estimates p.
     eout <- if(is.null(prox_data)) Estep(p,
-                                        item_data,
-                                        pred_data,
-                                        mean_predictors,
-                                        var_predictors,
-                                        theta,
-                                        samp_size,
-                                        num_items,
-                                        num_responses,
-                                        adapt_quad,
-                                        num_quad,
-                                        get_eap = FALSE,
-                                        NA_cases = NA_cases)
+                                         item_data,
+                                         pred_data,
+                                         mean_predictors,
+                                         var_predictors,
+                                         theta,
+                                         samp_size,
+                                         num_items,
+                                         num_responses,
+                                         adapt_quad,
+                                         num_quad,
+                                         get_eap = FALSE,
+                                         NA_cases = NA_cases)
 
 
 

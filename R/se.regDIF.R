@@ -37,7 +37,8 @@
 #'
 #' @import stats utils
 #'
-#' @export
+#' @keywords internal
+#'
 se.regDIF <- function(fit,
                       se.type = "sem",
                       tau = NULL,

@@ -125,7 +125,8 @@ Estep <-
 
     # E-table matrix to be used in Q function and (possibly adaptive)
     # theta values.
-    return(list(etable=etable,eap_scores=eap_scores,eap_sd=eap_sd,theta=theta,observed_ll=observed_ll))
+    return(list(etable=etable,eap_scores=eap_scores,eap_sd=eap_sd,
+                theta=theta,observed_ll=observed_ll))
 
 
   }

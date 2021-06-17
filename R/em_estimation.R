@@ -346,6 +346,6 @@ em_estimation <- function(p,
               em_history=em_history,
               under_identified=mout$under_identified,
               em_limit=em_limit,
-              eap_scores=eout_eap$eap_scores))
+              eap=eout_eap))
 
 }

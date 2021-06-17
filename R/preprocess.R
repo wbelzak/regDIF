@@ -301,8 +301,10 @@ preprocess <-
                               nrow=num_base_parms),
                 dif = matrix(NA,ncol=final_length,
                              nrow=num_dif_parms),
-                eap_scores = matrix(NA,ncol=final_length,
+                eap = list(scores = matrix(NA,ncol=final_length,
                                     nrow=length(NA_cases)),
+                           sd = matrix(NA,ncol=final_length,
+                                       nrow=length(NA_cases))),
                 em_history = lapply(1:num.tau,
                                     function(x) {
                                       mat <- matrix(0,

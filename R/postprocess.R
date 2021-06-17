@@ -66,7 +66,8 @@ postprocess <-
   em_history <- estimates$em_history
   complete_info <- estimates$complete_info
   under_identified <- estimates$under_identified
-  eap_scores <- estimates$eap_scores
+  eap_scores <- estimates$eap$eap_scores
+  eap_sd <- estimates$eap$eap_sd
 
   # Organize impact parameters.
   if(is.null(control$impact.mean.data)) {
@@ -227,7 +228,8 @@ postprocess <-
   final$base[,pen] <- round(all_items_parms_base,3)
   final$dif[,pen] <- round(all_items_parms_dif,3)
   if(is.null(prox.data)) {
-    final$eap_scores[,pen] <- eap_scores
+    final$eap$scores[,pen] <- eap_scores
+    final$eap$sd[,pen] <- eap_sd
     final$em_history[[pen]] <- em_history[[pen]]
   }
   final$complete_ll_info <- complete_info

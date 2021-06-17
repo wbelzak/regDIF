@@ -59,7 +59,7 @@ preprocess <-
   final_control <- list(impact.mean.data = pred.data,
                         impact.var.data = pred.data,
                         tol = 10^-5,
-                        maxit = 5000,
+                        maxit = 2000,
                         adapt.quad = FALSE,
                         num.quad = 21,
                         optim.method = "MNR",

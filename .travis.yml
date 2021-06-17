@@ -6,7 +6,7 @@ os:
   - linux
   - osx
 
-osx_image: xcode10
+osx_image: xcode10.1
 
 after_success:
   - Rscript -e 'covr::codecov()'

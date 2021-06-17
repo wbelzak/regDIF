@@ -36,13 +36,15 @@
 #' }
 #'
 #' @import stats utils
-#' @useDynLib regDIF, .registration = TRUE
 #'
 #' @export
 se.regDIF <- function(fit,
                       se.type = "sem",
                       tau = NULL,
                       ...) {
+
+    # Still in development.
+    stop("Getting standard errors for regDIF is not yet supported.", call. = FALSE)
 
     # Obtain data.
     item_data <- fit$data$item.data
@@ -60,15 +62,11 @@ se.regDIF <- function(fit,
                 } else {
                   regdif_args$pen.type
                 }
-    tau <- if(is.null(tau)) {
-              if(is.null(regdif_args$tau)) {
+    tau <- if(is.null(regdif_args$tau)) {
                   fit$tau_vec[[which.min(fit$bic)]]
                 } else {
                   regdif_args$tau
                 }
-           } else {
-              tau
-           }
     num_tau <- if(is.null(regdif_args$num.tau)) {
                   100
                 } else {

@@ -16,11 +16,10 @@ print.regDIF <-
     print(x$call)
     # Create table to display results.
     table <- data.frame(
-      "Tau" = x$tau_vec,
-      "AIC" = x$aic,
-      "BIC" = x$bic
+      "tau" = x$tau_vec,
+      "bic" = x$bic
     )
-    cat("\nRegDIF Results:\n")
+    cat("\nregDIF results:\n")
     # Print the results table.
     print(table)
   }

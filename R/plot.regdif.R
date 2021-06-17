@@ -42,7 +42,7 @@ plot.regDIF <-
     plot(tau,
          rep(0,length(tau)),
          type = 'l',
-         xlim = c(tau[first.tau]+.1,min(tau)),
+         xlim = c(tau[first.tau]+.1, min(tau, na.rm = T)),
          main = "Regularization Paths",
          xlab = expression(tau),
          ylab = "Estimate")

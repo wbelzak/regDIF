@@ -8,7 +8,7 @@ vignette: >
 ---
 
 ```{r setup, include = FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = TRUE, fig.width=7, fig.height=4)
 ```
 
 This vignette introduces `regDIF()` to the general user by providing common use cases.
@@ -21,6 +21,9 @@ within-study (e.g., gender, age) measurement bias. These data include 6 item res
 and 3 background characteristics -- namely, age (continuous, centered), gender (categorical, 
 effect-coded), and study (categorical, effect-coded).
 
+DIF was generated to be on items 2 (age, gender, study), 3 (age, gender, study), 4 (age), and 5
+(gender, study), for both intercepts and slopes.
+
 ```{r}
 library(regDIF)
 head(ida)
@@ -28,10 +31,12 @@ head(ida)
 The item response data must first be separated from the predictor data (background variables) before
 running `regDIF()`. A single value of the tuning parameter, `tau = 2`, is then fit to the data.
 
-```{r,eval=T}
+```{r,results='hide'}
 item.data <- regDIF::ida[,1:6]
 pred.data <- regDIF::ida[,7:9]
 fit <- regDIF(item.data, pred.data, tau = 2)
+```
+```{r}
 summary(fit)
 ```
 The `summary()` function shows that no DIF effects remain in the model. Only the latent variable
@@ -42,8 +47,10 @@ warranted. The `regDIF()` function defaults to estimating 100 values of the tuni
 starting with a value large enough to penalize all DIF effects to zero. However, for brevity, only
 10 values of tau are specified with the `num.tau` argument.
 
-```{r,eval=T}
+```{r,results='hide'}
 fit2 <- regDIF(item.data, pred.data, num.tau = 10)
+```
+```{r}
 fit2
 ```
 
@@ -55,7 +62,7 @@ would be non-identified. This is an encouraging result. The `summary()` function
 which, with multiple values of the tuning parameter fit to the data, produces non-zero DIF effects 
 corresponding to the model with the minimum value of BIC.
 
-```{r,eval=T}
+```{r}
 summary(fit2)
 ```
 
@@ -83,15 +90,77 @@ Finally, when data include a large number of items, observations, and predictors
 run relatively slowly. An alternative approach, which yields much faster results, is to provide an 
 observed proxy for the latent scores. In the case of binary data, this might be sum scores. Note
 that using observed proxy scores is identical to performing a multivariate regression, where the
-item responses are regressed on the proxy scores as well as the background variables. (The proxy
-scores are also regressed on the background variables.)
+item responses are regressed on the proxy scores and background variables. (The proxy
+scores are simulatenously regressed on the background variables as well.)
 
-```{r}
+```{r,results='hide'}
 fit3 <- regDIF(item.data, pred.data, prox.data = rowSums(item.data))
+```
+```{r}
 summary(fit3)
 ```
 
 The results show more DIF on both the intercepts (Items 3 and 6) and slopes (Items 2, 3, and 5).
 
-In summary, the regDIF R package provides a flexible implementation of identifying DIF using
-regularization.
+## More modeling possibilities with regDIF.
+
+In addition to LASSO, other penalty functions are possible with `regDIF()`. For instance, the
+elastic net penalty combines LASSO and ridge functions, which is useful when many correlated
+predictors are evaluated for DIF. The elastic net is controlled by a second tuning parameter, 
+`alpha`, and defaults to `alpha = 1`, corresponding to the LASSO penalty. In contrast, `alpha = 0`
+corresponds to the ridge penalty. When `alpha` is between 0 and 1, however, the elastic net is 
+used to perform DIF selection. For brevity, observed proxy scores are used in all model fitting
+below.
+
+```{r,results='hide'}
+fit_net <- regDIF(item.data, pred.data, prox.data = rowSums(item.data), alpha = .5)
+```
+```{r}
+summary(fit_net)
+```
+
+The final elastic net results yield the same DIF effects as the LASSO results, although the amount
+of penalization is greater for elastic net (i.e., larger `tau`).
+
+Because there are two tuning parameters -- namely, `tau` and `alpha` -- a grid search may be
+performed to identify the optimal degree of penalization.
+
+```{r,results='hide'}
+alpha_vec <- seq(.1, 1, .1)
+fit_net2 <- replicate(length(alpha_vec), NA, simplify = FALSE)
+
+for(a in seq_along(alpha_vec)) {
+  fit_net2[[a]] <- regDIF(item.data, pred.data, prox.data = rowSums(item.data), alpha = alpha_vec[a])
+}
+```
+```{r}
+which.min(
+  sapply(fit_net2, function(fit) min(fit$bic, na.rm = T))
+)
+```
+
+The minimum BIC across all models corresponds to the LASSO penalty model, i.e., `alpha = 1`.
+
+Other penalty functions include the minimax concave penalty (MCP) and the group extensions of LASSO
+and MCP, which penalize the intercept and slope DIF effects in tandem. The group LASSO function is 
+shown below.
+
+```{r,results='hide'}
+fit_grp_mcp <- regDIF(item.data, pred.data, prox.data = rowSums(item.data), pen.type = "grp.mcp")
+```
+```{r}
+summary(fit_grp_mcp)
+```
+
+Although the MCP results appear largely the same as the LASSO results, the group MCP function
+included both the intercept and slope for each background variable reamining in the final model.
+
+In summary, the regDIF R package provides a flexible implementation of using
+regularization to identify DIF across multiple background characteristics.
+
+Please reach out to [wbelzak@gmail.com](mailto:wbelzak@gmail.com) for any questions,
+and remember to cite regDIF in your work. Thank you kindly!
+
+```{r,echo=F}
+citation("regDIF")
+```

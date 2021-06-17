@@ -91,7 +91,7 @@ run relatively slowly. An alternative approach, which yields much faster results
 observed proxy for the latent scores. In the case of binary data, this might be sum scores. Note
 that using observed proxy scores is identical to performing a multivariate regression, where the
 item responses are regressed on the proxy scores and background variables. (The proxy
-scores are simulatenously regressed on the background variables as well.)
+scores are simultaneously regressed on the background variables as well.)
 
 ```{r,results='hide'}
 fit3 <- regDIF(item.data, pred.data, prox.data = rowSums(item.data))
@@ -153,7 +153,7 @@ summary(fit_grp_mcp)
 ```
 
 Although the MCP results appear largely the same as the LASSO results, the group MCP function
-included both the intercept and slope for each background variable reamining in the final model.
+included both the intercept and slope for each background variable remaining in the final model.
 
 In summary, the regDIF R package provides a flexible implementation of using
 regularization to identify DIF across multiple background characteristics.

@@ -11,18 +11,87 @@ vignette: >
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-This vignette introduces regDIF to the general user by providing common use
-cases.
+This vignette introduces `regDIF()` to the general user by providing common use cases.
 
-## LASSO regularization for evaluating DIF in 2PL-IRT model.
+## Using LASSO regularization to evaluate measurement bias in a 2-parameter logistic IRT model.
 
-In this example, the `ida` data were generated to mimic an integrative data analysis. The fastest method is to use sum scores as an observed proxy for the latent variable.
+In this example, data in `ida` were generated to mimic an integrative data analysis, where
+data are pooled across multiple studies and the measurement model is evaluated for between-study and
+within-study (e.g., gender, age) measurement bias. These data include 6 item responses (binary)
+and 3 background characteristics -- namely, age (continuous, centered), gender (categorical, 
+effect-coded), and study (categorical, effect-coded).
+
 ```{r,eval=T,message=F,echo=F}
 library(regDIF)
 head(ida)
+```
+The item response data must first be separated from the predictor data (background variables) before
+running `regDIF()`. A single value of the tuning parameter, `tau = 2`, is then fit to the data.
+
+```{r,eval=T,message=F,echo=F}
 item.data <- regDIF::ida[,1:6]
 pred.data <- regDIF::ida[,7:9]
-fit <- regDIF(item.data, pred.data, prox.data = rowSums(item.data))
+fit <- regDIF(item.data, pred.data, tau = 2)
 summary(fit)
 ```
+The `summary()` function shows that no DIF effects remain in the model. Only the latent variable
+parameters and base item parameters, which were not penalized at all, are estimated to be non-zero.
 
+Now that the data have been properly specified in `regDIF`, a more thorough investigation of DIF is
+warranted. The `regDIF()` function defaults to estimating 100 values of the tuning parameter,
+starting with a value large enough to penalize all DIF effects to zero. However, for brevity, only
+10 values of tau are specified with the `num.tau` argument.
+
+```{r,eval=T,message=F,echo=F}
+fit2 <- regDIF(item.data, pred.data, num.tau = 10)
+fit2
+```
+
+By printing the model object, 10 rows of results appear, one for each value of the tuning parameter.
+The first thing to notice is that 4 rows are missing. This occurs because `regDIF()` automatically 
+stops model-fitting when a small value of tau would produce a non-identified model. In focusing
+attention to the BIC column, it is evident that the smallest value occurs well before the model
+would be non-identified. This is an encouraging result. The `summary()` function may be used again,
+which, with multiple values of the tuning parameter fit to the data, produces non-zero DIF effects 
+corresponding to the model with the minimum value of BIC.
+
+```{r,eval=T,message=F,echo=F}
+summary(fit2)
+```
+
+A plot of the regularization path also shows the remaining DIF effects.
+
+```{r,eval=T,message=F,echo=F}
+plot(fit2)
+```
+
+To produce other model results, the `fit2` object contains lists of the impact (latent variable)
+parameters, base (intercept and slope) item parameters, and DIF parameters for all values of the
+tuning parameter. For instance, the impact parameters are printed below.
+
+```{r,eval=T,message=F,echo=F}
+fit2$impact
+```
+
+EAP scores and standard deviations may also be produced.
+
+```{r,eval=T,message=F,echo=F}
+lapply(fit2$eap, head)
+```
+
+Finally, when data include a large number of items, observations, and predictors, `regDIF()` can
+run relatively slowly. An alternative approach, which yields much faster results, is to provide an 
+observed proxy for the latent scores. In the case of binary data, this might be sum scores. Note
+that using observed proxy scores is identical to performing a multivariate regression, where the
+item responses are regressed on the proxy scores as well as the background variables. (The proxy
+scores are also regressed on the background variables.)
+
+```{r,eval=T,message=F,echo=F}
+fit3 <- regDIF(item.data, pred.data, prox.data = rowSums(item.data))
+summary(fit3)
+```
+
+The results show more DIF on both the intercepts (Items 3 and 6) and slopes (Items 2, 3, and 5).
+
+In summary, the regDIF R package provides a flexible implementation of identifying DIF using
+regularization.

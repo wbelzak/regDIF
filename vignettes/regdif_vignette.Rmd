@@ -21,14 +21,14 @@ within-study (e.g., gender, age) measurement bias. These data include 6 item res
 and 3 background characteristics -- namely, age (continuous, centered), gender (categorical, 
 effect-coded), and study (categorical, effect-coded).
 
-```{r,eval=T,message=F,echo=F}
+```{r}
 library(regDIF)
 head(ida)
 ```
 The item response data must first be separated from the predictor data (background variables) before
 running `regDIF()`. A single value of the tuning parameter, `tau = 2`, is then fit to the data.
 
-```{r,eval=T,message=F,echo=F}
+```{r,eval=T}
 item.data <- regDIF::ida[,1:6]
 pred.data <- regDIF::ida[,7:9]
 fit <- regDIF(item.data, pred.data, tau = 2)
@@ -42,7 +42,7 @@ warranted. The `regDIF()` function defaults to estimating 100 values of the tuni
 starting with a value large enough to penalize all DIF effects to zero. However, for brevity, only
 10 values of tau are specified with the `num.tau` argument.
 
-```{r,eval=T,message=F,echo=F}
+```{r,eval=T}
 fit2 <- regDIF(item.data, pred.data, num.tau = 10)
 fit2
 ```
@@ -55,13 +55,13 @@ would be non-identified. This is an encouraging result. The `summary()` function
 which, with multiple values of the tuning parameter fit to the data, produces non-zero DIF effects 
 corresponding to the model with the minimum value of BIC.
 
-```{r,eval=T,message=F,echo=F}
+```{r,eval=T}
 summary(fit2)
 ```
 
 A plot of the regularization path also shows the remaining DIF effects.
 
-```{r,eval=T,message=F,echo=F}
+```{r}
 plot(fit2)
 ```
 
@@ -69,13 +69,13 @@ To produce other model results, the `fit2` object contains lists of the impact (
 parameters, base (intercept and slope) item parameters, and DIF parameters for all values of the
 tuning parameter. For instance, the impact parameters are printed below.
 
-```{r,eval=T,message=F,echo=F}
+```{r}
 fit2$impact
 ```
 
 EAP scores and standard deviations may also be produced.
 
-```{r,eval=T,message=F,echo=F}
+```{r}
 lapply(fit2$eap, head)
 ```
 
@@ -86,7 +86,7 @@ that using observed proxy scores is identical to performing a multivariate regre
 item responses are regressed on the proxy scores as well as the background variables. (The proxy
 scores are also regressed on the background variables.)
 
-```{r,eval=T,message=F,echo=F}
+```{r}
 fit3 <- regDIF(item.data, pred.data, prox.data = rowSums(item.data))
 summary(fit3)
 ```

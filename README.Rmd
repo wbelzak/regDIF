@@ -1,0 +1,70 @@
+---
+output: github_document
+---
+
+<!-- README.md is generated from README.Rmd. -->
+
+<!-- badges: start -->
+[![Travis build status](https://travis-ci.org/wbelzak/regDIF.svg?branch=master)](https://travis-ci.org/wbelzak/regDIF)
+[![Codecov test coverage](https://codecov.io/gh/wbelzak/regDIF/branch/master/graph/badge.svg)](https://codecov.io/gh/wbelzak/regDIF?branch=master)
+<!-- badges: end -->
+
+```{r, echo = FALSE}
+options(width=80)
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.path = "README-"
+)
+```
+
+# regDIF: Regularized Differential Item Functioning
+
+An R package that performs regularization of differential item functioning (DIF) parameters in item response theory (IRT) models using a penalized expectation-maximization algorithm.
+ 
+## Version 1.0.0 Features
+
+* Handles multiple continuous and categorical DIF covariates. 
+* Supports binary and ordinal item responses. 
+* Includes LASSO, ridge, MCP, and elastic net penalty functions for regularization.
+
+## Installation
+
+To get the current development version from Github:
+
+```R
+# install.packages("devtools")
+devtools::install_github("wbelzak/regDIF")
+```
+
+## Getting Started
+
+A simulated data example with 6 item responses (binary) and 3 background variables (gender, age, study) is used to demonstrate the `regDIF` package.
+
+```{r, warning = FALSE, message = FALSE}
+library(regDIF)
+head(ida)
+```
+
+First, the item responses and predictor values are separately specified.
+
+```{r, warning = FALSE, message = FALSE}
+item.data <- ida[, 1:6]
+pred.data <- ida[, 7:9]
+```
+
+Second, the `regDIF()` function fits a sequence of 10 tuning parameter values.
+
+```{r, results = 'hide'}
+fit <- regDIF(item.data, pred.data, num.tau = 10)
+```
+
+Finally, the DIF results are shown.
+
+```{r}
+summary(fit)
+```
+
+## Questions
+
+Please send any questions to <wbelzak@gmail.com>.

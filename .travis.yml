@@ -2,9 +2,11 @@
 
 language: R
 cache: packages
-os: 
+os:
   - linux
   - osx
+
+osx_image: xcode10
 
 after_success:
   - Rscript -e 'covr::codecov()'

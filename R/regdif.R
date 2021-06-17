@@ -113,16 +113,15 @@
 #' @return Function returns an object of class \code{regDIF}
 #'
 #' @examples
-#' \dontrun{
 #'
 #' library(regDIF)
 #' head(ida)
 #' item.data <- ida[,1:6]
 #' pred.data <- ida[,7:9]
-#' fit <- regDIF(item.data, pred.data)
+#' prox.data <- rowSums(item.data)
+#' fit <- regDIF(item.data, pred.data, prox.data, num.tau = 10)
 #' summary(fit)
 #'
-#' }
 #'
 #' @import stats utils
 #'

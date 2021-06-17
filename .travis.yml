@@ -2,13 +2,10 @@
 
 language: R
 cache: packages
-os:
-  - linux
-  - osx
-
-osx_image: xcode10.1
-before_install:
-  - sudo xcode-select --install
+os: linux
+r:
+  - release
+  - devel
 
 after_success:
   - Rscript -e 'covr::codecov()'

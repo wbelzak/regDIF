@@ -1,3 +1,8 @@
+## Resubmission
+This is a resubmission. In this version I have:
+
+* Fixed URL (http --> https) in inst/CITATION
+
 ## Test environments
 * local: Windows 10.0.19041, R 4.0.3
 * travis: Ubuntu 16.04 LTS, release, devel
@@ -7,4 +12,4 @@
 0 errors | 0 warnings | 0 notes
 
 ## Downstream dependencies
-All downstream dependencies of regDIF passed R CMD check.
+All downstream dependencies of regDIF passed R CMD check

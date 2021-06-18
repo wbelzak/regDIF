@@ -8,10 +8,10 @@ citEntry(
   address      = "Pittsburgh, PA",
   note         = "version 1.0.0",
   year         = "2021",
-  url          = "http://github.com/wbelzak/regDIF/",
+  url          = "https://github.com/wbelzak/regDIF/",
   textVersion  = paste("Belzak, W. C. M (2021).",
                        "regDIF: Regularized Differential Item Functioning.",
                        "version 1.0.0. Duolingo. Pittsburgh, PA.",
-                       "http://github.com/wbelzak/regDIF/"
+                       "https://github.com/wbelzak/regDIF/"
   )
 )

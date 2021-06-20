@@ -8,3 +8,4 @@
 ^revdep$
 ^README\.Rmd$
 ^LICENSE\.md$
+^\.Rprofile$

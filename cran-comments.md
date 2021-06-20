@@ -1,7 +1,7 @@
 ## Resubmission
 This is a resubmission. In this version I have:
 
-* Fixed URL (http --> https) in inst/CITATION
+* Removed 'Year' from DESCRIPTION
 
 ## Test environments
 * local: Windows 10.0.19041, R 4.0.3

@@ -1,7 +1,9 @@
 ## Resubmission
 This is a resubmission. In this version I have:
 
-* Removed 'Year' from DESCRIPTION
+* Included reference and link in DESCRIPTION
+* Added 'return' values for all functions in package
+* Removed examples and '\dontrun{}' from 'se.regDIF' function
 
 ## Test environments
 * local: Windows 10.0.19041, R 4.0.3

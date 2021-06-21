@@ -22,19 +22,6 @@
 #'
 #' @return Function returns an object of class \code{se.regDIF}
 #'
-#' @examples
-#' \dontrun{
-#'
-#' library(regDIF)
-#' head(ida)
-#' item.data <- ida[,1:6]
-#' pred.data <- ida[,7:9]
-#' fit <- regDIF(item.data, pred.data, tau = .2)
-#' se.fit <- se.regDIF(fit)
-#' se.fit
-#'
-#' }
-#'
 #' @import stats utils
 #'
 #' @keywords internal

@@ -4,7 +4,9 @@ Version: 1.0.0
 Author: William Belzak
 Maintainer: William Belzak <wbelzak@gmail.com>
 Description: Performs regularization of differential item functioning (DIF) parameters 
-    in item response theory (IRT) models using a penalized expectation-maximization algorithm.
+    in item response theory (IRT) models (Belzak & Bauer, 2020)
+    <https://pubmed.ncbi.nlm.nih.gov/31916799/> using a penalized expectation-maximization
+    algorithm.
 License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true

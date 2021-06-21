@@ -48,6 +48,9 @@ latent variable.}
 
 \item{NA_cases}{Logical vector indicating missing observations.}
 }
+\value{
+a \code{"list"} of posterior values from the expectation step
+}
 \description{
 Expectation step.
 }

@@ -16,6 +16,8 @@
 #' optimization parameters.
 #' @param call Defined from regDIF.
 #'
+#' @return a \code{"list"} of default controls for \code{"em_estimation"}
+#'
 #' @keywords internal
 #'
 preprocess <-

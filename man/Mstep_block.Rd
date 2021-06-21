@@ -85,6 +85,10 @@ identified during the regDIF procedure.}
 \item{max_tau}{Logical indicating whether to output the minimum tau value
 needed to remove all DIF from the model.}
 }
+\value{
+a \code{"list"} of estimates obtained from the maximization step using multivariate
+Newton-Raphson
+}
 \description{
 Maximization step using latent variable and item response blocks.
 }

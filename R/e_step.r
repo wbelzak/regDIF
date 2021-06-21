@@ -16,6 +16,8 @@
 #' @param get_eap Logical indicating whether to compute EAP scores.
 #' @param NA_cases Logical vector indicating missing observations.
 #'
+#' @return a \code{"list"} of posterior values from the expectation step
+#'
 #' @keywords internal
 #'
 Estep <-

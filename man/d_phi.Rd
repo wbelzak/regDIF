@@ -38,6 +38,10 @@ variance impact equation.}
 \item{num_quad}{Number of quadrature points used for approximating the
 latent variable.}
 }
+\value{
+a \code{"list"} of first and second partial derivatives for variance impact equation (to
+use with coordinate descent and univariate Newton-Raphson)
+}
 \description{
 Partial derivatives for mean impact equation.
 }

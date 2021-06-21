@@ -103,6 +103,9 @@ the maxit limit in the previous estimation round.}
 
 \item{NA_cases}{Logical vector indicating if observation is missing.}
 }
+\value{
+a \code{"list"} of matrices with unprocessed model estimates
+}
 \description{
 Penalized expectation-maximization algorithm.
 }

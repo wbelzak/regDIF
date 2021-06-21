@@ -48,6 +48,9 @@ function.}
 \item{num_quad}{Number of quadrature points used for approximating the
 latent variable.}
 }
+\value{
+a \code{"list"} of information criteria to use for model selection
+}
 \description{
 Maximization step.
 }

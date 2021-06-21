@@ -41,6 +41,10 @@ latent variable.}
 
 \item{num_predictors}{Number of predictors in dataset.}
 }
+\value{
+a \code{"list"} of first and second partial derivatives for impact equation (to use
+with multivariate Newton-Raphson)
+}
 \description{
 Partial derivatives for mean and variance impact equation.
 }

@@ -30,6 +30,10 @@ d_bernoulli_itemblock_proxy(
 
 \item{num_predictors}{Number of predictors in dataset.}
 }
+\value{
+a \code{"list"} of first and second partial derivatives for Bernoulli item likelihood (to
+use with multivariate Newton-Raphson and observed proxy scores)
+}
 \description{
 Partial derivatives for binary items by item-blocks using observed score proxy.
 }

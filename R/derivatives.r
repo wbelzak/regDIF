@@ -13,6 +13,9 @@
 #' @param num_quad Number of quadrature points used for approximating the
 #' latent variable.
 #'
+#' @return a \code{"list"} of first and second partial derivatives for mean impact equation (to
+#' use with coordinate descent and univariate Newton-Raphson)
+#'
 #' @keywords internal
 #'
 d_alpha <-
@@ -60,6 +63,9 @@ d_alpha <-
 #' @param num_items Number of items in dataset.
 #' @param num_quad Number of quadrature points used for approximating the
 #' latent variable.
+#'
+#' @return a \code{"list"} of first and second partial derivatives for variance impact equation (to
+#' use with coordinate descent and univariate Newton-Raphson)
 #'
 #' @keywords internal
 #'
@@ -113,6 +119,9 @@ d_phi <-
 #' @param num_quad Number of quadrature points used for approximating the
 #' latent variable.
 #' @param num_predictors Number of predictors in dataset.
+#'
+#' @return a \code{"list"} of first and second partial derivatives for impact equation (to use
+#' with multivariate Newton-Raphson)
 #'
 #' @keywords internal
 #'
@@ -235,6 +244,9 @@ d_impact_block <-
 #' @param num_items Number of items in data set.
 #' @param num_predictors Number of predictors in dataset.
 #'
+#' @return a \code{"list"} of first and second partial derivatives for impact equation (to
+#' use with multivariate Newton-Rapshon and observed proxy scores)
+#'
 #' @keywords internal
 #'
 d_impact_block_proxy <-
@@ -321,6 +333,9 @@ d_impact_block_proxy <-
 #' @param num.quad Number of quadrature points used for approximating the
 #' latent variable.
 #'
+#' @return a \code{"list"} of first and second partial derivatives for Bernoulli item likelihood (to
+#' use with coordinate descent and univariate Newton-Raphson)
+#'
 #' @keywords internal
 #'
 d_bernoulli <-
@@ -379,6 +394,9 @@ d_bernoulli <-
 #' @param num_predictors Number of predictors in dataset.
 #' @param num_quad Number of quadrature points used for approximating the
 #' latent variable.
+#'
+#' @return a \code{"list"} of first and second partial derivatives for Bernoulli item likelihood (to
+#' use with multivariate Newton-Raphson)
 #'
 #' @keywords internal
 #'
@@ -528,6 +546,9 @@ d_bernoulli_itemblock <-
 #' @param num_items Number of items in dataset.
 #' @param num_predictors Number of predictors in dataset.
 #'
+#' @return a \code{"list"} of first and second partial derivatives for Bernoulli item likelihood (to
+#' use with multivariate Newton-Raphson and observed proxy scores)
+#'
 #' @keywords internal
 #'
 d_bernoulli_itemblock_proxy <-
@@ -668,6 +689,9 @@ d_bernoulli_itemblock_proxy <-
 #' @param num_quad Number of quadrature points used for approximating the
 #' latent variable.
 #'
+#' @return a \code{"list"} of first and second partial derivatives for categorical item likelihood
+#' (to use with coordinate descent and univariate Newton-Raphson)
+#'
 #' @keywords internal
 #'
 d_categorical <-
@@ -782,6 +806,9 @@ d_categorical <-
 #' @param num_predictors Number of predictors in dataset.
 #' @param num_quad Number of quadrature points used for approximating the
 #' latent variable.
+#'
+#' @return a \code{"list"} of first and second partial derivatives for categorical item likelihood
+#' (to use with multivariate Newton-Raphson)
 #'
 #' @keywords internal
 #'
@@ -1010,6 +1037,9 @@ d_categorical_itemblock <-
 #' @param num_quad Number of quadrature points used for approximating the
 #' latent variable.
 #'
+#' @return a \code{"list"} of first and second partial derivatives for mean value of Gaussian item
+#' likelihood (to use with coordinate descent and univariate Newton-Raphson)
+#'
 #' @keywords internal
 #'
 d_mu_gaussian <-
@@ -1083,6 +1113,9 @@ d_mu_gaussian <-
 #' @param num_items Number of items in dataset.
 #' @param num_quad Number of quadrature points used for approximating the
 #' latent variable.
+#'
+#' @return a \code{"list"} of first and second partial derivatives for variance value of Gaussian
+#' item likelihood (to use with coordinate descent and univariate Newton-Raphson)
 #'
 #' @keywords internal
 #'

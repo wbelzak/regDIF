@@ -110,7 +110,8 @@
 #'    order given by a \code{coef.regDIF} object.}
 #'    }
 #'
-#' @return Function returns an object of class \code{regDIF}
+#' @return Function returns an object of class \code{regDIF}, which is a list of results from
+#' the regularization routine
 #'
 #' @examples
 #'

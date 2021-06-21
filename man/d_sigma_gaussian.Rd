@@ -39,6 +39,10 @@ d_sigma_gaussian(
 \item{num_quad}{Number of quadrature points used for approximating the
 latent variable.}
 }
+\value{
+a \code{"list"} of first and second partial derivatives for variance value of Gaussian
+item likelihood (to use with coordinate descent and univariate Newton-Raphson)
+}
 \description{
 Partial derivatives for variance parameter of continuous items.
 }

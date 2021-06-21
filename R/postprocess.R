@@ -32,6 +32,8 @@
 #' @param exit_code An integer indicating whether the regDIF procedure finished normally
 #' @param NA_cases Logical vector indicating NA cases.
 #'
+#' @return a \code{"list"} object of processed \code{"regDIF"} results
+#'
 #' @keywords internal
 #'
 postprocess <-

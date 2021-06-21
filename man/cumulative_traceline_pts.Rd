@@ -27,6 +27,9 @@ cumulative_traceline_pts(
 \item{num_quad}{Number of quadrature points used for approximating the
 latent variable.}
 }
+\value{
+a \code{"matrix"} of probability values for categorical (cumulative) item likelihood
+}
 \description{
 Ordinal tracelines (for derivatives).
 }

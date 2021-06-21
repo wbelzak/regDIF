@@ -35,6 +35,10 @@ variance impact equation.}
 
 \item{num_predictors}{Number of predictors in dataset.}
 }
+\value{
+a \code{"list"} of first and second partial derivatives for impact equation (to
+use with multivariate Newton-Rapshon and observed proxy scores)
+}
 \description{
 Partial derivatives for mean and variance impact equation using observed score proxy.
 }

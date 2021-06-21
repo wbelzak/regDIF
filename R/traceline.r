@@ -5,6 +5,8 @@
 #' @param pred_data Matrix or dataframe of DIF and/or impact predictors.
 #' @param samp_size Sample size in dataset.
 #'
+#' @return a \code{"matrix"} of probability values for Bernoulli item likelihood
+#'
 #' @keywords internal
 #'
 bernoulli_traceline_pts <-
@@ -32,6 +34,9 @@ bernoulli_traceline_pts <-
 #' @param prox_data Vector of observed proxy scores.
 #' @param pred_data Matrix or dataframe of DIF and/or impact predictors.
 #'
+#' @return a \code{"matrix"} of probability values for Bernoulli item likelihood using observed
+#' proxy scores
+#'
 #' @keywords internal
 #'
 bernoulli_traceline_pts_proxy <-
@@ -57,6 +62,8 @@ bernoulli_traceline_pts_proxy <-
 #' @param num_responses_item Number of responses for item.
 #' @param num_quad Number of quadrature points used for approximating the
 #' latent variable.
+#'
+#' @return a \code{"matrix"} of probability values for categorical (cumulative) item likelihood
 #'
 #' @keywords internal
 #'
@@ -116,6 +123,8 @@ cumulative_traceline_pts <-
 #' @param responses_item Vector of item responses.
 #' @param pred_data Matrix or data frame of DIF and/or impact predictors.
 #' @param samp_size Sample size in data set.
+#'
+#' @return a \code{"matrix"} of probability values for Gaussian item likelihood
 #'
 #' @keywords internal
 #'

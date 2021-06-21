@@ -17,6 +17,9 @@ gaussian_traceline_pts(p_item, theta, responses_item, pred_data, samp_size)
 
 \item{samp_size}{Sample size in data set.}
 }
+\value{
+a \code{"matrix"} of probability values for Gaussian item likelihood
+}
 \description{
 Continuous tracelines.
 }

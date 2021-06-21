@@ -82,6 +82,10 @@ identified during the regDIF procedure.}
 \item{max_tau}{Logical indicating whether to output the maximum tau value
 needed to remove all DIF from the model.}
 }
+\value{
+a \code{"list"} of estimates obtained from the maximization step using univariate
+Newton-Raphson (i.e., one step of coordinate descent)
+}
 \description{
 Maximization step using coordinate descent optimization.
 }

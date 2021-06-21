@@ -34,6 +34,9 @@
 #' @param max_tau Logical indicating whether to output the minimum tau value
 #' needed to remove all DIF from the model.
 #'
+#' @return a \code{"list"} of estimates obtained from the maximization step using multivariate
+#' Newton-Raphson
+#'
 #' @keywords internal
 #'
 Mstep_block <-

@@ -45,6 +45,9 @@ optimization parameters.}
 
 \item{call}{Defined from regDIF.}
 }
+\value{
+a \code{"list"} of default controls for \code{"em_estimation"}
+}
 \description{
 Pre-process data.
 }

@@ -11,6 +11,8 @@
 #'
 #' @importFrom graphics abline legend lines plot
 #'
+#' @return a \code{"plot"} object for a \code{"regDIF"} fit
+#'
 #' @export
 #'
 plot.regDIF <-

@@ -39,6 +39,10 @@ d_mu_gaussian(
 \item{num_quad}{Number of quadrature points used for approximating the
 latent variable.}
 }
+\value{
+a \code{"list"} of first and second partial derivatives for mean value of Gaussian item
+likelihood (to use with coordinate descent and univariate Newton-Raphson)
+}
 \description{
 Partial derivatives for mean parameter of continuous items.
 }

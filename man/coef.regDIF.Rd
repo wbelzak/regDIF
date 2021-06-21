@@ -21,6 +21,9 @@ for determining \code{"tau.min"}. Default is \code{"bic"}. May also be
 
 \item{...}{Additional arguments to be passed through to \code{coef}.}
 }
+\value{
+\code{NULL}
+}
 \description{
 Coefficient function for regDIF function
 }

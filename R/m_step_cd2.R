@@ -33,6 +33,9 @@
 #' @param max_tau Logical indicating whether to output the maximum tau value
 #' needed to remove all DIF from the model.
 #'
+#' @return a \code{"list"} of estimates obtained from the maximization step using coordinate
+#' descent
+#'
 #' @keywords internal
 #'
 Mstep_cd2 <-

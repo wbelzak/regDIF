@@ -87,6 +87,9 @@ latent variable.}
 
 \item{NA_cases}{Logical vector indicating NA cases.}
 }
+\value{
+a \code{"list"} object of processed \code{"regDIF"} results
+}
 \description{
 Maximization step.
 }

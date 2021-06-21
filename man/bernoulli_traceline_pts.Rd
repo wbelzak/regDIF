@@ -15,6 +15,9 @@ bernoulli_traceline_pts(p_item, theta, pred_data, samp_size)
 
 \item{samp_size}{Sample size in dataset.}
 }
+\value{
+a \code{"matrix"} of probability values for Bernoulli item likelihood
+}
 \description{
 Binary item tracelines.
 }

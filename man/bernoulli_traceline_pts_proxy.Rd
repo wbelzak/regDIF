@@ -13,6 +13,10 @@ bernoulli_traceline_pts_proxy(p_item, prox_data, pred_data)
 
 \item{pred_data}{Matrix or dataframe of DIF and/or impact predictors.}
 }
+\value{
+a \code{"matrix"} of probability values for Bernoulli item likelihood using observed
+proxy scores
+}
 \description{
 Binary item tracelines for proxy scores.
 }

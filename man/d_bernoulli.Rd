@@ -36,6 +36,10 @@ d_bernoulli(
 \item{num.quad}{Number of quadrature points used for approximating the
 latent variable.}
 }
+\value{
+a \code{"list"} of first and second partial derivatives for Bernoulli item likelihood (to
+use with coordinate descent and univariate Newton-Raphson)
+}
 \description{
 Partial derivatives for binary items.
 }

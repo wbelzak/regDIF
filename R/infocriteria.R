@@ -17,6 +17,8 @@
 #' @param num_quad Number of quadrature points used for approximating the
 #' latent variable.
 #'
+#' @return a \code{"list"} of information criteria to use for model selection
+#'
 #' @keywords internal
 #'
 information_criteria <-

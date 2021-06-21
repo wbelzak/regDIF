@@ -10,8 +10,10 @@
 #' for determining \code{"tau.min"}. Default is \code{"bic"}. May also be
 #' \code{"aic"}.
 #' @param ... Additional arguments to be passed through to \code{coef}.
+#'
 #' @rdname coef.regDIF
 #'
+#' @return \code{NULL}
 #' @export
 
 coef.regDIF <-

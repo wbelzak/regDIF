@@ -124,7 +124,8 @@ optimization parameters. May be:
    }}
 }
 \value{
-Function returns an object of class \code{regDIF}
+Function returns an object of class \code{regDIF}, which is a list of results from
+the regularization routine
 }
 \description{
 Identify DIF in item response theory models using regularization.

@@ -42,6 +42,8 @@
 #' the maxit limit in the previous estimation round.
 #' @param NA_cases Logical vector indicating if observation is missing.
 #'
+#' @return a \code{"list"} of matrices with unprocessed model estimates
+#'
 #' @keywords internal
 #'
 em_estimation <- function(p,

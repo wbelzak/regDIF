@@ -18,6 +18,9 @@ DIF effects in plot.}
 
 \item{...}{Additional arguments to be passed through to \code{plot}.}
 }
+\value{
+a \code{"plot"} object for a \code{"regDIF"} fit
+}
 \description{
 Plot function for regDIF function
 }

@@ -36,11 +36,12 @@ item type. Different item types may be specified for a single model
 by providing a vector equal in length to the number of items in item.data.
 The options include:
 \itemize{
-   \item{\code{"Rasch"} - Slopes constrained to 1 and intercepts freely
+   \item{\code{"rasch"} - Slopes constrained to 1 and intercepts freely
    estimated.}
-   \item{\code{"2PL"} - Slopes and intercepts freely estimated.}
-   \item{\code{"Graded"} - Slopes, intercepts, and thresholds freely
-   estimated.}}}
+   \item{\code{"2pl"} - Slopes and intercepts freely estimated.}
+   \item{\code{"graded"} - Slopes, intercepts, and thresholds freely
+   estimated.}
+   \item{\code{"cfa"}}}}
 
 \item{pen.type}{Optional character value indicating the penalty
 function to use. The default is NULL, corresponding to the LASSO function.
@@ -121,6 +122,11 @@ optimization parameters. May be:
    by a \code{coef.regDIF} object; and finally,
    \code{dif}, for intercept and slope DIF parameters, again in
    order given by a \code{coef.regDIF} object.}
+   \item{parallel}{List of 2, with the first element being a logical value that indicates whether
+   to use parallel computing to estimate item parameters separately during maximization.
+   The second list element is the cluster object. Default is \code{list(FALSE,NULL)}. Set
+   \code{parallel = list(TRUE,cl)} when the EM iterations are running slowly.
+   }
    }}
 }
 \value{

@@ -29,8 +29,8 @@ em_estimation(
   num_quad,
   adapt_quad,
   optim_method,
-  em_history,
-  em_limit,
+  estimator_history,
+  estimator_limit,
   NA_cases
 )
 }
@@ -96,9 +96,9 @@ needs to be identified.}
 \item{optim_method}{Character value indicating the type of optimization
 method to use.}
 
-\item{em_history}{List to save EM iterations for supplemental EM algorithm.}
+\item{estimator_history}{List to save EM iterations for supplemental EM algorithm.}
 
-\item{em_limit}{Logical value indicating whether the EM algorithm reached
+\item{estimator_limit}{Logical value indicating whether the EM algorithm reached
 the maxit limit in the previous estimation round.}
 
 \item{NA_cases}{Logical vector indicating if observation is missing.}

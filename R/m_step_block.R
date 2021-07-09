@@ -37,6 +37,8 @@
 #' @return a \code{"list"} of estimates obtained from the maximization step using multivariate
 #' Newton-Raphson
 #'
+#' @importFrom foreach %dopar%
+#'
 #' @keywords internal
 #'
 Mstep_block <-
@@ -106,64 +108,114 @@ Mstep_block <-
 
 
     inv_hess_diag <- vector('list',num_items+2)
+
     # Item response updates.
-    for (item in 1:num_items) {
-    # foreach(item=1:num_items) %do% {
+    if(final_control$parallel[[1]]) {
+      parallel::clusterExport(final_control$parallel[[2]], c("num_responses", "pred_data", "item_data",
+                          "samp_size", "num_predictors", "num_quad", "num_items",
+                          "prox_data", "item_type", "anchor", "pen_type",
+                          "num_tau", "pen", "tau_vec", "alpha", "final_control",
+                          "max_tau", "d_bernoulli_itemblock", "d_bernoulli_itemblock_proxy",
+                          "grp_soft_threshold", "grp_firm_threshold", "soft_threshold",
+                          "firm_threshold", "p", "eout", "inv_hess_diag", "tau_current",
+                          "under_identified", "id_max_z"),
+                    envir=environment())
+      p_items <- foreach::foreach(item=1:num_items) %dopar% {
 
-      # Bernoulli responses.
-      if(num_responses[item] == 2) {
+        if(num_responses[item] == 2) {
 
-        if(is.null(prox_data)) {
-          anl_deriv_item <- d_bernoulli_itemblock(p[[item]],
-                                                  eout$etable,
-                                                  eout$theta,
-                                                  pred_data,
-                                                  item_data[,item],
-                                                  samp_size,
-                                                  num_items,
-                                                  num_predictors,
-                                                  num_quad)
-        } else {
-          anl_deriv_item <- d_bernoulli_itemblock_proxy(p[[item]],
-                                                        pred_data,
-                                                        item_data[,item],
-                                                        prox_data,
-                                                        samp_size,
-                                                        num_items,
-                                                        num_predictors,
-                                                        num_quad)
-        }
+          if(is.null(prox_data)) {
+            anl_deriv_item <- d_bernoulli_itemblock(p[[item]],
+                                                    eout$etable,
+                                                    eout$theta,
+                                                    pred_data,
+                                                    item_data[,item],
+                                                    samp_size,
+                                                    num_items,
+                                                    num_predictors,
+                                                    num_quad)
+          } else {
+            anl_deriv_item <- d_bernoulli_itemblock_proxy(p[[item]],
+                                                          pred_data,
+                                                          item_data[,item],
+                                                          prox_data,
+                                                          samp_size,
+                                                          num_items,
+                                                          num_predictors,
+                                                          num_quad)
+          }
 
 
-        inv_hess_item <- solve(anl_deriv_item[[2]])
-        inv_hess_diag[[item]] <- -diag(inv_hess_item)
-        z <- p[[item]] - inv_hess_item %*% anl_deriv_item[[1]]
+          inv_hess_item <- solve(anl_deriv_item[[2]])
+          inv_hess_diag[[item]] <- -diag(inv_hess_item)
+          z <- p[[item]] - inv_hess_item %*% anl_deriv_item[[1]]
 
-        # c0 update.
-        p[[item]][[1]] <- z[1]
+          # c0 update.
+          p[[item]][[1]] <- z[1]
 
-        # a0 update.
-        if(item_type[item] != "Rasch") p[[item]][[2]] <- z[2]
+          # a0 update.
+          if(item_type[item] != "rasch") p[[item]][[2]] <- z[2]
 
-        # Don't update DIF estimates if anchor item.
-        if(any(item == anchor)) next
+          # Don't update DIF estimates if anchor item.
+          if(any(item == anchor)) {
+            return(list(unlist(p[item]),id_max_z))
+          }
 
-        p2 <- unlist(p)
+          p2 <- unlist(p)
 
-        for(cov in 1:num_predictors) {
+          for(cov in 1:num_predictors) {
 
-          # If penalty type is a group function.
-          if(pen_type == "grp.lasso" ||
-             pen_type == "grp.mcp") {
+            # If penalty type is a group function.
+            if(pen_type == "grp.lasso" ||
+               pen_type == "grp.mcp") {
+
+              # End routine if only one anchor item is left on each covariate
+              # for each item parameter.
+              if(is.null(anchor) &&
+                 sum(p2[c(grep(paste0("c1(.*?)cov",cov),names(p2)),
+                          grep(paste0("a1(.*?)cov",cov),names(p2)))] != 0) >
+                 (num_items*2 - 1) &&
+                 (length(final_control$start.values) == 0 || pen > 1) &&
+                 num_tau >= 10) {
+                under_identified <- TRUE
+                break
+              }
+
+              if(max_tau) {
+                id_max_z <- c(id_max_z,
+                              z[2+cov],
+                              z[2+num_predictors+cov])
+              }
+
+
+              # group update.
+              grp.update <-
+                if(pen_type == "grp.lasso") {
+                  grp_soft_threshold(z[c(2+cov,
+                                         2+num_predictors+cov)],
+                                     tau_current)
+                } else if(pen_type == "grp.mcp") {
+                  grp_firm_threshold(z[c(2+cov,
+                                         2+num_predictors+cov)],
+                                     tau_current,
+                                     gamma)
+                }
+
+              # c1 updates.
+              p[[item]][[2+cov]] <- grp.update[[1]]
+              # a1 updates.
+              p[[item]][[2+num_predictors+cov]] <- grp.update[[2]]
+
+            }
 
             # End routine if only one anchor item is left on each covariate
             # for each item parameter.
             if(is.null(anchor) &&
-               sum(p2[c(grep(paste0("c1(.*?)cov",cov),names(p2)),
-                        grep(paste0("a1(.*?)cov",cov),names(p2)))] != 0) >
-               (num_items*2 - 1) &&
+               sum(p2[grep(paste0("c1(.*?)cov",cov),names(p2))] != 0) >
+               (num_items - 1) &&
+               alpha == 1 &&
                (length(final_control$start.values) == 0 || pen > 1) &&
-               num_tau >= 10){
+               num_tau >= 10) {
               under_identified <- TRUE
               break
             }
@@ -174,340 +226,30 @@ Mstep_block <-
                             z[2+num_predictors+cov])
             }
 
-
-            # group update.
-            grp.update <-
-              if(pen_type == "grp.lasso") {
-                grp_soft_threshold(z[c(2+cov,
-                                       2+num_predictors+cov)],
-                                   tau_current)
-              } else if(pen_type == "grp.mcp") {
-                grp_firm_threshold(z[c(2+cov,
-                                       2+num_predictors+cov)],
-                                   tau_current,
-                                   gamma)
+            # c1 updates.
+            p[[item]][[2+cov]] <-
+              if(pen_type == "lasso") {
+                soft_threshold(z[2+cov],
+                               alpha,
+                               tau_current)
+              } else if(pen_type == "mcp") {
+                firm_threshold(z[2+cov],
+                               alpha,
+                               tau_current,
+                               gamma)
               }
 
-            # c1 updates.
-            p[[item]][[2+cov]] <- grp.update[[1]]
+
             # a1 updates.
-            p[[item]][[2+num_predictors+cov]] <- grp.update[[2]]
-
-            next
-
-          }
-
-          # End routine if only one anchor item is left on each covariate
-          # for each item parameter.
-          if(is.null(anchor) &&
-             sum(p2[grep(paste0("c1(.*?)cov",cov),names(p2))] != 0) >
-             (num_items - 1) &&
-             alpha == 1 &&
-             (length(final_control$start.values) == 0 || pen > 1) &&
-             num_tau >= 10){
-            under_identified <- TRUE
-            break
-          }
-
-          if(max_tau) {
-            id_max_z <- c(id_max_z,
-                          z[2+cov],
-                          z[2+num_predictors+cov])
-          }
-
-          # c1 updates.
-          p[[item]][[2+cov]] <-
-            if(pen_type == "lasso") {
-              soft_threshold(z[2+cov],
-                              alpha,
-                              tau_current)
-            } else if(pen_type == "mcp") {
-              firm_threshold(z[2+cov],
-                             alpha,
-                             tau_current,
-                             gamma)
+            if(item_type[item] == "rasch") {
+              return(list(unlist(p[item]),id_max_z))
             }
-
-
-          # a1 updates.
-          if(item_type[item] == "Rasch") next
-
-          # End routine if only one anchor item is left on each covariate
-          # for each item parameter.
-          if(is.null(anchor) &&
-             sum(p2[grep(paste0("a1(.*?)cov",cov),names(p2))] != 0) >
-             (num_items - 1) &&
-             alpha == 1 &&
-             (length(final_control$start.values) == 0 || pen > 1) &&
-             num_tau >= 10){
-            under_identified <- TRUE
-            break
-          }
-
-          p[[item]][[2+num_predictors+cov]] <-
-            ifelse(pen_type == "lasso",
-                   soft_threshold(z[2+num_predictors+cov],
-                                   alpha,
-                                   tau_current),
-                   firm_threshold(z[2+num_predictors+cov],
-                                   alpha,
-                                   tau_current,
-                                   gamma))
-
-        }
-        if(under_identified) break
-
-      } else if(num_responses[item] > 2) {
-
-        # Get posterior probabilities for each response.
-        etable_item <- replicate(n=num_responses[item],
-                                 eout$etable,
-                                 simplify = F)
-
-        # Obtain E-tables for each response category.
-        for(resp in 1:num_responses[item]) {
-          etable_item[[resp]][which(
-            !(item_data[,item] == resp)), ] <- 0
-        }
-
-        # Intercept updates.
-        anl_deriv <- d_categorical("c0",
-                                   p[[item]],
-                                   etable_item,
-                                   eout$theta,
-                                   pred_data,
-                                   thr=-1,
-                                   cov=-1,
-                                   samp_size,
-                                   num_responses[[item]],
-                                   num_items,
-                                   num_quad)
-        p[[item]][[1]] <- p[[item]][[1]] - anl_deriv[[1]]/anl_deriv[[2]]
-
-        # Threshold updates.
-        for(thr in 2:(num_responses[item]-1)) {
-          anl_deriv <- d_categorical("c0",
-                                     p[[item]],
-                                     etable_item,
-                                     eout$theta,
-                                     pred_data,
-                                     thr=thr,
-                                     cov=-1,
-                                     samp_size,
-                                     num_responses[[item]],
-                                     num_items,
-                                     num_quad)
-          p[[item]][[thr]] <- p[[item]][[thr]] - anl_deriv[[1]]/anl_deriv[[2]]
-        }
-
-        # Slope updates.
-        if(item_type[item] != "Rasch") {
-          anl_deriv <- d_categorical("a0",
-                                     p[[item]],
-                                     etable_item,
-                                     eout$theta,
-                                     pred_data,
-                                     thr=-1,
-                                     cov=-1,
-                                     samp_size,
-                                     num_responses[[item]],
-                                     num_items,
-                                     num_quad)
-          p[[item]][[num_responses[[item]]]] <-
-            p[[item]][[num_responses[[item]]]] - anl_deriv[[1]]/anl_deriv[[2]]
-        }
-
-        if(any(item == anchor)) next
-
-        p2 <- unlist(p)
-
-        # Intercept DIF updates.
-        for(cov in 1:num_predictors) {
-
-          # End routine if only one anchor item is left on each covariate
-          # for each item parameter.
-          if(is.null(anchor) &
-             sum(p2[grep(paste0("c1(.*?)cov",cov),names(p2))] != 0) >
-             (num_items - 1) &&
-             alpha == 1 &&
-             (length(final_control$start.values) == 0 || pen > 1) &&
-             num_tau >= 10){
-            under_identified <- TRUE
-            break
-          }
-
-          anl_deriv <- d_categorical("c1",
-                                     p[[item]],
-                                     etable_item,
-                                     eout$theta,
-                                     pred_data,
-                                     thr=-1,
-                                     cov,
-                                     samp_size,
-                                     num_responses[[item]],
-                                     num_items,
-                                     num_quad)
-          z <- p[[item]][[num_responses[[item]]+cov]] -
-            anl_deriv[[1]]/anl_deriv[[2]]
-          if(max_tau) id_max_z <- c(id_max_z,z)
-          p[[item]][[num_responses[[item]]+cov]] <-
-            ifelse(pen_type == "lasso",
-                   soft_threshold(z,alpha,tau_current),
-                   firm_threshold(z,alpha,tau_current,gamma))
-        }
-
-        # Slope DIF updates.
-        for(cov in 1:num_predictors) {
-
-          # End routine if only one anchor item is left on each covariate
-          # for each item parameter.
-          if(is.null(anchor) &
-             sum(p2[grep(paste0("a1(.*?)cov",cov),names(p2))] != 0) >
-             (num_items - 1) &
-             alpha == 1 &&
-             (length(final_control$start.values) == 0 || pen > 1) &&
-             num_tau >= 10){
-            under_identified <- TRUE
-            break
-          }
-
-          if(item_type[item] != "Rasch") {
-            anl_deriv <- d_categorical("a1",
-                                       p[[item]],
-                                       etable_item,
-                                       eout$theta,
-                                       pred_data,
-                                       thr=-1,
-                                       cov,
-                                       samp_size,
-                                       num_responses[[item]],
-                                       num_items,
-                                       num_quad)
-            z <- p[[item]][[length(p[[item]])-ncol(pred_data)+cov]] -
-              anl_deriv[[1]]/anl_deriv[[2]]
-            if(max_tau) id_max_z <- c(id_max_z,z)
-            p[[item]][[length(p[[item]])-ncol(pred_data)+cov]] <-
-              ifelse(pen_type == "lasso",
-                     soft_threshold(z,alpha,tau_current),
-                     firm_threshold(z,alpha,tau_current,gamma))
-          }
-        }
-
-
-
-        # Gaussian responses.
-      } else if(num_responses[item] == 1) {
-
-        # Intercept updates.
-        anl_deriv <- d_mu_gaussian("c0",
-                                   p[[item]],
-                                   eout$etable,
-                                   eout$theta,
-                                   item_data[,item],
-                                   pred_data,
-                                   cov=NULL,
-                                   samp_size,
-                                   num_items,
-                                   num_quad)
-        p[[item]][[1]] <- p[[item]][[1]] - anl_deriv[[1]]/anl_deriv[[2]]
-
-        # Slope updates.
-        if(item_type[item] != "Rasch") {
-          a0_parms <- grep(paste0("a0_itm",item,"_"),names(p[[item]]),fixed=T)
-          anl_deriv <- d_mu_gaussian("a0",
-                                     p[[item]],
-                                     eout$etable,
-                                     eout$theta,
-                                     item_data[,item],
-                                     pred_data,
-                                     cov=NULL,
-                                     samp_size,
-                                     num_items,
-                                     num_quad)
-          p[[item]] <- p[[item]][a0_parms] - anl_deriv[[1]]/anl_deriv[[2]]
-        }
-
-        # Residual updates.
-        s0_parms <- grep(paste0("s0_itm",item,"_"),names(p[[item]]),fixed=T)
-        anl_deriv <- d_sigma_gaussian("s0",
-                                      p[[item]],
-                                      eout$etable,
-                                      eout$theta,
-                                      item_data[,item],
-                                      pred_data,
-                                      cov=NULL,
-                                      samp_size,
-                                      num_items,
-                                      num_quad)
-        p[[item]][s0_parms][1] <- p[[item]][s0_parms][1] -
-          anl_deriv[[1]]/anl_deriv[[2]]
-
-
-        if(!any(item == anchor)) {
-
-          # Residual DIF updates.
-          for(cov in 1:num_predictors) {
-            s1_parms <-
-              grep(paste0("s1_itm",item,"_cov",cov),names(p[[item]]),fixed=T)
-            anl_deriv <- d_sigma_gaussian("s1",
-                                          p[[item]],
-                                          eout$etable,
-                                          eout$theta,
-                                          item_data[,item],
-                                          pred_data,
-                                          cov=cov,
-                                          samp_size,
-                                          num_items,
-                                          num_quad)
-            p[[item]][s1_parms][1] <- p[[item]][s1_parms][1] -
-              anl_deriv[[1]]/anl_deriv[[2]]
-          }
-
-          p2 <- unlist(p)
-
-          # Intercept DIF updates.
-          for(cov in 1:num_predictors){
 
             # End routine if only one anchor item is left on each covariate
             # for each item parameter.
-            if(is.null(anchor) &
-               sum(p2[grep(paste0("c1(.*?)cov",cov),names(p2))] != 0) >
-               (num_items - 1) &
-               alpha == 1 &&
-               (length(final_control$start.values) == 0 || pen > 1) &&
-               num_tau >= 10){
-              under_identified <- TRUE
-              break
-            }
-
-            c1_parms <-
-              grep(paste0("c1_itm",item,"_cov",cov),names(p[[item]]),fixed=T)
-            anl_deriv <- d_mu_gaussian("c1",
-                                       p[[item]],
-                                       eout$etable,
-                                       eout$theta,
-                                       item_data[,item],
-                                       pred_data,
-                                       cov,
-                                       samp_size,
-                                       num_items,
-                                       num_quad)
-            z <- p[[item]][c1_parms] - anl_deriv[[1]]/anl_deriv[[2]]
-            if(max_tau) id_max_z <- c(id_max_z,z)
-            p[[item]][c1_parms] <-
-              ifelse(pen_type == "lasso",
-                     soft_threshold(z,alpha,tau_current),
-                     firm_threshold(z,alpha,tau_current,gamma))
-          }
-
-          # Slope DIF updates.
-          for(cov in 1:num_predictors){
-
-            # End routine if only one anchor item is left on each covariate
-            # for each item parameter.
-            if(is.null(anchor) &
+            if(is.null(anchor) &&
                sum(p2[grep(paste0("a1(.*?)cov",cov),names(p2))] != 0) >
-               (num_items - 1) &
+               (num_items - 1) &&
                alpha == 1 &&
                (length(final_control$start.values) == 0 || pen > 1) &&
                num_tau >= 10){
@@ -515,31 +257,188 @@ Mstep_block <-
               break
             }
 
-            if(item_type[item] != "Rasch"){
-              a1_parms <-
-                grep(paste0("a1_itm",item,"_cov",cov),names(p[[item]]),fixed=T)
-              anl_deriv <- d_mu_gaussian("a1",
-                                         p[[item]],
-                                         eout$etable,
-                                         eout$theta,
-                                         item_data[,item],
-                                         pred_data,
-                                         cov,
-                                         samp_size,
-                                         num_items,
-                                         num_quad)
-              z <- p[[item]][a1_parms] - anl_deriv[[1]]/anl_deriv[[2]]
-              if(max_tau) id_max_z <- c(id_max_z,z)
-              p[[item]][a1_parms] <- ifelse(pen_type == "lasso",
-                                            soft_threshold(z,alpha,tau_current),
-                                            firm_threshold(z,alpha,tau_current,gamma))
-            }
-          }
-        }
+            p[[item]][[2+num_predictors+cov]] <-
+              ifelse(pen_type == "lasso",
+                     soft_threshold(z[2+num_predictors+cov],
+                                    alpha,
+                                    tau_current),
+                     firm_threshold(z[2+num_predictors+cov],
+                                    alpha,
+                                    tau_current,
+                                    gamma))
 
-      }
+          }
+          if(under_identified) return(list(unlist(p[item]),id_max_z))
+
+
+        }
+        return(list(unlist(p[item]),id_max_z))
 
     }
+
+      for(item in 1:num_items) {
+        p[[item]] <- p_items[[item]][[1]]
+      }
+
+      } else{
+
+        for (item in 1:num_items) {
+
+          # Bernoulli responses.
+          if(num_responses[item] == 2) {
+
+            if(is.null(prox_data)) {
+              anl_deriv_item <- d_bernoulli_itemblock(p[[item]],
+                                                      eout$etable,
+                                                      eout$theta,
+                                                      pred_data,
+                                                      item_data[,item],
+                                                      samp_size,
+                                                      num_items,
+                                                      num_predictors,
+                                                      num_quad)
+            } else {
+              anl_deriv_item <- d_bernoulli_itemblock_proxy(p[[item]],
+                                                            pred_data,
+                                                            item_data[,item],
+                                                            prox_data,
+                                                            samp_size,
+                                                            num_items,
+                                                            num_predictors,
+                                                            num_quad)
+            }
+
+
+            inv_hess_item <- solve(anl_deriv_item[[2]])
+            inv_hess_diag[[item]] <- -diag(inv_hess_item)
+            z <- p[[item]] - inv_hess_item %*% anl_deriv_item[[1]]
+
+            # c0 update.
+            p[[item]][[1]] <- z[1]
+
+            # a0 update.
+            if(item_type[item] != "rasch") p[[item]][[2]] <- z[2]
+
+            # Don't update DIF estimates if anchor item.
+            if(any(item == anchor)) next
+
+            p2 <- unlist(p)
+
+            for(cov in 1:num_predictors) {
+
+              # If penalty type is a group function.
+              if(pen_type == "grp.lasso" ||
+                 pen_type == "grp.mcp") {
+
+                # End routine if only one anchor item is left on each covariate
+                # for each item parameter.
+                if(is.null(anchor) &&
+                   sum(p2[c(grep(paste0("c1(.*?)cov",cov),names(p2)),
+                            grep(paste0("a1(.*?)cov",cov),names(p2)))] != 0) >
+                   (num_items*2 - 1) &&
+                   (length(final_control$start.values) == 0 || pen > 1) &&
+                   num_tau >= 10){
+                  under_identified <- TRUE
+                  break
+                }
+
+                if(max_tau) {
+                  id_max_z <- c(id_max_z,
+                                z[2+cov],
+                                z[2+num_predictors+cov])
+                }
+
+
+                # group update.
+                grp.update <-
+                  if(pen_type == "grp.lasso") {
+                    grp_soft_threshold(z[c(2+cov,
+                                           2+num_predictors+cov)],
+                                       tau_current)
+                  } else if(pen_type == "grp.mcp") {
+                    grp_firm_threshold(z[c(2+cov,
+                                           2+num_predictors+cov)],
+                                       tau_current,
+                                       gamma)
+                  }
+
+                # c1 updates.
+                p[[item]][[2+cov]] <- grp.update[[1]]
+                # a1 updates.
+                p[[item]][[2+num_predictors+cov]] <- grp.update[[2]]
+
+                next
+
+              }
+
+              # End routine if only one anchor item is left on each covariate
+              # for each item parameter.
+              if(is.null(anchor) &&
+                 sum(p2[grep(paste0("c1(.*?)cov",cov),names(p2))] != 0) >
+                 (num_items - 1) &&
+                 alpha == 1 &&
+                 (length(final_control$start.values) == 0 || pen > 1) &&
+                 num_tau >= 10){
+                under_identified <- TRUE
+                break
+              }
+
+              if(max_tau) {
+                id_max_z <- c(id_max_z,
+                              z[2+cov],
+                              z[2+num_predictors+cov])
+              }
+
+              # c1 updates.
+              p[[item]][[2+cov]] <-
+                if(pen_type == "lasso") {
+                  soft_threshold(z[2+cov],
+                                 alpha,
+                                 tau_current)
+                } else if(pen_type == "mcp") {
+                  firm_threshold(z[2+cov],
+                                 alpha,
+                                 tau_current,
+                                 gamma)
+                }
+
+
+              # a1 updates.
+              if(item_type[item] == "rasch") next
+
+              # End routine if only one anchor item is left on each covariate
+              # for each item parameter.
+              if(is.null(anchor) &&
+                 sum(p2[grep(paste0("a1(.*?)cov",cov),names(p2))] != 0) >
+                 (num_items - 1) &&
+                 alpha == 1 &&
+                 (length(final_control$start.values) == 0 || pen > 1) &&
+                 num_tau >= 10){
+                under_identified <- TRUE
+                break
+              }
+
+              p[[item]][[2+num_predictors+cov]] <-
+                ifelse(pen_type == "lasso",
+                       soft_threshold(z[2+num_predictors+cov],
+                                      alpha,
+                                      tau_current),
+                       firm_threshold(z[2+num_predictors+cov],
+                                      alpha,
+                                      tau_current,
+                                      gamma))
+
+            }
+            if(under_identified) break
+
+          }
+          }
+
+        }
+
+
+
+
 
     inv_hess_diag[[num_items+1]] <-
       inv_hess_impact_diag[1:ncol(mean_predictors)]
@@ -547,7 +446,11 @@ Mstep_block <-
       inv_hess_impact_diag[-(1:ncol(mean_predictors))]
 
     if(max_tau) {
-      id_max_z <- max(abs(id_max_z))
+      if(final_control$parallel[[1]]) {
+        id_max_z <- max(abs(unlist(sapply(1:num_items, function(items) p_items[[items]][[2]]))))
+      } else{
+        id_max_z <- max(abs(id_max_z))
+      }
       return(id_max_z)
     } else {
       return(list(p=p,

@@ -159,7 +159,7 @@ gaussian_traceline_pts <-
                           }
                         ))
 
-  return(list(traceline))
+  return(traceline)
 
 }
 

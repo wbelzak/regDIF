@@ -65,7 +65,7 @@ postprocess <-
   # Get estimates and information criteria.
   p <- estimates$p
   infocrit <- estimates$infocrit
-  em_history <- estimates$em_history
+  estimator_history <- estimates$estimator_history
   complete_info <- estimates$complete_info
   under_identified <- estimates$under_identified
   eap_scores <- estimates$eap$eap_scores
@@ -232,7 +232,7 @@ postprocess <-
   if(is.null(prox.data)) {
     final$eap$scores[,pen] <- eap_scores
     final$eap$sd[,pen] <- eap_sd
-    final$em_history[[pen]] <- em_history[[pen]]
+    final$estimator_history[[pen]] <- estimator_history[[pen]]
   }
   final$complete_ll_info <- complete_info
   final$log_like[pen] <- infocrit$complete_ll
@@ -240,13 +240,13 @@ postprocess <-
   rownames(final$impact) <- lv_names
   rownames(final$base) <- all_items_names_base
   rownames(final$dif) <- all_items_names_dif
-  if(!(any(num_responses > 2)) && !is.null(complete_info)) {
-    for(item in 1:num_items) {
-      names(final$complete_ll_info[[item]]) <- names(p[[item]])
-    }
-    names(final$complete_ll_info[[num_items+1]]) <- names(p[[num_items+1]])
-    names(final$complete_ll_info[[num_items+2]]) <- names(p[[num_items+2]])
-  }
+  # if(!(any(num_responses > 2)) && !is.null(complete_info)) {
+  #   for(item in 1:num_items) {
+  #     names(final$complete_ll_info[[item]]) <- names(p[[item]])
+  #   }
+  #   names(final$complete_ll_info[[num_items+1]]) <- names(p[[num_items+1]])
+  #   names(final$complete_ll_info[[num_items+2]]) <- names(p[[num_items+2]])
+  # }
   final$exit_code <- ifelse(exit_code == 0, 0, 1)
   final$missing_obs <- which(NA_cases)
 
@@ -308,16 +308,17 @@ postprocess <-
   dif_parms <- p2[grep(paste0("cov"),names(p2))]
 
   # Warn if tau does not remove all DIF
-  if(is.null(anchor) &&
-     pen == 1 &&
-     sum(abs(dif_parms)) > 0 &&
-     alpha == 1 &&
-     num_tau >= 10) {
-    warning(paste0("\nAutomatically-generated or user-defined ",
-                   "tau value is too small to penalize all parameters to ",
-                   "zero without anchor item. Larger values of tau are ",
-                   "recommended."))
-  }
+  # if(is.null(anchor) &&
+  #    pen == 1 &&
+  #    sum(abs(dif_parms)) > 0 &&
+  #    alpha == 1 &&
+  #    num_tau >= 10
+  #    ) {
+  #   warning(paste0("\nAutomatically-generated or user-defined ",
+  #                  "tau value is too small to penalize all parameters to ",
+  #                  "zero without anchor item. Larger values of tau are ",
+  #                  "recommended."), call. = FALSE)
+  # }
 
   # Print information about optimization.
   if(is.null(prox.data)) {

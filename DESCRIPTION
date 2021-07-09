@@ -15,7 +15,9 @@ VignetteBuilder: knitr
 Imports:
     stats (> 3.0.0),
     utils,
-    statmod
+    statmod,
+    parallel,
+    foreach
 Suggests:
     knitr,
     testthat (>= 2.1.0),

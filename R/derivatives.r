@@ -1070,7 +1070,7 @@ d_mu_gaussian <-
 
 
   # Get latent mean and variance vectors.
-  mu <- vapply(theta,
+  mu <- sapply(theta,
               function(x) {
                 (p_item[grep("c0",names(p_item),fixed=T)] +
                    pred_data %*%
@@ -1078,20 +1078,20 @@ d_mu_gaussian <-
                   (p_item[grep("a0",names(p_item),fixed=T)] +
                      pred_data %*%
                      p_item[grep("a1",names(p_item),fixed=T)])*x
-                },numeric(samp_size))
+                })
   sigma <- sqrt(p_item[grep("s0",names(p_item))][1]*exp(
     pred_data %*% p_item[grep("s1",names(p_item))]
     ))
 
 
-  d1_trace <- t(vapply(1:samp_size,
+  d1_trace <- t(sapply(1:samp_size,
                        function(x) {
                          eta_d[x,]/sigma[x]**2*(responses_item[x] - mu[x,])
-                         },numeric(samp_size)))
-  d2_trace <- t(vapply(1:samp_size,
+                         }))
+  d2_trace <- t(sapply(1:samp_size,
                        function(x) {
                          -eta_d[x,]**2 / sigma[x]**2
-                         },numeric(samp_size)))
+                         }))
 
   d1 <- sum(etable_item[[1]]*d1_trace, na.rm = TRUE)
   d2 <- sum(etable_item[[1]]*d2_trace, na.rm = TRUE)
@@ -1133,7 +1133,7 @@ d_sigma_gaussian <-
 
   sigma <- sqrt(p_item[grep("s0",names(p_item))][1]*exp(
     pred_data %*% p_item[grep("s1",names(p_item))]))
-  mu <- vapply(theta,
+  mu <- sapply(theta,
               function(x) {
                 (p_item[grep("c0",names(p_item),fixed=T)] +
                    pred_data %*%
@@ -1141,54 +1141,54 @@ d_sigma_gaussian <-
                   (p_item[grep("a0",names(p_item),fixed=T)] +
                      pred_data %*%
                      p_item[grep("a1",names(p_item),fixed=T)])*x
-                },numeric(samp_size))
+                })
 
   if(parm == "s0") {
-    eta_d1 <- vapply(1:samp_size,
+    eta_d1 <- sapply(1:samp_size,
                      function(x) {
                        exp(pred_data[x,] %*%
                              p_item[grep("s1",names(p_item))]) / (2*sigma[x])
-                       },numeric(samp_size))
-    eta_d2 <- vapply(1:samp_size,
+                       })
+    eta_d2 <- sapply(1:samp_size,
                      function(x) {
                        -exp(pred_data[x,] %*%
                               p_item[grep("s1",names(p_item))])**2 /
                          (4*sigma[x]**3)
-                       },numeric(samp_size))
+                       })
   } else if(parm == "s1") {
-    eta_d1 <- vapply(1:samp_size,
+    eta_d1 <- sapply(1:samp_size,
                      function(x) {
                        sigma[x]*pred_data[x,cov] / 2
-                       },numeric(samp_size))
-    eta_d2 <- vapply(1:samp_size,
+                       })
+    eta_d2 <- sapply(1:samp_size,
                      function(x) {
                        sigma[x]*pred_data[x,cov]**2 / 4
-                       },numeric(samp_size))
+                       })
   }
 
 
-  d1_trace <- t(vapply(1:samp_size,
+  d1_trace <- t(sapply(1:samp_size,
                        function(x) {
                          eta_d1[x]*((responses_item[x]-mu[x,])**2 /
                                       sigma[x]**3 -
                                       1/sigma[x])
-                         },numeric(samp_size)))
+                         }))
 
   if(parm == "s0") {
-    d2_trace <- t(vapply(1:samp_size,
+    d2_trace <- t(sapply(1:samp_size,
                          function(x) {
                            eta_d1[x]**2*(1 / sigma[x]**2 -
                                            3*(responses_item[x] - mu[x,])**2 /
                                            sigma[x]**4) +
                              eta_d2[x]*((responses_item[x] - mu[x,])**2 /
                                           sigma[x]**3 - 1/sigma[x])
-                           },numeric(samp_size)))
+                           }))
   } else if(parm == "s1") {
-    d2_trace <- t(vapply(1:samp_size,
+    d2_trace <- t(sapply(1:samp_size,
                          function(x) {
                            -2*eta_d2[x]*(sigma[x]**(-3)*(responses_item[x] -
                                                            mu[x,])**2)
-                           },numeric(samp_size)))
+                           }))
   }
 
   d1 <- sum(etable_item[[1]]*d1_trace, na.rm = TRUE)

@@ -37,8 +37,8 @@
 #' needs to be identified.
 #' @param optim_method Character value indicating the type of optimization
 #' method to use.
-#' @param em_history List to save EM iterations for supplemental EM algorithm.
-#' @param em_limit Logical value indicating whether the EM algorithm reached
+#' @param estimator_history List to save EM iterations for supplemental EM algorithm.
+#' @param estimator_limit Logical value indicating whether the EM algorithm reached
 #' the maxit limit in the previous estimation round.
 #' @param NA_cases Logical vector indicating if observation is missing.
 #'
@@ -70,8 +70,8 @@ em_estimation <- function(p,
                           num_quad,
                           adapt_quad,
                           optim_method,
-                          em_history,
-                          em_limit,
+                          estimator_history,
+                          estimator_limit,
                           NA_cases) {
 
   # Maximization and print settings.
@@ -183,15 +183,15 @@ em_estimation <- function(p,
     eout_obs_ll <- ifelse(is.null(eout), NA, eout$observed_ll)
 
     if(!is.null(eout)) {
-      em_history[[pen]][,iter] <- c(unlist(p), eout_obs_ll)
+      estimator_history[[pen]][,iter] <- c(unlist(p), eout_obs_ll)
     } else {
-      em_history[[pen]][,iter] <- NA
+      estimator_history[[pen]][,iter] <- NA
     }
 
 
     # Add row for next EM step.
-    if(eps > final_control$tol && !is.null(eout)) {
-      em_history[[pen]] <- cbind(em_history[[pen]],
+    if(eps > final_control$tol) {
+      estimator_history[[pen]] <- cbind(estimator_history[[pen]],
                                  matrix(0,ncol=1,nrow=length(unlist(p))+1))
     }
 
@@ -201,21 +201,15 @@ em_estimation <- function(p,
     # Update the iteration number.
     iter = iter + 1
     if(iter == final_control$maxit) {
-      warning("EM iteration limit reached without convergence")
+      warning("Iteration limit reached without convergence")
       em_limit <- T
     }
 
-    if(is.null(prox_data)) {
       cat('\r', sprintf("Models Completed: %d of %d  Iteration: %d  Change: %f",
                         pen,
                         models_to_fit,
                         iter,
                         round(eps, nchar(final_control$tol))))
-    } else {
-      cat('\r', sprintf("Models Completed: %d of %d   ",
-                        pen,
-                        models_to_fit))
-    }
 
 
     utils::flush.console()
@@ -223,9 +217,8 @@ em_estimation <- function(p,
     # Stop estimation if model would become under-identified because of tau
     # being too small.
     if(mout$under_identified) break
-    if(!is.null(prox_data)) break
+    # if(!is.null(prox_data)) break
 
-    #
 
 
   }
@@ -345,9 +338,9 @@ em_estimation <- function(p,
               complete_info=mout$inv_hess_diag,
               infocrit=infocrit,
               max_tau=max_tau,
-              em_history=em_history,
+              estimator_history=estimator_history,
               under_identified=mout$under_identified,
-              em_limit=em_limit,
+              estimator_limit=estimator_limit,
               eap=eout_eap))
 
 }

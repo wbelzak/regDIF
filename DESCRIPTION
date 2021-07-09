@@ -1,6 +1,6 @@
 Package: regDIF
 Title: Regularized Differential Item Functioning
-Version: 1.0.0
+Version: 1.1.0
 Author: William Belzak
 Maintainer: William Belzak <wbelzak@gmail.com>
 Description: Performs regularization of differential item functioning (DIF) parameters 

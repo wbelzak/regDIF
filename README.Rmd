@@ -20,15 +20,26 @@ knitr::opts_chunk$set(
 
 # regDIF: Regularized Differential Item Functioning
 
-An R package that performs regularization of differential item functioning (DIF) parameters in item response theory (IRT) models using a penalized expectation-maximization algorithm.
+This R package performs regularization of differential item functioning (DIF) parameters in item response theory (IRT) models using a penalized expectation-maximization algorithm.
  
-## Version 1.0.0 Features
+## Version 1.1.0 Features
 
-* Handles multiple continuous and categorical DIF covariates. 
-* Supports binary and ordinal item responses. 
-* Includes LASSO, ridge, MCP, and elastic net penalty functions for regularization.
+regDIF can:
+
+* Handle multiple continuous and categorical DIF covariates;
+* Support binary, ordinal, and continuous item responses;
+* Use LASSO, ridge, MCP, elastic net, and group penalty functions for regularization;
+* Support parallel processing to improve model estimation speed;
+* Allow for proxy data to be used in place of estimating latent variable scores, which leads to
+much faster estimation speed.
 
 ## Installation
+
+To get the current released version from CRAN:
+
+```R
+install.packages("regDIF")
+```
 
 To get the current development version from Github:
 
@@ -39,30 +50,48 @@ devtools::install_github("wbelzak/regDIF")
 
 ## Getting Started
 
-A simulated data example with 6 item responses (binary) and 3 background variables (gender, age, study) is used to demonstrate the `regDIF` package.
+A simulated data example with 6 item responses (binary) and 3 background variables (gender, age, study) is available in the regDIF package:
 
 ```{r, warning = FALSE, message = FALSE}
 library(regDIF)
 head(ida)
 ```
 
-First, the item responses and predictor values are separately specified.
+First, the item responses and predictor values are separately specified:
 
 ```{r, warning = FALSE, message = FALSE}
 item.data <- ida[, 1:6]
 pred.data <- ida[, 7:9]
 ```
 
-Second, the `regDIF()` function fits a sequence of 10 tuning parameter values.
+Second, the `regDIF()` function fits a sequence of 10 tuning parameter values using a penalized
+EM algorithm, which assumes a normal latent variable affects all item responses:
 
 ```{r, results = 'hide'}
 fit <- regDIF(item.data, pred.data, num.tau = 10)
 ```
 
-Finally, the DIF results are shown.
+The DIF results are shown below:
 
 ```{r}
 summary(fit)
+```
+
+When estimation speed is slow, proxy data may be used in place of latent score estimation:
+```{r, results = 'hide'}
+fit_proxy <- regDIF(item.data, pred.data, prox.data = rowSums(item.data))
+```
+```{r}
+summary(fit_proxy)
+```
+
+Other penalty functions (besides LASSO) may also be used. For instance, the elastic net penalty uses
+a second tuning parameter, `alpha`, to vary the ratio of LASSO to ridge penalties:
+```{r, results = 'hide'}
+fit_proxy_net <- regDIF(item.data, pred.data, prox.data = rowSums(item.data), alpha = .5)
+```
+```{r}
+summary(fit_proxy_net)
 ```
 
 ## Questions

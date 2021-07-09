@@ -65,15 +65,21 @@ preprocess <-
                         adapt.quad = FALSE,
                         num.quad = 21,
                         optim.method = "MNR",
-                        start.values = list())
+                        start.values = list(),
+                        parallel = list(FALSE,NULL))
   if(length(control) > 0) final_control[names(control)] <- control
 
   # Pre-process warnings.
-  if(!(any(item.type == "Rasch") ||
-       any(item.type == "2PL") ||
-       any(item.type == "Graded") ||
+  if(final_control$optim.method == "CD" && final_control$parallel[[1]]) {
+    stop(paste0("Parallel computing is not supported for coordinate descent. Use \"UNR\" or ",
+                "\"MNR\" for binary item responses or \"UNR\" for categorical item responses."))
+  }
+  if(!(any(item.type == "rasch") ||
+       any(item.type == "2pl") ||
+       any(item.type == "graded") ||
+       any(item.type == "cfa") ||
        any(is.null(item.type)))) {
-    stop(paste0("Item response types must either be Rasch, 2PL, or Graded."),
+    stop(paste0("Item response types must either be Rasch, 2PL, Graded, or CFA (continuous)."),
          call. = FALSE)
   }
   if(any(tau < 0)) {
@@ -152,15 +158,15 @@ preprocess <-
 
   # Get muliple characters of item.type for number of items.
   if(length(item.type) == 1 | is.null(item.type)) {
-    if(is.null(item.type)) item.type <- "2PL"
+    if(is.null(item.type)) item.type <- "2pl"
     item_type <- rep(item.type, num_items)
   }
 
   # Get item response types.
   num_responses <- rep(1,num_items)
-  cat_items <- item_type == "Rasch" |
-    item_type == "2PL" |
-    item_type == "Graded"
+  cat_items <- item_type == "rasch" |
+    item_type == "2pl" |
+    item_type == "graded"
   if(any(cat_items)) {
     item_data[,which(cat_items)] <-
       apply(item.data[,which(cat_items)],
@@ -172,9 +178,9 @@ preprocess <-
             function(x) length(unique(na.omit(x))))
   }
 
-  if(any(num_responses > 2)) {
+  if(any(num_responses != 2)) {
     if(is.null(control$optim.method) || control$optim.method == "MNR") {
-      warning(paste0("Ordered categorical item responses are not yet supported with ",
+      warning(paste0("These item response types are not yet supported with ",
                      "Multivariate Newton-Raphson (MNR). Using Univariate Newton-Raphson ",
                      "(UNR) instead."), call. = FALSE, immediate. = TRUE)
     }
@@ -183,7 +189,11 @@ preprocess <-
 
   # Update number of quad pts for ordered categorical or guassian items.
   if(any(num_responses != 2) && final_control$num.quad == 21) {
-    final_control$num.quad <- 51
+    if(any(num_responses) == 1) {
+      final_control$num.quad <- 101
+    } else {
+      final_control$num.quad <- 51
+    }
   }
 
   # Define fixed quadrature points.
@@ -307,7 +317,7 @@ preprocess <-
                                     nrow=length(NA_cases)),
                            sd = matrix(NA,ncol=final_length,
                                        nrow=length(NA_cases))),
-                em_history = lapply(1:num.tau,
+                estimator_history = lapply(1:num.tau,
                                     function(x) {
                                       mat <- matrix(0,
                                                     ncol=1,
@@ -341,8 +351,8 @@ preprocess <-
               num_quad = final_control$num.quad,
               adapt_quad = final_control$adapt.quad,
               optim_method = final_control$optim.method,
-              em_history = final$em_history,
-              em_limit = F,
+              estimator_history = final$estimator_history,
+              estimator_limit = F,
               exit_code = 0,
               NA_cases = NA_cases))
 

@@ -31,11 +31,12 @@
 #' by providing a vector equal in length to the number of items in item.data.
 #' The options include:
 #' \itemize{
-#'    \item{\code{"Rasch"} - Slopes constrained to 1 and intercepts freely
+#'    \item{\code{"rasch"} - Slopes constrained to 1 and intercepts freely
 #'    estimated.}
-#'    \item{\code{"2PL"} - Slopes and intercepts freely estimated.}
-#'    \item{\code{"Graded"} - Slopes, intercepts, and thresholds freely
-#'    estimated.}}
+#'    \item{\code{"2pl"} - Slopes and intercepts freely estimated.}
+#'    \item{\code{"graded"} - Slopes, intercepts, and thresholds freely
+#'    estimated.}
+#'    \item{\code{"cfa"}}}
 #' @param pen.type Optional character value indicating the penalty
 #' function to use. The default is NULL, corresponding to the LASSO function.
 #' The options include:
@@ -108,6 +109,11 @@
 #'    by a \code{coef.regDIF} object; and finally,
 #'    \code{dif}, for intercept and slope DIF parameters, again in
 #'    order given by a \code{coef.regDIF} object.}
+#'    \item{parallel}{List of 2, with the first element being a logical value that indicates whether
+#'    to use parallel computing to estimate item parameters separately during maximization.
+#'    The second list element is the cluster object. Default is \code{list(FALSE,NULL)}. Set
+#'    \code{parallel = list(TRUE,cl)} when the EM iterations are running slowly.
+#'    }
 #'    }
 #'
 #' @return Function returns an object of class \code{regDIF}, which is a list of results from
@@ -182,8 +188,8 @@ regDIF <- function(item.data,
                                  data_scrub$num_quad,
                                  data_scrub$adapt_quad,
                                  data_scrub$optim_method,
-                                 data_scrub$em_history,
-                                 data_scrub$em_limit,
+                                 data_scrub$estimator_history,
+                                 data_scrub$estimator_limit,
                                  data_scrub$NA_cases)
 
       # Update vector of tau values based on identification of minimum tau value
@@ -222,7 +228,7 @@ regDIF <- function(item.data,
                                 data_scrub$NA_cases)
 
       # EM limit.
-      if(estimates$em_limit && (data_scrub$pen_type == "mcp" ||
+      if(estimates$estimator_limit && (data_scrub$pen_type == "mcp" ||
                                 data_scrub$pen_type == "grp.mcp")) {
         warning("regDIF procedure stopped because MCP penalty is likely non-convex in this region.")
         data_final$exit_code <- 1

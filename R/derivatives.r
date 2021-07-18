@@ -1027,7 +1027,7 @@ d_categorical_itemblock <-
 #'
 #' @param parm Item parameter being maximized.
 #' @param p_item Vector of item parameters.
-#' @param etable_item E-table for impact.
+#' @param etable E-table.
 #' @param theta Matrix of adaptive theta values.
 #' @param responses_item Vector of item responses.
 #' @param pred_data Matrix or dataframe of DIF and/or impact predictors.
@@ -1045,7 +1045,7 @@ d_categorical_itemblock <-
 d_mu_gaussian <-
   function(parm,
            p_item,
-           etable_item,
+           etable,
            theta,
            responses_item,
            pred_data,
@@ -1093,8 +1093,8 @@ d_mu_gaussian <-
                          -eta_d[x,]**2 / sigma[x]**2
                          }))
 
-  d1 <- sum(etable_item[[1]]*d1_trace, na.rm = TRUE)
-  d2 <- sum(etable_item[[1]]*d2_trace, na.rm = TRUE)
+  d1 <- sum(etable*d1_trace, na.rm = TRUE)
+  d2 <- sum(etable*d2_trace, na.rm = TRUE)
 
   dlist <- list(d1,d2)
 
@@ -1104,7 +1104,7 @@ d_mu_gaussian <-
 #'
 #' @param parm Item parameter being maximized.
 #' @param p_item Vector of item parameters.
-#' @param etable_item E-table for impact.
+#' @param etable E-table for impact.
 #' @param theta Matrix of adaptive theta values.
 #' @param responses_item Vector of item responses.
 #' @param pred_data Matrix or dataframe of DIF and/or impact predictors.
@@ -1122,7 +1122,7 @@ d_mu_gaussian <-
 d_sigma_gaussian <-
   function(parm,
            p_item,
-           etable_item,
+           etable,
            theta,
            responses_item,
            pred_data,
@@ -1191,8 +1191,8 @@ d_sigma_gaussian <-
                            }))
   }
 
-  d1 <- sum(etable_item[[1]]*d1_trace, na.rm = TRUE)
-  d2 <- sum(etable_item[[1]]*d2_trace, na.rm = TRUE)
+  d1 <- sum(etable*d1_trace, na.rm = TRUE)
+  d2 <- sum(etable*d2_trace, na.rm = TRUE)
 
   dlist <- list(d1,d2)
 

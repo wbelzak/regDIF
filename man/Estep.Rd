@@ -8,6 +8,7 @@ Estep(
   p,
   item_data,
   pred_data,
+  item_type,
   mean_predictors,
   var_predictors,
   theta,
@@ -26,6 +27,8 @@ Estep(
 \item{item_data}{Matrix or dataframe of item responses.}
 
 \item{pred_data}{Matrix or dataframe of DIF and/or impact predictors.}
+
+\item{item_type}{Vector of character values indicating the item type.}
 
 \item{mean_predictors}{Possibly different matrix of predictors for the mean
 impact equation.}

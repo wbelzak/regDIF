@@ -49,7 +49,7 @@ impact equation.}
 \item{var_predictors}{Possibly different matrix of predictors for the
 variance impact equation.}
 
-\item{item_type}{Optional character value or vector indicating the type of
+\item{item_type}{Character value or vector indicating the type of
 item to be modeled.}
 
 \item{theta}{Vector of fixed quadrature points.}

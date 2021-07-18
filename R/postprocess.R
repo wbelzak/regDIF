@@ -13,6 +13,8 @@
 #' impact equation.
 #' @param var_predictors Possibly different matrix of predictors for the
 #' variance impact equation.
+#' @param item_type Optional character value or vector indicating the type of
+#' item to be modeled.
 #' @param tau_vec Optional numeric vector of tau values.
 #' @param num_tau Logical indicating whether the minimum tau value needs to be
 #' identified during the regDIF procedure.
@@ -46,6 +48,7 @@ postprocess <-
            prox_data,
            mean_predictors,
            var_predictors,
+           item_type,
            tau_vec,
            num_tau,
            alpha,
@@ -125,7 +128,7 @@ postprocess <-
   }
 
   for(item in 1:num_items) {
-    if(num_responses[item] == 1) {
+    if(item_type[item] == "cfa") {
       item_parms_base <- c(p2[grep(paste0("c0_item",item,"_"),names(p2))],
                            p2[grep(paste0("a0_item",item,"_"),names(p2))],
                            p2[grep(paste0("s0_item",item,"_"),names(p2))])
@@ -139,7 +142,7 @@ postprocess <-
       item_names_base <- c(paste0(item_names[item],".int"),
                            paste0(item_names[item],".slp"))
 
-    } else if(num_responses[item] > 2) {
+    } else {
       item_parms_base <- c(p2[grep(paste0("c0_item",item,"_"),names(p2))],
                            p2[grep(paste0("a0_item",item,"_"),names(p2))])
       item_names_base <- c(paste0(item_names[item],".int",
@@ -153,18 +156,18 @@ postprocess <-
   }
 
   # Transform threshold values if ordered categorical item
-  for(item in 1:num_items) {
-    if(num_responses[item] > 2) {
-      threshold_parms <- p2[grep(paste0("c0_item",item,"_"),
-                            names(p2))][2:(num_responses[item]-1)]
-      intercept_parm <- p2[grep(paste0("c0_item",item,"_"),names(p2))][1]
+  if(any(item_type == "graded")) {
+    for(item in 1:num_items) {
+        if(item_type[item] == "graded") {
+          threshold_parms <- p2[grep(paste0("c0_item",item,"_"),
+                                     names(p2))][2:(num_responses[item]-1)]
+          intercept_parm <- p2[grep(paste0("c0_item",item,"_"),names(p2))][1]
 
-      all_items_parms_base[grep(paste0("c0_item",item,"_"),
-                                names(all_items_parms_base))][2:(
-                                  num_responses[item]-1)] <-
-        intercept_parm - threshold_parms
-    } else {
-      next
+          all_items_parms_base[grep(paste0("c0_item",item,"_"),
+                                    names(all_items_parms_base))][2:(
+                                      num_responses[item]-1)] <-
+            intercept_parm - threshold_parms
+        }
     }
   }
 
@@ -183,7 +186,7 @@ postprocess <-
   }
 
   for(item in 1:num_items) {
-    if(num_responses[item] == 1) {
+    if(item_type[item] == "cfa") {
       item_parms_dif <- c(p2[grep(paste0("c1_item",item,"_"),names(p2),fixed=T)],
                           p2[grep(paste0("a1_item",item,"_"),names(p2),fixed=T)],
                           p2[grep(paste0("s1_item",item,"_"),names(p2),fixed=T)])
@@ -222,13 +225,14 @@ postprocess <-
     return(final)
     }
 
+
   # Assign rest of output to final list.
   final$tau_vec[pen] <- tau_vec[pen]
-  final$aic[pen] <- round(infocrit$aic,3)
-  final$bic[pen] <- round(infocrit$bic,3)
-  final$impact[,pen] <- round(lv_parms,3)
-  final$base[,pen] <- round(all_items_parms_base,3)
-  final$dif[,pen] <- round(all_items_parms_dif,3)
+  final$aic[pen] <- round(infocrit$aic,4)
+  final$bic[pen] <- round(infocrit$bic,4)
+  final$impact[,pen] <- round(lv_parms,4)
+  final$base[,pen] <- round(all_items_parms_base,4)
+  final$dif[,pen] <- round(all_items_parms_dif,4)
   if(is.null(prox.data)) {
     final$eap$scores[,pen] <- eap_scores
     final$eap$sd[,pen] <- eap_sd

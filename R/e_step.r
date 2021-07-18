@@ -3,6 +3,7 @@
 #' @param p List of parameters.
 #' @param item_data Matrix or dataframe of item responses.
 #' @param pred_data Matrix or dataframe of DIF and/or impact predictors.
+#' @param item_type Vector of character values indicating the item type.
 #' @param mean_predictors Possibly different matrix of predictors for the mean
 #' impact equation.
 #' @param var_predictors Possibly different matrix of predictors for the
@@ -24,6 +25,7 @@ Estep <-
   function(p,
            item_data,
            pred_data,
+           item_type,
            mean_predictors,
            var_predictors,
            theta,
@@ -54,7 +56,7 @@ Estep <-
 
     # Compute the trace lines.
     for (item in 1:num_items) {
-      if(num_responses[item] == 1) {
+      if(item_type[item] == "cfa") {
         itemtrace[[item]] <- gaussian_traceline_pts(p[[item]],
                                                     theta,
                                                     item_data[,item],
@@ -65,7 +67,7 @@ Estep <-
                                                      theta,
                                                      pred_data,
                                                      samp_size)
-      } else if (num_responses[item] > 2) {
+      } else {
         itemtrace[[item]] <- cumulative_traceline_pts(p[[item]],
                                                       theta,
                                                       pred_data,
@@ -90,7 +92,7 @@ Estep <-
         if(is.na(item_data[i,j])) next
         x <- item_data[i,j]
 
-        if(num_responses[j] == 1) { # Continuous responses.
+        if(item_type[item] == "cfa") { # Continuous responses.
           posterior <- posterior*itemtrace[[j]][i,]
         } else if(num_responses[j] == 2) { # Binary responses.
           if(x == 1) {

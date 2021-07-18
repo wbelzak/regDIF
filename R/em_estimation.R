@@ -8,7 +8,7 @@
 #' impact equation.
 #' @param var_predictors Possibly different matrix of predictors for the
 #' variance impact equation.
-#' @param item_type Optional character value or vector indicating the type of
+#' @param item_type Character value or vector indicating the type of
 #' item to be modeled.
 #' @param theta Vector of fixed quadrature points.
 #' @param pen_type Character value indicating the penalty function to use.
@@ -88,6 +88,7 @@ em_estimation <- function(p,
     eout <- if(is.null(prox_data)) Estep(p,
                                          item_data,
                                          pred_data,
+                                         item_type,
                                          mean_predictors,
                                          var_predictors,
                                          theta,
@@ -231,6 +232,7 @@ em_estimation <- function(p,
                                    prox_data,
                                    mean_predictors,
                                    var_predictors,
+                                   item_type,
                                    gamma,
                                    samp_size,
                                    num_responses,
@@ -242,6 +244,7 @@ em_estimation <- function(p,
     Estep(p,
           item_data,
           pred_data,
+          item_type,
           mean_predictors,
           var_predictors,
           theta,

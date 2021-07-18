@@ -12,6 +12,7 @@ information_criteria(
   prox_data,
   mean_predictors,
   var_predictors,
+  item_type,
   gamma,
   samp_size,
   num_responses,
@@ -35,6 +36,9 @@ impact equation.}
 
 \item{var_predictors}{Possibly different matrix of predictors for the
 variance impact equation.}
+
+\item{item_type}{Optional character value or vector indicating the type of
+item to be modeled.}
 
 \item{gamma}{Numeric value indicating the gamma parameter in the MCP
 function.}

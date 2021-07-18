@@ -64,6 +64,7 @@ preprocess <-
                         maxit = 2000,
                         adapt.quad = FALSE,
                         num.quad = 21,
+                        int.limits = c(-6,6),
                         optim.method = "MNR",
                         start.values = list(),
                         parallel = list(FALSE,NULL))
@@ -79,7 +80,7 @@ preprocess <-
        any(item.type == "graded") ||
        any(item.type == "cfa") ||
        any(is.null(item.type)))) {
-    stop(paste0("Item response types must either be Rasch, 2PL, Graded, or CFA (continuous)."),
+    stop("Item response types must be \"rasch\", \"2pl\", \"graded\", or \"cfa\".",
          call. = FALSE)
   }
   if(any(tau < 0)) {
@@ -156,17 +157,31 @@ preprocess <-
   num_items <- dim(item_data)[2]
   num_predictors <- dim(pred_data)[2]
 
-  # Get muliple characters of item.type for number of items.
-  if(length(item.type) == 1 | is.null(item.type)) {
-    if(is.null(item.type)) item.type <- "2pl"
-    item_type <- rep(item.type, num_items)
+  # Determine initial number of responses
+  num_responses <-
+    as.vector(apply(item_data, 2, function(x) length(unique(na.omit(x)))))
+
+
+  # Get multiple characters of item.type for number of items.
+  if(is.null(item.type)) {
+    item_type <- sapply(1:num_items, function(item) {
+      if(num_responses[item] == 2) {
+        tmp = '2pl'
+      } else if (num_responses[item] > 2 && num_responses[item] < 7) {
+        tmp = 'graded'
+      } else if (num_responses[item] > 6) {
+        tmp = 'cfa'
+      }
+      return(tmp)
+      })
+  } else if(length(item.type) == 1) {
+    item_type = rep(item.type, num_items)
   }
 
   # Get item response types.
-  num_responses <- rep(1,num_items)
-  cat_items <- item_type == "rasch" |
-    item_type == "2pl" |
-    item_type == "graded"
+  cat_items <- item_type == 'rasch' |
+                     item_type == '2pl' |
+                     item_type == 'graded'
   if(any(cat_items)) {
     item_data[,which(cat_items)] <-
       apply(item.data[,which(cat_items)],
@@ -179,7 +194,7 @@ preprocess <-
   }
 
   if(any(num_responses != 2)) {
-    if(is.null(control$optim.method) || control$optim.method == "MNR") {
+    if(is.null(control$optim.method)) {
       warning(paste0("These item response types are not yet supported with ",
                      "Multivariate Newton-Raphson (MNR). Using Univariate Newton-Raphson ",
                      "(UNR) instead."), call. = FALSE, immediate. = TRUE)
@@ -189,7 +204,7 @@ preprocess <-
 
   # Update number of quad pts for ordered categorical or guassian items.
   if(any(num_responses != 2) && final_control$num.quad == 21) {
-    if(any(num_responses) == 1) {
+    if(any(num_responses > 6)) {
       final_control$num.quad <- 101
     } else {
       final_control$num.quad <- 51
@@ -197,7 +212,8 @@ preprocess <-
   }
 
   # Define fixed quadrature points.
-  theta <- seq(-6, 6, length.out = final_control$num.quad)
+  theta <- seq(final_control$int.limits[1],
+               final_control$int.limits[2], length.out = final_control$num.quad)
 
   if(final_control$adapt.quad == F && final_control$num.quad < 21) {
     warning(paste0("When using fixed quadrature, greater than 20 points for ",
@@ -225,27 +241,7 @@ preprocess <-
   for(item in 1:num_items){
 
     # Different item response types.
-    if(num_responses[item] > 2) {
-      p[[item]] <- c(0,
-                     seq(.25,1,length.out = num_responses[item]-2),
-                     1,
-                     rep(0, num_predictors),
-                     rep(0, num_predictors))
-      names(p[[item]]) <- c(paste0('c0_item',item,"_int",
-                                   1:(num_responses[item]-1)),
-                            paste0('a0_item',item,"_"),
-                            paste0('c1_item',item,"_cov",1:num_predictors),
-                            paste0('a1_item',item,"_cov",1:num_predictors))
-    } else if(num_responses[item] == 2) {
-      p[[item]] <- c(0,
-                     1,
-                     rep(0, num_predictors),
-                     rep(0, num_predictors))
-      names(p[[item]]) <- c(paste0('c0_item',item,"_int1"),
-                            paste0('a0_item',item,"_"),
-                            paste0('c1_item',item,"_cov",1:num_predictors),
-                            paste0('a1_item',item,"_cov",1:num_predictors))
-    } else if(num_responses[item] == 1) {
+    if(item_type[item] == "cfa") {
       p[[item]] <- c(mean(item_data[,item]),
                      sqrt(.5*var(item_data[,item])),
                      rep(0, num_predictors),
@@ -258,8 +254,30 @@ preprocess <-
                             paste0('a1_item',item,"_cov",1:num_predictors),
                             paste0('s0_item',item, "_"),
                             paste0('s1_item',item,"_cov",1:num_predictors))
+    } else if(num_responses[item] == 2) {
+      p[[item]] <- c(0,
+                     1,
+                     rep(0, num_predictors),
+                     rep(0, num_predictors))
+      names(p[[item]]) <- c(paste0('c0_item',item,"_int1"),
+                            paste0('a0_item',item,"_"),
+                            paste0('c1_item',item,"_cov",1:num_predictors),
+                            paste0('a1_item',item,"_cov",1:num_predictors))
+    } else {
+      p[[item]] <- c(0,
+                     seq(.25,1,length.out = num_responses[item]-2),
+                     1,
+                     rep(0, num_predictors),
+                     rep(0, num_predictors))
+      names(p[[item]]) <- c(paste0('c0_item',item,"_int",
+                                   1:(num_responses[item]-1)),
+                            paste0('a0_item',item,"_"),
+                            paste0('c1_item',item,"_cov",1:num_predictors),
+                            paste0('a1_item',item,"_cov",1:num_predictors))
     }
-  }
+
+    }
+
 
   p[[(num_items+1)]] <- rep(0,ncol(mean_predictors))
   p[[(num_items+2)]] <- rep(0,ncol(var_predictors))
@@ -289,7 +307,7 @@ preprocess <-
     }
   }
 
-  if(any(item.type == "cfa")){
+  if(any(item_type == "cfa")){
     num_base_parms <- length(c(unlist(p)[grep('c0',names(unlist(p)))],
                                unlist(p)[grep('a0',names(unlist(p)))],
                                unlist(p)[grep('s0',names(unlist(p)))]))
@@ -330,6 +348,7 @@ preprocess <-
                 complete_ll_info = list(),
                 data = vector("list",3),
                 call = call)
+
   return(list(p = p,
               final = final,
               item_data = item_data,

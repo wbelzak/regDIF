@@ -92,6 +92,8 @@
 #'    points to be used. For fixed-point quadrature, the default is \code{21}
 #'    points when all item responses are binary or else \code{51} points if at
 #'    least one item is ordered categorical.}
+#'    \item{int.limits}{Vector of 2 numeric values indicating the integral limits
+#'    for quadrature. Default is c(-6,6).}
 #'    \item{optim.method}{Character value indicating which optimization method
 #'    to use. Default is "MNR", which updates the impact and item parameter
 #'    estimates using Multivariate Newton-Raphson. Another option is "UNR",
@@ -211,6 +213,7 @@ regDIF <- function(item.data,
                                 data_scrub$prox_data,
                                 data_scrub$mean_predictors,
                                 data_scrub$var_predictors,
+                                data_scrub$item_type,
                                 data_scrub$tau_vec,
                                 data_scrub$num_tau,
                                 alpha,

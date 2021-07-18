@@ -7,7 +7,7 @@
 d_sigma_gaussian(
   parm,
   p_item,
-  etable_item,
+  etable,
   theta,
   responses_item,
   pred_data,
@@ -22,7 +22,7 @@ d_sigma_gaussian(
 
 \item{p_item}{Vector of item parameters.}
 
-\item{etable_item}{E-table for impact.}
+\item{etable}{E-table for impact.}
 
 \item{theta}{Matrix of adaptive theta values.}
 

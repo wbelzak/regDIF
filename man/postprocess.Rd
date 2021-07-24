@@ -28,7 +28,6 @@ postprocess(
   num_predictors,
   num_items,
   num_quad,
-  exit_code,
   NA_cases
 )
 }
@@ -86,8 +85,6 @@ penalty function.}
 
 \item{num_quad}{Number of quadrature points used for approximating the
 latent variable.}
-
-\item{exit_code}{An integer indicating whether the regDIF procedure finished normally}
 
 \item{NA_cases}{Logical vector indicating NA cases.}
 }

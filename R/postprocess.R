@@ -31,7 +31,6 @@
 #' @param num_items Number of items in dataset.
 #' @param num_quad Number of quadrature points used for approximating the
 #' latent variable.
-#' @param exit_code An integer indicating whether the regDIF procedure finished normally
 #' @param NA_cases Logical vector indicating NA cases.
 #'
 #' @return a \code{"list"} object of processed \code{"regDIF"} results
@@ -62,7 +61,6 @@ postprocess <-
            num_predictors,
            num_items,
            num_quad,
-           exit_code,
            NA_cases) {
 
   # Get estimates and information criteria.
@@ -73,6 +71,7 @@ postprocess <-
   under_identified <- estimates$under_identified
   eap_scores <- estimates$eap$eap_scores
   eap_sd <- estimates$eap$eap_sd
+  exit_code <- estimates$exit_code
 
   # Organize impact parameters.
   if(is.null(control$impact.mean.data)) {
@@ -132,22 +131,22 @@ postprocess <-
       item_parms_base <- c(p2[grep(paste0("c0_item",item,"_"),names(p2))],
                            p2[grep(paste0("a0_item",item,"_"),names(p2))],
                            p2[grep(paste0("s0_item",item,"_"),names(p2))])
-      item_names_base <- c(paste0(item_names[item],".int"),
-                           paste0(item_names[item],".slp"),
-                           paste0(item_names[item],".res"))
+      item_names_base <- c(paste0(item_names[item],".int."),
+                           paste0(item_names[item],".slp."),
+                           paste0(item_names[item],".res."))
 
     } else if(num_responses[item] == 2) {
       item_parms_base <- c(p2[grep(paste0("c0_item",item,"_"),names(p2))],
                            p2[grep(paste0("a0_item",item,"_"),names(p2))])
-      item_names_base <- c(paste0(item_names[item],".int"),
-                           paste0(item_names[item],".slp"))
+      item_names_base <- c(paste0(item_names[item],".int."),
+                           paste0(item_names[item],".slp."))
 
     } else {
       item_parms_base <- c(p2[grep(paste0("c0_item",item,"_"),names(p2))],
                            p2[grep(paste0("a0_item",item,"_"),names(p2))])
-      item_names_base <- c(paste0(item_names[item],".int",
+      item_names_base <- c(paste0(item_names[item],".int.",
                                   1:(num_responses[item]-1)),
-                           paste0(item_names[item],".slp"))
+                           paste0(item_names[item],".slp."))
 
     }
     all_items_parms_base <- c(all_items_parms_base,item_parms_base)
@@ -226,7 +225,8 @@ postprocess <-
     }
 
 
-  # Assign rest of output to final list.
+
+  # Order item parms# Assign rest of output to final list.
   final$tau_vec[pen] <- tau_vec[pen]
   final$aic[pen] <- round(infocrit$aic,4)
   final$bic[pen] <- round(infocrit$bic,4)
@@ -251,21 +251,20 @@ postprocess <-
   #   names(final$complete_ll_info[[num_items+1]]) <- names(p[[num_items+1]])
   #   names(final$complete_ll_info[[num_items+2]]) <- names(p[[num_items+2]])
   # }
-  final$exit_code <- ifelse(exit_code == 0, 0, 1)
+  final$exit_code <- exit_code
   final$missing_obs <- which(NA_cases)
 
-  # Order item parms.
   final_int_thr_base <-
-    final$base[grep(paste0(c(".int",".thr"),
+    final$base[grep(paste0(c("\\.int\\.","\\.thr\\."),
                            collapse = "|"),
                     rownames(final$base)),
                pen]
   final_slp_base <-
-    final$base[grep(".slp",
+    final$base[grep("\\.slp\\.",
                     rownames(final$base)),
                pen]
   final_res_base <-
-    final$base[grep(".res",
+    final$base[grep("\\.res\\.",
                     rownames(final$base)),
                pen]
   final_names_base <-
@@ -274,13 +273,13 @@ postprocess <-
     matrix(c(final_int_thr_base,final_slp_base,final_res_base), ncol = 1)
   rownames(final$base) <- final_names_base
 
-  final_int_dif <- final$dif[grep(".int",
+  final_int_dif <- final$dif[grep("\\.int\\.",
                                   rownames(final$dif)),
                              pen]
-  final_slp_dif <- final$dif[grep(".slp",
+  final_slp_dif <- final$dif[grep("\\.slp\\.",
                                   rownames(final$dif)),
                              pen]
-  final_res_dif <- final$dif[grep(".res..",
+  final_res_dif <- final$dif[grep("\\.res\\.",
                                   rownames(final$dif)),
                              pen]
   final_names_dif <- names(c(final_int_dif,final_slp_dif,final_res_dif))

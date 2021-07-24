@@ -31,7 +31,8 @@ em_estimation(
   optim_method,
   estimator_history,
   estimator_limit,
-  NA_cases
+  NA_cases,
+  exit_code
 )
 }
 \arguments{
@@ -102,6 +103,8 @@ method to use.}
 the maxit limit in the previous estimation round.}
 
 \item{NA_cases}{Logical vector indicating if observation is missing.}
+
+\item{exit_code}{Integer indicating if the model has converged properly.}
 }
 \value{
 a \code{"list"} of matrices with unprocessed model estimates

@@ -41,6 +41,7 @@
 #' @param estimator_limit Logical value indicating whether the EM algorithm reached
 #' the maxit limit in the previous estimation round.
 #' @param NA_cases Logical vector indicating if observation is missing.
+#' @param exit_code Integer indicating if the model has converged properly.
 #'
 #' @return a \code{"list"} of matrices with unprocessed model estimates
 #'
@@ -72,7 +73,8 @@ em_estimation <- function(p,
                           optim_method,
                           estimator_history,
                           estimator_limit,
-                          NA_cases) {
+                          NA_cases,
+                          exit_code) {
 
   # Maximization and print settings.
   lastp <- p
@@ -104,7 +106,9 @@ em_estimation <- function(p,
 
     if(optim_method == "MNR") {
       # M-step: Optimize parameters using multivariate NR.
-      mout <- Mstep_block(p,
+      mout <- tryCatch(
+        {
+              Mstep_block(p,
                           item_data,
                           pred_data,
                           prox_data,
@@ -126,9 +130,14 @@ em_estimation <- function(p,
                           num_predictors,
                           num_tau,
                           max_tau = FALSE)
+        },
+      error = function(e) {e; return(NULL)} )
+
     } else if(optim_method == "UNR") {
       # M-step: Optimize parameters using one round of coordinate descent.
-      mout <- Mstep_cd(p,
+      mout <- tryCatch(
+        {
+          Mstep_cd(p,
                        item_data,
                        pred_data,
                        mean_predictors,
@@ -149,8 +158,12 @@ em_estimation <- function(p,
                        num_predictors,
                        num_tau,
                        max_tau = FALSE)
+    },
+    error = function(e) {e; return(NULL)} )
     } else if(optim_method == "CD") {
-      mout <- Mstep_cd2(p,
+      mout <- tryCatch(
+        {
+          Mstep_cd2(p,
                         item_data,
                         pred_data,
                         mean_predictors,
@@ -171,6 +184,15 @@ em_estimation <- function(p,
                         num_predictors,
                         num_tau,
                         max_tau = FALSE)
+
+        },
+        error = function(e) {e; return(NULL)} )
+    }
+
+
+    if(is.null(mout)) {
+      exit_code <- 4
+      break
     }
 
     # Obtain parameter estimates.
@@ -199,15 +221,17 @@ em_estimation <- function(p,
     # Update parameter list.
     lastp <- p
 
+
     # Update the iteration number.
     iter = iter + 1
     if(iter == final_control$maxit) {
-      warning("Iteration limit reached without convergence")
-      em_limit <- T
+      warning("Iteration limit reached without convergence", call. = FALSE, immediate. = TRUE)
+      estimator_limit <- T
+      exit_code <- exit_code + 1
     }
 
       cat('\r', sprintf("Models Completed: %d of %d  Iteration: %d  Change: %f",
-                        pen,
+                        pen - 1,
                         models_to_fit,
                         iter,
                         round(eps, nchar(final_control$tol))))
@@ -223,6 +247,8 @@ em_estimation <- function(p,
 
 
   }
+
+  if(exit_code == 4) return(NULL)
 
   # Get information criteria.
   infocrit <- information_criteria(eout,
@@ -344,6 +370,7 @@ em_estimation <- function(p,
               estimator_history=estimator_history,
               under_identified=mout$under_identified,
               estimator_limit=estimator_limit,
-              eap=eout_eap))
+              eap=eout_eap,
+              exit_code=exit_code))
 
 }

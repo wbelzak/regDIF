@@ -20,12 +20,14 @@ summary.regDIF <-
       sum_results <- c(object$tau_vec[which.min(object$aic)],
                        object$aic[which.min(object$aic)])
       dif <- object$dif[object$dif[,which.min(object$aic)] != 0, which.min(object$aic)]
+      if(length(grep(".res.", names(dif))) != 0) dif <- dif[-grep(".res.", names(dif))]
       names(sum_results) <- c("tau","aic")
 
     } else if(method == "bic") {
       sum_results <- c(object$tau_vec[which.min(object$bic)],
                        object$bic[which.min(object$bic)])
       dif <- object$dif[object$dif[,which.min(object$bic)] != 0, which.min(object$bic)]
+      if(length(grep(".res.", names(dif))) != 0) dif <- dif[-grep(".res.", names(dif))]
       names(sum_results) <- c("tau","bic")
 
     }

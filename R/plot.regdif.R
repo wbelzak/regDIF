@@ -3,8 +3,9 @@
 #' @param x Fitted regDIF model object.
 #' @param y Unused for plotting regDIF model object.
 #' @param method Fit statistic to use for identifying DIF effects in plot.
-#' @param legend.seed Random seed to sample line colors and line types for
+#' @param color.seed Random seed to sample line colors and line types for
 #' DIF effects in plot.
+#' @param legend.plot Logical indicating whether to plot a legend. Default is \code{TRUE}.
 #' @param ... Additional arguments to be passed through to \code{plot}.
 #'
 #' @rdname plot.regDIF
@@ -16,9 +17,9 @@
 #' @export
 #'
 plot.regDIF <-
-  function(x, y = NULL, method = "bic", legend.seed = 123, ...) {
+  function(x, y = NULL, method = "bic", color.seed = 123, legend.plot = TRUE, ...) {
 
-    tau <- x$tau_vec
+    tau <- log(x$tau_vec)
     if(length(tau) < 2) stop(
       paste0("Must run multiple tau values to plot."),
       call. = TRUE)
@@ -28,32 +29,31 @@ plot.regDIF <-
     min.tau <- tau[which.min(unlist(x[method]))]
     dif.min.tau <- dif.parms[,which(tau == min.tau)]
     nonzero.dif <- dif.min.tau[!(dif.min.tau == 0)]
-    if(length(nonzero.dif) == 0) {
-      stop(paste0("No DIF effects in final model to plot."), call. = TRUE)
-    }
-    # Find first tau with non-zero dif parms.
-      for(j in 1:ncol(dif.parms)){
-        if(sum(abs(dif.parms[,j])) > 0){
-          first.tau <- j
-          break
-        } else{
-          next
-        }
-      }
+
+    # # Find first tau with non-zero dif parms.
+    #   for(j in 1:ncol(dif.parms)){
+    #     if(sum(abs(dif.parms[,j])) > 0){
+    #       first.tau <- j
+    #       break
+    #     } else{
+    #       next
+    #     }
+    #   }
 
     plot(tau,
          rep(0,length(tau)),
          type = 'l',
-         xlim = c(tau[first.tau]+.1, min(tau, na.rm = T)),
+         xlim = c(max(tau, na.rm = T), min(tau, na.rm = T)),
+         ylim = c(min(dif.parms, na.rm = TRUE), max(dif.parms, na.rm = TRUE)),
          main = "Regularization Path",
-         xlab = expression(tau),
+         xlab = expression(log(tau)),
          ylab = "Estimate")
     abline(v = min.tau, lty = 2)
 
       dif.lines <- matrix(NA,ncol=2,nrow=nrow(dif.parms))
       for(i in 1:nrow(dif.parms)){
         if(rownames(dif.parms)[i] %in% names(nonzero.dif)){
-          set.seed(legend.seed+i)
+          set.seed(color.seed+i)
           linecolor <- sample(grDevices::colors()[grep('gr(a|e)y',
                                                        grDevices::colors(),
                                                        invert = T)], 1)
@@ -70,18 +70,22 @@ plot.regDIF <-
         dif.lines[i,2] <- linetype
 
       }
-    lines(c(tau[first.tau]+.1,tau),
+    lines(c(tau, tau[1]),
           rep(0,length(tau)+1),
           type = 'l',
-          xlim = c(tau[first.tau]+.1,min(tau)))
+          xlim = c(tau[1],max(tau, na.rm = TRUE)))
     nonzero.dif.lines <- dif.lines[!(dif.min.tau == 0)]
-    legend("topleft",
-           legend = names(nonzero.dif),
-           col = nonzero.dif.lines[1:length(nonzero.dif)],
-           lty = as.numeric(
-             nonzero.dif.lines[(length(nonzero.dif)+1):(length(nonzero.dif)*2)]
+    if(legend.plot) {
+      legend("topleft",
+             legend = names(nonzero.dif),
+             col = nonzero.dif.lines[1:length(nonzero.dif)],
+             lty = as.numeric(
+               nonzero.dif.lines[(length(nonzero.dif)+1):(length(nonzero.dif)*2)]
              ),
-           lwd = 2,
-           cex = 0.75)
+             lwd = 2,
+             cex = 0.75,
+             bty = "n")
+    }
+
 
   }

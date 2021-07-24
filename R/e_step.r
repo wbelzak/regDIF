@@ -62,7 +62,7 @@ Estep <-
                                                     item_data[,item],
                                                     pred_data,
                                                     samp_size)
-      } else if (num_responses[item] == 2) {
+      } else if (item_type[item] == "2pl") {
         itemtrace[[item]] <- bernoulli_traceline_pts(p[[item]],
                                                      theta,
                                                      pred_data,
@@ -94,7 +94,7 @@ Estep <-
 
         if(item_type[item] == "cfa") { # Continuous responses.
           posterior <- posterior*itemtrace[[j]][i,]
-        } else if(num_responses[j] == 2) { # Binary responses.
+        } else if(item_type[item] == "2pl") { # Binary responses.
           if(x == 1) {
             posterior <- posterior*(1-itemtrace[[j]][i,])
           } else {

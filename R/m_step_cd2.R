@@ -316,7 +316,7 @@ Mstep_cd2 <-
         }
 
         # Bernoulli responses.
-      } else if(num_responses[item] == 2) {
+      } else if(item_type[item] == "2pl") {
 
         # CD Maximization and print settings.
         lastp_cd <- p_cd

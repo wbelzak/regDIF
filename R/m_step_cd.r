@@ -130,7 +130,7 @@ Mstep_cd <-
       }
 
       # Bernoulli responses.
-      if(num_responses[item] == 2) {
+      if(item_type[item] == "2pl") {
 
         # Intercept updates.
         anl_deriv <- d_bernoulli("c0",
@@ -526,7 +526,7 @@ Mstep_cd <-
 
 
         # Bernoulli responses.
-      } else if(num_responses[item] == 2) {
+      } else if(item_type[item] == "2pl") {
 
         # Intercept updates.
         anl_deriv <- d_bernoulli("c0",

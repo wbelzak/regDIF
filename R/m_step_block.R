@@ -122,7 +122,7 @@ Mstep_block <-
                     envir=environment())
       p_items <- foreach::foreach(item=1:num_items) %dopar% {
 
-        if(num_responses[item] == 2) {
+        if(item_type[item] == "2pl") {
 
           if(is.null(prox_data)) {
             anl_deriv_item <- d_bernoulli_itemblock(p[[item]],

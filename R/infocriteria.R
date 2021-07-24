@@ -88,7 +88,7 @@ information_criteria <-
       observed_ll_dif_item <- sum(log(itemtrace[[1]]),
                                      na.rm = TRUE)
 
-    } else if (num_responses[item] == 2) {
+    } else if (item_type[item] == "2pl") {
 
       if(!is.null(eout)) {
         itemtrace <- bernoulli_traceline_pts(p[[item]],
@@ -112,7 +112,7 @@ information_criteria <-
       }
 
 
-    } else if (num_responses[item] > 2){
+    } else {
       itemtrace <- cumulative_traceline_pts(p[[item]],
                                              theta,
                                              pred_data,

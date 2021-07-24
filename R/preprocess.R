@@ -120,13 +120,13 @@ preprocess <-
   }
 
   # Speed up computation.
-  item_data <- as.matrix(sapply(item.data,as.numeric))
-  pred_data <- as.matrix(sapply(pred.data,as.numeric))
+  item_data <- as.matrix(apply(item.data,2,as.numeric))
+  pred_data <- as.matrix(apply(pred.data,2,as.numeric))
   prox_data <- if(!is.null(prox.data)) scale(as.matrix(as.numeric(prox.data)))
   mean_predictors <-
-    as.matrix(sapply(final_control$impact.mean.data,as.numeric))
+    as.matrix(apply(final_control$impact.mean.data,2,as.numeric))
   var_predictors <-
-    as.matrix(sapply(final_control$impact.var.data,as.numeric))
+    as.matrix(apply(final_control$impact.var.data,2,as.numeric))
 
   # Remove any variables with no variance.
   item_data_no_var <- apply(item_data, 2, var) == 0

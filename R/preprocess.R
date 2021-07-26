@@ -50,9 +50,9 @@ preprocess <-
   item.data <- item.data[!NA_cases,]
   pred.data <-
     if(is.null(dim(pred.data))) {
-      pred.data[!NA_cases]
+      as.matrix(pred.data[!NA_cases])
     } else {
-      pred.data[!NA_cases,]
+      as.matrix(pred.data[!NA_cases,])
     }
 
   prox.data <- if(!is.null(prox.data)) prox.data[!NA_cases]
@@ -64,8 +64,8 @@ preprocess <-
                         maxit = 2000,
                         adapt.quad = FALSE,
                         num.quad = 21,
-                        int.limits = c(-6,6),
-                        optim.method = "MNR",
+                        int.limits = if(any(item.type == "cfa")) {c(-3,3)} else {c(-6,6)},
+                        optim.method = if(is.null(item.type) || all(item.type == "2pl")) {"MNR"} else {"UNR"},
                         start.values = list(),
                         parallel = list(FALSE,NULL))
   if(length(control) > 0) final_control[names(control)] <- control
@@ -120,13 +120,13 @@ preprocess <-
   }
 
   # Speed up computation.
-  item_data <- as.matrix(apply(item.data,2,as.numeric))
-  pred_data <- as.matrix(apply(pred.data,2,as.numeric))
+  item_data <- as.matrix(apply(as.matrix(item.data),2,as.numeric))
+  pred_data <- as.matrix(apply(as.matrix(pred.data),2,as.numeric))
   prox_data <- if(!is.null(prox.data)) scale(as.matrix(as.numeric(prox.data)))
   mean_predictors <-
-    as.matrix(apply(final_control$impact.mean.data,2,as.numeric))
+    as.matrix(apply(as.matrix(final_control$impact.mean.data),2,as.numeric))
   var_predictors <-
-    as.matrix(apply(final_control$impact.var.data,2,as.numeric))
+    as.matrix(apply(as.matrix(final_control$impact.var.data),2,as.numeric))
 
   # Remove any variables with no variance.
   item_data_no_var <- apply(item_data, 2, var) == 0
@@ -210,6 +210,8 @@ preprocess <-
       final_control$num.quad <- 51
     }
   }
+
+
 
   # Define fixed quadrature points.
   theta <- seq(final_control$int.limits[1],
@@ -347,6 +349,7 @@ preprocess <-
                 log_lik = NA,
                 complete_ll_info = list(),
                 data = vector("list",3),
+                exit_code = 0,
                 call = call)
 
   return(list(p = p,

@@ -428,6 +428,7 @@ Mstep_cd <-
                                       num_quad)
         p[[item]][s0_parms][[1]] <- p[[item]][s0_parms][[1]] -
           anl_deriv[[1]]/anl_deriv[[2]]
+        if(p[[item]][s0_parms][[1]] < 0) p[[item]][s0_parms][[1]] <- 1
 
 
         if(!any(item == anchor)) {

@@ -195,18 +195,25 @@ regDIF <- function(item.data,
                                  data_scrub$NA_cases,
                                  data_scrub$exit_code)
 
+
       if(is.null(estimates)) {
-        warning("regDIF procedure stopped because of model convergence problems.",
-                call. = FALSE, immediate. = TRUE)
-        data_final$exit_code <- 4
-        break
+        if(pen > 1){
+          warning("regDIF procedure stopped because of model convergence problems.",
+                  call. = FALSE, immediate. = TRUE)
+          data_final$exit_code <- 4
+          break
+        } else {
+          stop("regDIF procedure stopped because of model convergence problems.",
+                  call. = FALSE)
+        }
+
       }
 
       data_scrub$exit_code <- data_scrub$exit_code + estimates$exit_code
 
       # Update vector of tau values based on identification of minimum tau value
       # which removes all DIF from the model.
-      if(data_scrub$id_tau) {
+      if(data_scrub$id_tau & !is.null(estimates)) {
         data_scrub$tau_vec <- seq((estimates$max_tau)**(1/3),0,
                                   length.out = data_scrub$num_tau)**3
         data_scrub$id_tau <- FALSE
@@ -239,6 +246,8 @@ regDIF <- function(item.data,
                                 data_scrub$num_quad,
                                 data_scrub$NA_cases)
 
+
+
       # EM limit.
       if(estimates$estimator_limit & (data_scrub$pen_type == "mcp" ||
                                        data_scrub$pen_type == "grp.mcp")) {
@@ -263,6 +272,7 @@ regDIF <- function(item.data,
 
 
     }
+
 
 
   # Obtain final results.

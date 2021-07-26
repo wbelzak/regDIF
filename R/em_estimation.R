@@ -131,7 +131,8 @@ em_estimation <- function(p,
                           num_tau,
                           max_tau = FALSE)
         },
-      error = function(e) {e; return(NULL)} )
+      error = function(e) {e; return(NULL)},
+      warning = function(w) {} )
 
     } else if(optim_method == "UNR") {
       # M-step: Optimize parameters using one round of coordinate descent.
@@ -159,7 +160,8 @@ em_estimation <- function(p,
                        num_tau,
                        max_tau = FALSE)
     },
-    error = function(e) {e; return(NULL)} )
+    error = function(e) {e; return(NULL)},
+    warning = function(w) {})
     } else if(optim_method == "CD") {
       mout <- tryCatch(
         {
@@ -186,7 +188,8 @@ em_estimation <- function(p,
                         max_tau = FALSE)
 
         },
-        error = function(e) {e; return(NULL)} )
+        error = function(e) {e; return(NULL)},
+        warning = function(w) {})
     }
 
 

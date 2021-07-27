@@ -2,7 +2,7 @@
 % Please edit documentation in R/traceline.r
 \name{cumulative_traceline_pts}
 \alias{cumulative_traceline_pts}
-\title{Ordinal tracelines (for derivatives).}
+\title{Ordinal tracelines.}
 \usage{
 cumulative_traceline_pts(
   p_item,
@@ -31,6 +31,6 @@ latent variable.}
 a \code{"matrix"} of probability values for categorical (cumulative) item likelihood
 }
 \description{
-Ordinal tracelines (for derivatives).
+Ordinal tracelines.
 }
 \keyword{internal}

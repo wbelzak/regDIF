@@ -35,6 +35,8 @@ d_categorical(
 
 \item{samp_size}{Sample size in dataset.}
 
+\item{num_responses_item}{Number of responses for item.}
+
 \item{num_items}{Number of items in dataset.}
 
 \item{num_quad}{Number of quadrature points used for approximating the

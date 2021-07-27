@@ -78,15 +78,28 @@ information_criteria <-
 
     #compute negative log-likelihood values
     if(item_type[item] == "cfa") {
-      itemtrace <- gaussian_traceline_pts(p[[item]],
-                                          theta,
-                                          item_data[,item],
-                                          pred_data,
-                                          samp_size)
-      complete_ll_dif_item <- sum(etable*log(itemtrace[[1]]),
-                                     na.rm = TRUE)
-      observed_ll_dif_item <- sum(log(itemtrace[[1]]),
-                                     na.rm = TRUE)
+
+      if(!is.null(eout)) {
+        itemtrace <- gaussian_traceline_pts(p[[item]],
+                                            theta,
+                                            item_data[,item],
+                                            pred_data,
+                                            samp_size)
+        complete_ll_dif_item <- sum(etable*log(itemtrace[[1]]),
+                                       na.rm = TRUE)
+        observed_ll_dif_item <- sum(log(itemtrace[[1]]),
+                                       na.rm = TRUE)
+      } else{
+        itemtrace <- gaussian_traceline_pts_proxy(p[[item]],
+                                                  prox_data,
+                                                  item_data[,item],
+                                                  pred_data,
+                                                  samp_size)
+        complete_ll_dif_item <- sum(log(itemtrace[[1]]),
+                                    na.rm = TRUE)
+        observed_ll_dif_item <- sum(prox_data*log(itemtrace[[1]]),
+                                    na.rm = TRUE)
+      }
 
     } else if (item_type[item] == "2pl") {
 
@@ -112,32 +125,61 @@ information_criteria <-
       }
 
 
-    } else {
-      itemtrace <- cumulative_traceline_pts(p[[item]],
-                                             theta,
-                                             pred_data,
-                                             samp_size,
-                                             num_responses[item],
-                                             num_quad)
-      complete_ll_dif_item <- 0
-      observed_ll_dif_item <- 0
-      for(resp in 1:num_responses[item]){
-        if(resp < num_responses[item] && all(itemtrace[[resp]] == 0)){
-          log_itemtrace_cat <- 0
-        } else{
-          if(resp == 1) {
-            log_itemtrace_cat <- log(1-itemtrace[[resp]])
-          } else if(resp == num_responses[item]) {
-            log_itemtrace_cat <- log(itemtrace[[resp-1]])
-          } else {
-            log_itemtrace_cat <- log(itemtrace[[resp-1]]-itemtrace[[resp]])
+    } else if (item_type[item] == "graded") {
+
+      if(!is.null(eout)) {
+        itemtrace <- cumulative_traceline_pts(p[[item]],
+                                               theta,
+                                               pred_data,
+                                               samp_size,
+                                               num_responses[item],
+                                               num_quad)
+        complete_ll_dif_item <- 0
+        observed_ll_dif_item <- 0
+        for(resp in 1:num_responses[item]){
+          if(resp < num_responses[item] && all(itemtrace[[resp]] == 0)){
+            log_itemtrace_cat <- 0
+          } else{
+            if(resp == 1) {
+              log_itemtrace_cat <- log(1-itemtrace[[resp]])
+            } else if(resp == num_responses[item]) {
+              log_itemtrace_cat <- log(itemtrace[[resp-1]])
+            } else {
+              log_itemtrace_cat <- log(itemtrace[[resp-1]]-itemtrace[[resp]])
+            }
           }
+          log_itemtrace_cat[is.infinite(log_itemtrace_cat)] <- NA
+          complete_ll_dif_item <- complete_ll_dif_item +
+            sum(etable_item[[resp]]*log_itemtrace_cat, na.rm = TRUE)
+          observed_ll_dif_item <- observed_ll_dif_item +
+            sum(log_itemtrace_cat, na.rm = TRUE)
         }
-        log_itemtrace_cat[is.infinite(log_itemtrace_cat)] <- NA
-        complete_ll_dif_item <- complete_ll_dif_item +
-          sum(etable_item[[resp]]*log_itemtrace_cat, na.rm = TRUE)
-        observed_ll_dif_item <- observed_ll_dif_item +
-          sum(log_itemtrace_cat, na.rm = TRUE)
+      } else {
+        itemtrace <- cumulative_traceline_pts_proxy(p[[item]],
+                                                    prox_data,
+                                                    pred_data,
+                                                    samp_size,
+                                                    num_responses[item])
+        complete_ll_dif_item <- 0
+        observed_ll_dif_item <- 0
+        for(resp in 1:num_responses[item]){
+          if(resp < num_responses[item] && all(itemtrace[[resp]] == 0)){
+            log_itemtrace_cat <- 0
+          } else{
+            if(resp == 1) {
+              log_itemtrace_cat <- log(1-itemtrace[[resp]])
+            } else if(resp == num_responses[item]) {
+              log_itemtrace_cat <- log(itemtrace[[resp-1]])
+            } else {
+              log_itemtrace_cat <- log(itemtrace[[resp-1]]-itemtrace[[resp]])
+            }
+          }
+          log_itemtrace_cat[is.infinite(log_itemtrace_cat)] <- NA
+          complete_ll_dif_item <- complete_ll_dif_item +
+            sum(log_itemtrace_cat, na.rm = TRUE)
+          observed_ll_dif_item <- observed_ll_dif_item +
+            sum(prox_data*log_itemtrace_cat, na.rm = TRUE)
+        }
       }
     }
 

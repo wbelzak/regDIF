@@ -92,15 +92,15 @@ Estep <-
         if(is.na(item_data[i,j])) next
         x <- item_data[i,j]
 
-        if(item_type[item] == "cfa") { # Continuous responses.
+        if(item_type[j] == "cfa") { # Continuous responses.
           posterior <- posterior*itemtrace[[j]][i,]
-        } else if(item_type[item] == "2pl") { # Binary responses.
+        } else if(item_type[j] == "2pl") { # Binary responses.
           if(x == 1) {
             posterior <- posterior*(1-itemtrace[[j]][i,])
           } else {
             posterior <- posterior*itemtrace[[j]][i,]
           }
-        } else { # Ordered categorical responses.
+        } else if(item_type[j] == "graded") { # Ordered categorical responses.
           if(x == 1) {
             posterior <- posterior*(1-itemtrace[[j]][[1]][i,])
           } else if(x == num_responses[j]) {
@@ -110,6 +110,7 @@ Estep <-
                                         itemtrace[[j]][[x]][i,])
           }
         }
+
       }
 
       # Normalize posterior.

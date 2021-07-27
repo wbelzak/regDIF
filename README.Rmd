@@ -29,7 +29,6 @@ regDIF can:
 * Handle multiple continuous and categorical DIF covariates;
 * Support binary, ordinal, and continuous item responses;
 * Use LASSO, ridge, MCP, elastic net, and group penalty functions for regularization;
-* Support parallel processing to improve model estimation speed;
 * Allow for proxy data to be used in place of estimating latent variable scores, which leads to
 much faster estimation speed.
 

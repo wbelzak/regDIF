@@ -23,7 +23,6 @@ regDIF can:
   - Support binary, ordinal, and continuous item responses;
   - Use LASSO, ridge, MCP, elastic net, and group penalty functions for
     regularization;
-  - Support parallel processing to improve model estimation speed;
   - Allow for proxy data to be used in place of estimating latent
     variable scores, which leads to much faster estimation speed.
 
@@ -83,11 +82,11 @@ summary(fit)
 #> 
 #> Optimal model (out of 10):
 #>          tau          bic 
-#>    0.1934603 4074.7270000 
+#>    0.1934603 4074.7271000 
 #> 
 #> Non-zero DIF effects:
 #>    item4.int.age    item5.int.age item5.int.gender  item5.int.study 
-#>            0.263           -0.247           -0.656            0.349
+#>           0.2633          -0.2471          -0.6558           0.3487
 ```
 
 When estimation speed is slow, proxy data may be used in place of latent
@@ -104,15 +103,15 @@ summary(fit_proxy)
 #> 
 #> Optimal model (out of 100):
 #>          tau          bic 
-#>    0.2241118 3550.1030000 
+#>    0.2307399 3551.0892000 
 #> 
 #> Non-zero DIF effects:
 #> item3.int.gender    item4.int.age    item5.int.age item5.int.gender 
-#>            0.121            0.339           -0.192           -0.589 
+#>           0.1147           0.3330          -0.1685          -0.5852 
 #>  item5.int.study item6.int.gender item2.slp.gender  item3.slp.study 
-#>            0.519            0.035            0.144           -0.062 
+#>           0.5301           0.0285           0.1391          -0.0641 
 #> item5.slp.gender 
-#>           -0.126
+#>          -0.1194
 ```
 
 Other penalty functions (besides LASSO) may also be used. For instance,
@@ -131,15 +130,15 @@ summary(fit_proxy_net)
 #> 
 #> Optimal model (out of 100):
 #>          tau          bic 
-#>    0.4377184 3562.5710000 
+#>    0.4547117 3564.7108000 
 #> 
 #> Non-zero DIF effects:
 #> item3.int.gender    item4.int.age    item5.int.age item5.int.gender 
-#>            0.104            0.277           -0.209           -0.466 
+#>           0.0963           0.2681          -0.1953          -0.4569 
 #>  item5.int.study item6.int.gender item2.slp.gender  item3.slp.study 
-#>            0.369            0.033            0.119           -0.054 
+#>           0.3638           0.0259           0.1120          -0.0491 
 #> item5.slp.gender 
-#>           -0.099
+#>          -0.0907
 ```
 
 ## Questions

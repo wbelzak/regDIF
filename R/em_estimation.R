@@ -104,93 +104,35 @@ em_estimation <- function(p,
 
 
 
-    if(optim_method == "MNR") {
-      # M-step: Optimize parameters using multivariate NR.
-      mout <- tryCatch(
-        {
-              Mstep_block(p,
-                          item_data,
-                          pred_data,
-                          prox_data,
-                          mean_predictors,
-                          var_predictors,
-                          eout,
-                          item_type,
-                          pen_type,
-                          tau_vec[pen],
-                          pen,
-                          alpha,
-                          gamma,
-                          anchor,
-                          final_control,
-                          samp_size,
-                          num_responses,
-                          num_items,
-                          num_quad,
-                          num_predictors,
-                          num_tau,
-                          max_tau = FALSE)
-        },
+    mout <- tryCatch(
+      {
+        Mstep(p,
+              item_data,
+              pred_data,
+              prox_data,
+              mean_predictors,
+              var_predictors,
+              eout,
+              item_type,
+              pen_type,
+              tau_vec[pen],
+              pen,
+              alpha,
+              gamma,
+              anchor,
+              final_control,
+              samp_size,
+              num_responses,
+              num_items,
+              num_quad,
+              num_predictors,
+              num_tau,
+              max_tau = FALSE,
+              optim_method)
+      },
       error = function(e) {e; return(NULL)},
       warning = function(w) {} )
 
-    } else if(optim_method == "UNR") {
-      # M-step: Optimize parameters using one round of coordinate descent.
-      mout <- tryCatch(
-        {
-          Mstep_cd(p,
-                       item_data,
-                       pred_data,
-                       mean_predictors,
-                       var_predictors,
-                       eout,
-                       item_type,
-                       pen_type,
-                       tau_vec[pen],
-                       pen,
-                       alpha,
-                       gamma,
-                       anchor,
-                       final_control,
-                       samp_size,
-                       num_responses,
-                       num_items,
-                       num_quad,
-                       num_predictors,
-                       num_tau,
-                       max_tau = FALSE)
-    },
-    error = function(e) {e; return(NULL)},
-    warning = function(w) {})
-    } else if(optim_method == "CD") {
-      mout <- tryCatch(
-        {
-          Mstep_cd2(p,
-                        item_data,
-                        pred_data,
-                        mean_predictors,
-                        var_predictors,
-                        eout,
-                        item_type,
-                        pen_type,
-                        tau_vec[pen],
-                        pen,
-                        alpha,
-                        gamma,
-                        anchor,
-                        final_control,
-                        samp_size,
-                        num_responses,
-                        num_items,
-                        num_quad,
-                        num_predictors,
-                        num_tau,
-                        max_tau = FALSE)
-
-        },
-        error = function(e) {e; return(NULL)},
-        warning = function(w) {})
-    }
 
 
     if(is.null(mout)) {
@@ -233,11 +175,21 @@ em_estimation <- function(p,
       exit_code <- exit_code + 1
     }
 
+    if(final_control$optim.method == "CD") {
+      cat('\r', '                                         ',
+          sprintf("Models Completed: %d of %d  Iteration: %d  Change: %f",
+                        pen - 1,
+                        models_to_fit,
+                        iter,
+                        round(eps, nchar(final_control$tol))))
+    } else {
       cat('\r', sprintf("Models Completed: %d of %d  Iteration: %d  Change: %f",
                         pen - 1,
                         models_to_fit,
                         iter,
                         round(eps, nchar(final_control$tol))))
+    }
+
 
 
     utils::flush.console()
@@ -291,75 +243,30 @@ em_estimation <- function(p,
   # Option to identify maximum value of tau which removes all DIF from model.
   if(id_tau) {
 
-    # Final M-step.
-    if(optim_method == "MNR") {
-      max_tau <- Mstep_block(p,
-                             item_data,
-                             pred_data,
-                             prox_data,
-                             mean_predictors,
-                             var_predictors,
-                             eout,
-                             item_type,
-                             pen_type,
-                             tau_vec[1],
-                             pen,
-                             alpha,
-                             gamma,
-                             anchor,
-                             final_control,
-                             samp_size,
-                             num_responses,
-                             num_items,
-                             num_quad,
-                             num_predictors,
-                             num_tau,
-                             max_tau = TRUE)
-    } else if(optim_method == "UNR") {
-      max_tau <- Mstep_cd(p,
-                          item_data,
-                          pred_data,
-                          mean_predictors,
-                          var_predictors,
-                          eout,
-                          item_type,
-                          pen_type,
-                          tau_vec[1],
-                          pen,
-                          alpha,
-                          gamma,
-                          anchor,
-                          final_control,
-                          samp_size,
-                          num_responses,
-                          num_items,
-                          num_quad,
-                          num_predictors,
-                          num_tau,
-                          max_tau = TRUE)
-    } else if(optim_method == "CD") {
-      max_tau <- Mstep_cd2(p,
-                           item_data,
-                           pred_data,
-                           mean_predictors,
-                           var_predictors,
-                           eout,
-                           item_type,
-                           pen_type,
-                           tau_vec[1],
-                           pen,
-                           alpha,
-                           gamma,
-                           anchor,
-                           final_control,
-                           samp_size,
-                           num_responses,
-                           num_items,
-                           num_quad,
-                           num_predictors,
-                           num_tau,
-                           max_tau = TRUE)
-    }
+    max_tau <- Mstep(p,
+                     item_data,
+                     pred_data,
+                     prox_data,
+                     mean_predictors,
+                     var_predictors,
+                     eout,
+                     item_type,
+                     pen_type,
+                     tau_vec[1],
+                     pen,
+                     alpha,
+                     gamma,
+                     anchor,
+                     final_control,
+                     samp_size,
+                     num_responses,
+                     num_items,
+                     num_quad,
+                     num_predictors,
+                     num_tau,
+                     max_tau = TRUE,
+                     optim_method)
+
 
   } else {
     max_tau <- NULL

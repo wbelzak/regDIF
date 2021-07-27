@@ -1063,7 +1063,7 @@ d_categorical_proxy <-
 #' @param pred_data Matrix or dataframe of DIF and/or impact predictors.
 #' @param item_data_current Vector of current item responses.
 #' @param samp_size Sample size in dataset.
-#' @param num_repsones_item Number of responses for item.
+#' @param num_responses_item Number of responses for item.
 #' @param num_items Number of items in dataset.
 #' @param num_predictors Number of predictors in dataset.
 #' @param num_quad Number of quadrature points used for approximating the

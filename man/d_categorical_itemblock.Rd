@@ -33,6 +33,8 @@ d_categorical_itemblock(
 
 \item{samp_size}{Sample size in dataset.}
 
+\item{num_responses_item}{Number of responses for item.}
+
 \item{num_items}{Number of items in dataset.}
 
 \item{num_predictors}{Number of predictors in dataset.}

@@ -111,11 +111,6 @@
 #'    by a \code{coef.regDIF} object; and finally,
 #'    \code{dif}, for intercept and slope DIF parameters, again in
 #'    order given by a \code{coef.regDIF} object.}
-#'    \item{parallel}{List of 2, with the first element being a logical value that indicates whether
-#'    to use parallel computing to estimate item parameters separately during maximization.
-#'    The second list element is the cluster object. Default is \code{list(FALSE,NULL)}. Set
-#'    \code{parallel = list(TRUE,cl)} when the EM iterations are running slowly.
-#'    }
 #'    }
 #'
 #' @return Function returns an object of class \code{regDIF}, which is a list of results from

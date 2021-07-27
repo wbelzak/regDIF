@@ -71,10 +71,10 @@ preprocess <-
   if(length(control) > 0) final_control[names(control)] <- control
 
   # Pre-process warnings.
-  if(final_control$optim.method == "CD" && final_control$parallel[[1]]) {
-    stop(paste0("Parallel computing is not supported for coordinate descent. Use \"UNR\" or ",
-                "\"MNR\" for binary item responses or \"UNR\" for categorical item responses."))
-  }
+  # if(final_control$optim.method == "CD" && final_control$parallel[[1]]) {
+  #   stop(paste0("Parallel computing is not supported for coordinate descent. Use \"UNR\" or ",
+  #               "\"MNR\" for binary item responses or \"UNR\" for categorical item responses."))
+  # }
   if(!(any(item.type == "rasch") ||
        any(item.type == "2pl") ||
        any(item.type == "graded") ||
@@ -97,9 +97,9 @@ preprocess <-
   if(!is.null(anchor) && !is.numeric(anchor)) {
     stop("Anchor items must be numeric (e.g., anchor = 1).", call. = FALSE)
   }
-  if(!is.null(prox.data) && final_control$optim.method == "UNR") {
-    stop("Coordinate descent is not yet supported when using observed proxy scores.", call. = FALSE)
-  }
+  # if(!is.null(prox.data) && final_control$optim.method == "UNR") {
+  #   stop("Coordinate descent is not yet supported when using observed proxy scores.", call. = FALSE)
+  # }
   if(final_control$adapt.quad == T) {
     warning(paste0("Adaptive quadrature is not fully supported. Fixed-point ",
                    "quadrature is recommended at this time."), call. = FALSE, immediate. = TRUE)

@@ -160,7 +160,7 @@ em_estimation <- function(p,
     # Add row for next EM step.
     if(eps > final_control$tol) {
       estimator_history[[pen]] <- cbind(estimator_history[[pen]],
-                                 matrix(0,ncol=1,nrow=length(unlist(p))+1))
+                                        matrix(0,ncol=1,nrow=length(unlist(p))+1))
     }
 
     # Update parameter list.
@@ -177,11 +177,9 @@ em_estimation <- function(p,
 
     if(final_control$optim.method == "CD") {
       cat('\r', '                                         ',
-          sprintf("Models Completed: %d of %d  Iteration: %d  Change: %f",
-                        pen - 1,
-                        models_to_fit,
-                        iter,
-                        round(eps, nchar(final_control$tol))))
+          sprintf("Models Completed: %d of %d",
+                        pen,
+                        models_to_fit))
     } else {
       cat('\r', sprintf("Models Completed: %d of %d  Iteration: %d  Change: %f",
                         pen - 1,

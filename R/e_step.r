@@ -89,8 +89,8 @@ Estep <-
       # probability of response pattern.
       for(j in 1:num_items) {
 
-        if(is.na(item_data[i,j])) next
         x <- item_data[i,j]
+        if(is.na(x)) next
 
         if(item_type[j] == "cfa") { # Continuous responses.
           posterior <- posterior*itemtrace[[j]][i,]

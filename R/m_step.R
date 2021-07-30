@@ -424,38 +424,18 @@ Mstep <-
 
         if(item_type[item] == "cfa") {
 
-          # Intercept updates.
-          if(is.null(prox_data)) {
-            anl_deriv <- d_mu_gaussian("c0",
-                                       p[[item]],
-                                       etable,
-                                       theta,
-                                       item_data[,item],
-                                       pred_data,
-                                       cov=NULL,
-                                       samp_size,
-                                       num_items,
-                                       num_quad)
-          } else {
-            anl_deriv <- d_mu_gaussian_proxy("c0",
-                                             p[[item]],
-                                             prox_data,
-                                             item_data[,item],
-                                             pred_data,
-                                             cov=NULL,
-                                             samp_size)
-          }
+          # CD Maximization and print settings.
+          lastp_cd <- p_cd
+          eps_cd <- Inf
+          iter_cd <- 1
 
-          p[[item]][[1]] <- p[[item]][[1]] - anl_deriv[[1]]/anl_deriv[[2]]
+          # Loop until convergence or maximum number of iterations.
+          while(eps_cd > final_control$tol){
 
-          # Slope updates.
-          if(item_type[item] != "rasch") {
-
-            a0_parms <- grep(paste0("a0_item",item,"_"),names(p[[item]]),fixed=T)
-
+            # Intercept updates.
             if(is.null(prox_data)) {
-              anl_deriv <- d_mu_gaussian("a0",
-                                         p[[item]],
+              anl_deriv <- d_mu_gaussian("c0",
+                                         p_cd[[item]],
                                          etable,
                                          theta,
                                          item_data[,item],
@@ -465,8 +445,8 @@ Mstep <-
                                          num_items,
                                          num_quad)
             } else {
-              anl_deriv <- d_mu_gaussian_proxy("a0",
-                                               p[[item]],
+              anl_deriv <- d_mu_gaussian_proxy("c0",
+                                               p_cd[[item]],
                                                prox_data,
                                                item_data[,item],
                                                pred_data,
@@ -474,75 +454,195 @@ Mstep <-
                                                samp_size)
             }
 
-            p[[item]][[2]] <- p[[item]][a0_parms] - anl_deriv[[1]]/anl_deriv[[2]]
+            p_cd[[item]][[1]] <- p_cd[[item]][[1]] - anl_deriv[[1]]/anl_deriv[[2]]
+
+            if(method == "UNR") {
+              p[[item]][[1]] <- p_cd[[item]][[1]]
+              break
+            }
+
+            # Update and check for convergence: Calculate the difference
+            # in parameter estimates from current to previous.
+            eps_cd = sqrt(sum((unlist(p_cd)-unlist(lastp_cd))^2))
+
+            # Update parameter list.
+            lastp_cd <- p_cd
+
+            # Update the iteration number.
+            iter_cd = iter_cd + 1
+
+          } # End coordinate descent looping.
+
+          # Slope updates.
+          if(item_type[item] != "rasch") {
+
+            a0_parms <- grep(paste0("a0_item",item,"_"),names(p_cd[[item]]),fixed=T)
+
+            # CD Maximization and print settings.
+            lastp_cd <- p_cd
+            eps_cd <- Inf
+            iter_cd <- 1
+
+            # Loop until convergence or maximum number of iterations.
+            while(eps_cd > final_control$tol){
+
+              if(is.null(prox_data)) {
+                anl_deriv <- d_mu_gaussian("a0",
+                                           p_cd[[item]],
+                                           etable,
+                                           theta,
+                                           item_data[,item],
+                                           pred_data,
+                                           cov=NULL,
+                                           samp_size,
+                                           num_items,
+                                           num_quad)
+              } else {
+                anl_deriv <- d_mu_gaussian_proxy("a0",
+                                                 p_cd[[item]],
+                                                 prox_data,
+                                                 item_data[,item],
+                                                 pred_data,
+                                                 cov=NULL,
+                                                 samp_size)
+              }
+
+              p_cd[[item]][a0_parms] <- p_cd[[item]][a0_parms] - anl_deriv[[1]]/anl_deriv[[2]]
+
+              if(method == "UNR") {
+                p[[item]][a0_parms] <- p_cd[[item]][a0_parms]
+                break
+              }
+
+              # Update and check for convergence: Calculate the difference
+              # in parameter estimates from current to previous.
+              eps_cd = sqrt(sum((unlist(p_cd)-unlist(lastp_cd))^2))
+
+              # Update parameter list.
+              lastp_cd <- p_cd
+
+              # Update the iteration number.
+              iter_cd = iter_cd + 1
+
+            } # End coordinate descent looping.
 
           } # End Rasch conditional.
 
 
           # Residual updates.
-          s0_parms <- grep(paste0("s0_item",item,"_"),names(p[[item]]),fixed=T)
+          s0_parms <- grep(paste0("s0_item",item,"_"),names(p_cd[[item]]),fixed=T)
 
-          if(is.null(prox_data)) {
-            anl_deriv <- d_sigma_gaussian("s0",
-                                          p[[item]],
-                                          etable,
-                                          theta,
-                                          item_data[,item],
-                                          pred_data,
-                                          cov=NULL,
-                                          samp_size,
-                                          num_items,
-                                          num_quad)
-          } else {
-            anl_deriv <- d_sigma_gaussian_proxy("s0",
-                                                p[[item]],
-                                                prox_data,
-                                                item_data[,item],
-                                                pred_data,
-                                                cov=NULL,
-                                                samp_size)
-          }
+          # CD Maximization and print settings.
+          lastp_cd <- p_cd
+          eps_cd <- Inf
+          iter_cd <- 1
 
-          p[[item]][s0_parms][[1]] <- p[[item]][s0_parms][[1]] -
-            anl_deriv[[1]]/anl_deriv[[2]]
-          if(p[[item]][s0_parms][[1]] < 0) p[[item]][s0_parms][[1]] <- 1
+          # Loop until convergence or maximum number of iterations.
+          while(eps_cd > final_control$tol){
 
+            if(is.null(prox_data)) {
+              anl_deriv <- d_sigma_gaussian("s0",
+                                            p_cd[[item]],
+                                            etable,
+                                            theta,
+                                            item_data[,item],
+                                            pred_data,
+                                            cov=NULL,
+                                            samp_size,
+                                            num_items,
+                                            num_quad)
+            } else {
+              anl_deriv <- d_sigma_gaussian_proxy("s0",
+                                                  p_cd[[item]],
+                                                  prox_data,
+                                                  item_data[,item],
+                                                  pred_data,
+                                                  cov=NULL,
+                                                  samp_size)
+            }
+
+            p_cd[[item]][s0_parms][[1]] <- p_cd[[item]][s0_parms][[1]] -
+              anl_deriv[[1]]/anl_deriv[[2]]
+            if(p_cd[[item]][s0_parms][[1]] < 0) p_cd[[item]][s0_parms][[1]] <- 1
+
+            if(method == "UNR") {
+              p[[item]][s0_parms][[1]] <- p_cd[[item]][s0_parms][[1]]
+              break
+            }
+
+            # Update and check for convergence: Calculate the difference
+            # in parameter estimates from current to previous.
+            eps_cd = sqrt(sum((unlist(p_cd)-unlist(lastp_cd))^2))
+
+            # Update parameter list.
+            lastp_cd <- p_cd
+
+            # Update the iteration number.
+            iter_cd = iter_cd + 1
+
+          } # End coordinate descent looping.
 
           if(!any(item == anchor)) {
+
 
             # Residual DIF updates.
             for(cov in 1:num_predictors) {
 
               s1_parms <-
-                grep(paste0("s1_item",item,"_cov",cov),names(p[[item]]),fixed=T)
+                grep(paste0("s1_item",item,"_cov",cov),names(p_cd[[item]]),fixed=T)
 
-              if(is.null(prox_data)) {
-                anl_deriv <- d_sigma_gaussian("s1",
-                                              p[[item]],
-                                              etable,
-                                              theta,
-                                              item_data[,item],
-                                              pred_data,
-                                              cov=cov,
-                                              samp_size,
-                                              num_items,
-                                              num_quad)
-              } else{
-                anl_deriv <- d_sigma_gaussian_proxy("s1",
-                                                    p[[item]],
-                                                    prox_data,
-                                                    item_data[,item],
-                                                    pred_data,
-                                                    cov=cov,
-                                                    samp_size)
-              }
+              # CD Maximization and print settings.
+              lastp_cd <- p_cd
+              eps_cd <- Inf
+              iter_cd <- 1
 
-              p[[item]][s1_parms][[1]] <- p[[item]][s1_parms][[1]] -
-                anl_deriv[[1]]/anl_deriv[[2]]
+              # Loop until convergence or maximum number of iterations.
+              while(eps_cd > final_control$tol){
+
+                if(is.null(prox_data)) {
+                  anl_deriv <- d_sigma_gaussian("s1",
+                                                p_cd[[item]],
+                                                etable,
+                                                theta,
+                                                item_data[,item],
+                                                pred_data,
+                                                cov=cov,
+                                                samp_size,
+                                                num_items,
+                                                num_quad)
+                } else{
+                  anl_deriv <- d_sigma_gaussian_proxy("s1",
+                                                      p_cd[[item]],
+                                                      prox_data,
+                                                      item_data[,item],
+                                                      pred_data,
+                                                      cov=cov,
+                                                      samp_size)
+                }
+
+                p_cd[[item]][s1_parms][[1]] <- p_cd[[item]][s1_parms][[1]] -
+                  anl_deriv[[1]]/anl_deriv[[2]]
+
+                if(method == "UNR") {
+                  p[[item]][s1_parms][[1]] <- p_cd[[item]][s1_parms][[1]]
+                  break
+                }
+
+                # Update and check for convergence: Calculate the difference
+                # in parameter estimates from current to previous.
+                eps_cd = sqrt(sum((unlist(p_cd)-unlist(lastp_cd))^2))
+
+                # Update parameter list.
+                lastp_cd <- p_cd
+
+                # Update the iteration number.
+                iter_cd = iter_cd + 1
+
+              } # End coordinate descent looping.
 
             } # End looping across covariates.
 
-            p2 <- unlist(p)
+            p2_cd <- unlist(p_cd)
 
             # Intercept DIF updates.
             for(cov in 1:num_predictors){
@@ -550,7 +650,7 @@ Mstep <-
               # End routine if only one anchor item is left on each covariate
               # for each item parameter.
               if(is.null(anchor) &
-                 sum(p2[grep(paste0("c1(.*?)cov",cov),names(p2))] != 0) >
+                 sum(p2_cd[grep(paste0("c1(.*?)cov",cov),names(p2_cd))] != 0) >
                  (num_items - 1) &
                  alpha == 1 &&
                  (length(final_control$start.values) == 0 || pen > 1) &&
@@ -560,35 +660,60 @@ Mstep <-
               }
 
               c1_parms <-
-                grep(paste0("c1_item",item,"_cov",cov),names(p[[item]]),fixed=T)
+                grep(paste0("c1_item",item,"_cov",cov),names(p_cd[[item]]),fixed=T)
 
-              if(is.null(prox_data)) {
-                anl_deriv <- d_mu_gaussian("c1",
-                                           p[[item]],
-                                           etable,
-                                           theta,
-                                           item_data[,item],
-                                           pred_data,
-                                           cov,
-                                           samp_size,
-                                           num_items,
-                                           num_quad)
-              } else{
-                anl_deriv <- d_mu_gaussian_proxy("c1",
-                                                 p[[item]],
-                                                 prox_data,
-                                                 item_data[,item],
-                                                 pred_data,
-                                                 cov,
-                                                 samp_size)
-              }
+              # CD Maximization and print settings.
+              lastp_cd <- p_cd
+              eps_cd <- Inf
+              iter_cd <- 1
 
-              z <- p[[item]][c1_parms] - anl_deriv[[1]]/anl_deriv[[2]]
-              if(max_tau) id_max_z <- c(id_max_z,z)
-              p[[item]][c1_parms][[1]] <-
-                ifelse(pen_type == "lasso",
-                       soft_threshold(z,alpha,tau_current),
-                       firm_threshold(z,alpha,tau_current,gamma))
+              # Loop until convergence or maximum number of iterations.
+              while(eps_cd > final_control$tol){
+
+                if(is.null(prox_data)) {
+                  anl_deriv <- d_mu_gaussian("c1",
+                                             p_cd[[item]],
+                                             etable,
+                                             theta,
+                                             item_data[,item],
+                                             pred_data,
+                                             cov,
+                                             samp_size,
+                                             num_items,
+                                             num_quad)
+                } else{
+                  anl_deriv <- d_mu_gaussian_proxy("c1",
+                                                   p_cd[[item]],
+                                                   prox_data,
+                                                   item_data[,item],
+                                                   pred_data,
+                                                   cov,
+                                                   samp_size)
+                }
+
+                z <- p_cd[[item]][c1_parms] - anl_deriv[[1]]/anl_deriv[[2]]
+                if(max_tau) id_max_z <- c(id_max_z,z)
+                p_cd[[item]][c1_parms][[1]] <-
+                  ifelse(pen_type == "lasso",
+                         soft_threshold(z,alpha,tau_current),
+                         firm_threshold(z,alpha,tau_current,gamma))
+
+                if(method == "UNR") {
+                  p[[item]][c1_parms] <- p_cd[[item]][c1_parms]
+                  break
+                }
+
+                # Update and check for convergence: Calculate the difference
+                # in parameter estimates from current to previous.
+                eps_cd = sqrt(sum((unlist(p_cd)-unlist(lastp_cd))^2))
+
+                # Update parameter list.
+                lastp_cd <- p_cd
+
+                # Update the iteration number.
+                iter_cd = iter_cd + 1
+
+              } # End coordinate descent looping.
 
             } # End looping across covariates.
 
@@ -598,7 +723,7 @@ Mstep <-
               # End routine if only one anchor item is left on each covariate
               # for each item parameter.
               if(is.null(anchor) &
-                 sum(p2[grep(paste0("a1(.*?)cov",cov),names(p2))] != 0) >
+                 sum(p2_cd[grep(paste0("a1(.*?)cov",cov),names(p2_cd))] != 0) >
                  (num_items - 1) &
                  alpha == 1 &&
                  (length(final_control$start.values) == 0 || pen > 1) &&
@@ -609,34 +734,62 @@ Mstep <-
 
               if(item_type[item] != "rasch"){
                 a1_parms <-
-                  grep(paste0("a1_item",item,"_cov",cov),names(p[[item]]),fixed=T)
+                  grep(paste0("a1_item",item,"_cov",cov),names(p_cd[[item]]),fixed=T)
 
-                if(is.null(prox_data)) {
-                  anl_deriv <- d_mu_gaussian("a1",
-                                             p[[item]],
-                                             etable,
-                                             theta,
-                                             item_data[,item],
-                                             pred_data,
-                                             cov,
-                                             samp_size,
-                                             num_items,
-                                             num_quad)
-                } else {
-                  anl_deriv <- d_mu_gaussian_proxy("a1",
-                                                   p[[item]],
-                                                   prox_data,
-                                                   item_data[,item],
-                                                   pred_data,
-                                                   cov,
-                                                   samp_size)
-                }
+                # CD Maximization and print settings.
+                lastp_cd <- p_cd
+                eps_cd <- Inf
+                iter_cd <- 1
 
-                z <- p[[item]][a1_parms] - anl_deriv[[1]]/anl_deriv[[2]]
-                if(max_tau) id_max_z <- c(id_max_z,z)
-                p[[item]][a1_parms][[1]] <- ifelse(pen_type == "lasso",
-                                                   soft_threshold(z,alpha,tau_current),
-                                                   firm_threshold(z,alpha,tau_current,gamma))
+                # Loop until convergence or maximum number of iterations.
+                while(eps_cd > final_control$tol){
+
+                  if(is.null(prox_data)) {
+                    anl_deriv <- d_mu_gaussian("a1",
+                                               p_cd[[item]],
+                                               etable,
+                                               theta,
+                                               item_data[,item],
+                                               pred_data,
+                                               cov,
+                                               samp_size,
+                                               num_items,
+                                               num_quad)
+                  } else {
+                    anl_deriv <- d_mu_gaussian_proxy("a1",
+                                                     p_cd[[item]],
+                                                     prox_data,
+                                                     item_data[,item],
+                                                     pred_data,
+                                                     cov,
+                                                     samp_size)
+                  }
+
+                  z <- p_cd[[item]][a1_parms] - anl_deriv[[1]]/anl_deriv[[2]]
+                  if(max_tau) id_max_z <- c(id_max_z,z)
+                  p_cd[[item]][a1_parms][[1]] <- ifelse(pen_type == "lasso",
+                                                     soft_threshold(z,alpha,tau_current),
+                                                     firm_threshold(z,alpha,tau_current,gamma))
+
+
+
+                  if(method == "UNR") {
+                    p_cd[[item]][c1_parms] <- p_cd[[item]][a1_parms]
+                    break
+                  }
+
+                  # Update and check for convergence: Calculate the difference
+                  # in parameter estimates from current to previous.
+                  eps_cd = sqrt(sum((unlist(p_cd)-unlist(lastp_cd))^2))
+
+                  # Update parameter list.
+                  lastp_cd <- p_cd
+
+                  # Update the iteration number.
+                  iter_cd = iter_cd + 1
+
+                } # End coordinate descent looping.
+
 
               } # End Rasch conditional.
 
@@ -905,73 +1058,18 @@ Mstep <-
           # Categorical.
         } else {
 
-          # Intercept updates.
-          if(is.null(prox_data)) {
-            anl_deriv <- d_categorical("c0",
-                                       p[[item]],
-                                       etable_item,
-                                       theta,
-                                       pred_data,
-                                       thr=-1,
-                                       cov=-1,
-                                       samp_size,
-                                       num_responses[[item]],
-                                       num_items,
-                                       num_quad)
-          } else {
-            anl_deriv <- d_categorical_proxy("c0",
-                                             p[[item]],
-                                             prox_data,
-                                             pred_data,
-                                             item_data[,item],
-                                             thr=-1,
-                                             cov=-1,
-                                             samp_size,
-                                             num_responses[[item]],
-                                             num_items)
-          }
+          # CD Maximization and print settings.
+          lastp_cd <- p_cd
+          eps_cd <- Inf
+          iter_cd <- 1
 
-          p[[item]][[1]] <- p[[item]][[1]] - anl_deriv[[1]]/anl_deriv[[2]]
+          # Loop until convergence or maximum number of iterations.
+          while(eps_cd > final_control$tol){
 
-          # Threshold updates.
-
-          for(thr in 2:(num_responses[item]-1)) {
-
+            # Intercept updates.
             if(is.null(prox_data)) {
               anl_deriv <- d_categorical("c0",
-                                         p[[item]],
-                                         etable_item,
-                                         theta,
-                                         pred_data,
-                                         thr=thr,
-                                         cov=-1,
-                                         samp_size,
-                                         num_responses[[item]],
-                                         num_items,
-                                         num_quad)
-            } else {
-              anl_deriv <- d_categorical_proxy("c0",
-                                               p[[item]],
-                                               prox_data,
-                                               pred_data,
-                                               item_data[,item],
-                                               thr=thr,
-                                               cov=-1,
-                                               samp_size,
-                                               num_responses[[item]],
-                                               num_items)
-            }
-
-            p[[item]][[thr]] <- p[[item]][[thr]] - anl_deriv[[1]]/anl_deriv[[2]]
-
-          } # End looping across thresholds.
-
-          # Slope updates.
-          if(item_type[item] != "rasch") {
-
-            if(is.null(prox_data)) {
-              anl_deriv <- d_categorical("a0",
-                                         p[[item]],
+                                         p_cd[[item]],
                                          etable_item,
                                          theta,
                                          pred_data,
@@ -982,8 +1080,8 @@ Mstep <-
                                          num_items,
                                          num_quad)
             } else {
-              anl_deriv <- d_categorical_proxy("a0",
-                                               p[[item]],
+              anl_deriv <- d_categorical_proxy("c0",
+                                               p_cd[[item]],
                                                prox_data,
                                                pred_data,
                                                item_data[,item],
@@ -993,14 +1091,173 @@ Mstep <-
                                                num_responses[[item]],
                                                num_items)
             }
-            p[[item]][[num_responses[[item]]]] <-
-              p[[item]][[num_responses[[item]]]] - anl_deriv[[1]]/anl_deriv[[2]]
+            p_cd[[item]][[1]] <- p_cd[[item]][[1]] - anl_deriv[[1]]/anl_deriv[[2]]
+
+            if(method == "UNR") {
+              p[[item]][[1]] <- p_cd[[item]][[1]]
+              break
+            }
+
+            # Update and check for convergence: Calculate the difference
+            # in parameter estimates from current to previous.
+            eps_cd = sqrt(sum((unlist(p_cd)-unlist(lastp_cd))^2))
+
+            # Update parameter list.
+            lastp_cd <- p_cd
+
+            # Update the iteration number.
+            iter_cd = iter_cd + 1
+
+          } # End coordinate descent looping.
+
+
+          # Threshold updates.
+
+
+          for(thr in 2:(num_responses[item]-1)) {
+            # avg_thr <- mean(sapply(1:num_items, function(x) p_cd[[x]][[thr]]))
+
+            # CD Maximization and print settings.
+            lastp_cd <- p_cd
+            eps_cd <- Inf
+            iter_cd <- 1
+
+            # Loop until convergence or maximum number of iterations.
+            while(eps_cd > final_control$tol){
+
+
+              if(is.null(prox_data)) {
+                anl_deriv <- d_categorical("c0",
+                                           p_cd[[item]],
+                                           etable_item,
+                                           theta,
+                                           pred_data,
+                                           thr=thr,
+                                           cov=-1,
+                                           samp_size,
+                                           num_responses[[item]],
+                                           num_items,
+                                           num_quad)
+              } else {
+                anl_deriv <- d_categorical_proxy("c0",
+                                                 p_cd[[item]],
+                                                 prox_data,
+                                                 pred_data,
+                                                 item_data[,item],
+                                                 thr=thr,
+                                                 cov=-1,
+                                                 samp_size,
+                                                 num_responses[[item]],
+                                                 num_items)
+              }
+              p_cd[[item]][[thr]] <- p_cd[[item]][[thr]] - anl_deriv[[1]]/anl_deriv[[2]]
+
+              if(is.na(p_cd[[item]][[thr]])) {
+                p_cd[[item]][[thr]] <-
+                  mean(sapply(1:num_items, function(x) p_cd[[x]][[thr]]), na.rm = T)
+                if(method == "UNR") {
+                  p[[item]][[thr]] <- p_cd[[item]][[thr]]
+                }
+                break
+              }
+
+
+              # if(abs(p_cd[[item]][[thr]]) > 10*avg_thr) {
+              #   p_cd[[item]][[thr]] <- avg_thr
+              #   warning(paste0("Problem with estimating threshold ", thr, " for item ",
+              #                  item,".\n",
+              #                  "Setting threshold ", thr, " for item ", item, " to average ",
+              #                  "of all other item thresholds."),
+              #           call. = FALSE, immediate. = TRUE)
+              #   if(method == "UNR") {
+              #     p[[item]][[thr]] <- p_cd[[item]][[thr]]
+              #   }
+              #   break
+              # }
+
+              if(method == "UNR") {
+                p[[item]][[thr]] <- p_cd[[item]][[thr]]
+                break
+              }
+
+              # print(p_cd[[item]][3])
+              # p_cd[[item]][3]=.25
+
+              # Update and check for convergence: Calculate the difference
+              # in parameter estimates from current to previous.
+              eps_cd = sqrt(sum((unlist(p_cd)-unlist(lastp_cd))^2))
+
+              # Update parameter list.
+              lastp_cd <- p_cd
+
+              # Update the iteration number.
+              iter_cd = iter_cd + 1
+
+            } # End coordinate descent looping.
+
+
+          } # End looping across thresholds.
+
+          # Slope updates.
+          if(item_type[item] != "rasch") {
+
+            # CD Maximization and print settings.
+            lastp_cd <- p_cd
+            eps_cd <- Inf
+            iter_cd <- 1
+
+            # Loop until convergence or maximum number of iterations.
+            while(eps_cd > final_control$tol){
+
+              if(is.null(prox_data)) {
+                anl_deriv <- d_categorical("a0",
+                                           p_cd[[item]],
+                                           etable_item,
+                                           theta,
+                                           pred_data,
+                                           thr=-1,
+                                           cov=-1,
+                                           samp_size,
+                                           num_responses[[item]],
+                                           num_items,
+                                           num_quad)
+              } else {
+                anl_deriv <- d_categorical_proxy("a0",
+                                                 p_cd[[item]],
+                                                 prox_data,
+                                                 pred_data,
+                                                 item_data[,item],
+                                                 thr=-1,
+                                                 cov=-1,
+                                                 samp_size,
+                                                 num_responses[[item]],
+                                                 num_items)
+              }
+              p_cd[[item]][[num_responses[[item]]]] <-
+                p_cd[[item]][[num_responses[[item]]]] - anl_deriv[[1]]/anl_deriv[[2]]
+
+              if(method == "UNR") {
+                p[[item]][[num_responses[[item]]]] <- p_cd[[item]][[num_responses[[item]]]]
+                break
+              }
+
+              # Update and check for convergence: Calculate the difference
+              # in parameter estimates from current to previous.
+              eps_cd = sqrt(sum((unlist(p_cd)-unlist(lastp_cd))^2))
+
+              # Update parameter list.
+              lastp_cd <- p_cd
+
+              # Update the iteration number.
+              iter_cd = iter_cd + 1
+
+            } # End coordinate descent looping.
 
           } # End Rasch conditional.
 
           if(!any(item == anchor)){
 
-            p2 <- unlist(p)
+            p2_cd <- unlist(p_cd)
 
             # Intercept DIF updates.
             for(cov in 1:num_predictors) {
@@ -1008,7 +1265,7 @@ Mstep <-
               # End routine if only one anchor item is left on each covariate
               # for each item parameter.
               if(is.null(anchor) &
-                 sum(p2[grep(paste0("c1(.*?)cov",cov),names(p2))] != 0) >
+                 sum(p2_cd[grep(paste0("c1(.*?)cov",cov),names(p2_cd))] != 0) >
                  (num_items - 1) &
                  alpha == 1 &&
                  (length(final_control$start.values) == 0 || pen > 1) &&
@@ -1017,61 +1274,17 @@ Mstep <-
                 break
               }
 
-              if(is.null(prox_data)) {
-                anl_deriv <- d_categorical("c1",
-                                           p[[item]],
-                                           etable_item,
-                                           theta,
-                                           pred_data,
-                                           thr=-1,
-                                           cov,
-                                           samp_size,
-                                           num_responses[[item]],
-                                           num_items,
-                                           num_quad)
-              } else {
-                anl_deriv <- d_categorical_proxy("c1",
-                                                 p[[item]],
-                                                 prox_data,
-                                                 pred_data,
-                                                 item_data[,item],
-                                                 thr=-1,
-                                                 cov,
-                                                 samp_size,
-                                                 num_responses[[item]],
-                                                 num_items)
-              }
+              # CD Maximization and print settings.
+              lastp_cd <- p_cd
+              eps_cd <- Inf
+              iter_cd <- 1
 
-              z <- p[[item]][[num_responses[[item]]+cov]] -
-                anl_deriv[[1]]/anl_deriv[[2]]
-              if(max_tau) id_max_z <- c(id_max_z,z)
-              p[[item]][[num_responses[[item]]+cov]] <-
-                ifelse(pen_type == "lasso",
-                       soft_threshold(z,alpha,tau_current),
-                       firm_threshold(z,alpha,tau_current,gamma))
-
-            } # End looping across covariates.
-
-            # Slope DIF updates.
-            for(cov in 1:num_predictors) {
-
-              # End routine if only one anchor item is left on each covariate
-              # for each item parameter.
-              if(is.null(anchor) &
-                 sum(p2[grep(paste0("a1(.*?)cov",cov),names(p2))] != 0) >
-                 (num_items - 1) &
-                 alpha == 1 &&
-                 (length(final_control$start.values) == 0 || pen > 1) &&
-                 num_tau >= 10){
-                under_identified <- TRUE
-                break
-              }
-
-              if(item_type[item] != "rasch") {
+              # Loop until convergence or maximum number of iterations.
+              while(eps_cd > final_control$tol){
 
                 if(is.null(prox_data)) {
-                  anl_deriv <- d_categorical("a1",
-                                             p[[item]],
+                  anl_deriv <- d_categorical("c1",
+                                             p_cd[[item]],
                                              etable_item,
                                              theta,
                                              pred_data,
@@ -1082,8 +1295,8 @@ Mstep <-
                                              num_items,
                                              num_quad)
                 } else {
-                  anl_deriv <- d_categorical_proxy("a1",
-                                                   p[[item]],
+                  anl_deriv <- d_categorical_proxy("c1",
+                                                   p_cd[[item]],
                                                    prox_data,
                                                    pred_data,
                                                    item_data[,item],
@@ -1094,13 +1307,113 @@ Mstep <-
                                                    num_items)
                 }
 
-                z <- p[[item]][[length(p[[item]])-ncol(pred_data)+cov]] -
+                z <- p_cd[[item]][[num_responses[[item]]+cov]] -
                   anl_deriv[[1]]/anl_deriv[[2]]
                 if(max_tau) id_max_z <- c(id_max_z,z)
-                p[[item]][[length(p[[item]])-ncol(pred_data)+cov]] <-
+                p_cd[[item]][[num_responses[[item]]+cov]] <-
                   ifelse(pen_type == "lasso",
                          soft_threshold(z,alpha,tau_current),
                          firm_threshold(z,alpha,tau_current,gamma))
+
+                if(method == "UNR") {
+                  p[[item]][[num_responses[[item]]+cov]] <-
+                    p_cd[[item]][[num_responses[[item]]+cov]]
+                  break
+                }
+
+                # Update and check for convergence: Calculate the difference
+                # in parameter estimates from current to previous.
+                eps_cd = sqrt(sum((unlist(p_cd)-unlist(lastp_cd))^2))
+
+                # Update parameter list.
+                lastp_cd <- p_cd
+
+                # Update the iteration number.
+                iter_cd = iter_cd + 1
+
+              } # End coordinate descent looping.
+
+
+
+            } # End looping across covariates.
+
+            # Slope DIF updates.
+            for(cov in 1:num_predictors) {
+
+              # End routine if only one anchor item is left on each covariate
+              # for each item parameter.
+              if(is.null(anchor) &
+                 sum(p2_cd[grep(paste0("a1(.*?)cov",cov),names(p2_cd))] != 0) >
+                 (num_items - 1) &
+                 alpha == 1 &&
+                 (length(final_control$start.values) == 0 || pen > 1) &&
+                 num_tau >= 10){
+                under_identified <- TRUE
+                break
+              }
+
+              if(item_type[item] != "rasch") {
+
+                # CD Maximization and print settings.
+                lastp_cd <- p_cd
+                eps_cd <- Inf
+                iter_cd <- 1
+
+                # Loop until convergence or maximum number of iterations.
+                while(eps_cd > final_control$tol){
+
+                  if(is.null(prox_data)) {
+                    anl_deriv <- d_categorical("a1",
+                                               p_cd[[item]],
+                                               etable_item,
+                                               theta,
+                                               pred_data,
+                                               thr=-1,
+                                               cov,
+                                               samp_size,
+                                               num_responses[[item]],
+                                               num_items,
+                                               num_quad)
+                  } else {
+                    anl_deriv <- d_categorical_proxy("a1",
+                                                     p_cd[[item]],
+                                                     prox_data,
+                                                     pred_data,
+                                                     item_data[,item],
+                                                     thr=-1,
+                                                     cov,
+                                                     samp_size,
+                                                     num_responses[[item]],
+                                                     num_items)
+                  }
+
+                  z <- p_cd[[item]][[length(p[[item]])-ncol(pred_data)+cov]] -
+                    anl_deriv[[1]]/anl_deriv[[2]]
+                  if(max_tau) id_max_z <- c(id_max_z,z)
+                  p_cd[[item]][[length(p[[item]])-ncol(pred_data)+cov]] <-
+                    ifelse(pen_type == "lasso",
+                           soft_threshold(z,alpha,tau_current),
+                           firm_threshold(z,alpha,tau_current,gamma))
+
+                  if(method == "UNR") {
+                    p[[item]][[length(p[[item]])-ncol(pred_data)+cov]] <-
+                      p_cd[[item]][[length(p[[item]])-ncol(pred_data)+cov]]
+                    break
+                  }
+
+                  # Update and check for convergence: Calculate the difference
+                  # in parameter estimates from current to previous.
+                  eps_cd = sqrt(sum((unlist(p_cd)-unlist(lastp_cd))^2))
+
+                  # Update parameter list.
+                  lastp_cd <- p_cd
+
+                  # Update the iteration number.
+                  iter_cd = iter_cd + 1
+
+                } # End coordinate descent looping.
+
+
               } # End Rasch conditional.
 
             } # End looping across covariates.
@@ -1113,7 +1426,7 @@ Mstep <-
       } # End looping through items.
 
 
-    } # End optimization method conditional..
+    } # End optimization method conditional.
 
 
 

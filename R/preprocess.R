@@ -66,8 +66,7 @@ preprocess <-
                         num.quad = 21,
                         int.limits = if(any(item.type == "cfa")) {c(-3,3)} else {c(-6,6)},
                         optim.method = if(is.null(item.type) || all(item.type == "2pl")) {"MNR"} else {"UNR"},
-                        start.values = list(),
-                        parallel = list(FALSE,NULL))
+                        start.values = list())
   if(length(control) > 0) final_control[names(control)] <- control
 
   # Pre-process warnings.
@@ -198,8 +197,8 @@ preprocess <-
       warning(paste0("These item response types are not yet supported with ",
                      "Multivariate Newton-Raphson (MNR). Using Univariate Newton-Raphson ",
                      "(UNR) instead."), call. = FALSE, immediate. = TRUE)
+      final_control$optim.method <- "UNR"
     }
-    final_control$optim.method <- "UNR"
   }
 
   # Update number of quad pts for ordered categorical or guassian items.

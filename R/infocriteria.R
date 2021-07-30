@@ -51,7 +51,7 @@ information_criteria <-
   observed_ll_dif <- 0
   for (item in 1:num_items) {
 
-    if(item_type[item] != "cfa") {
+    if(item_type[item] == "2pl") {
       if(!is.null(eout)) {
         # Obtain E-tables for each response category.
         etable_item <- lapply(1:num_responses[item], function(x) etable)
@@ -73,6 +73,28 @@ information_criteria <-
 
 
       }
+    } else if(item_type[item] == "graded") {
+
+      if(!is.null(eout)) {
+        # Obtain E-tables for each response category.
+        etable_item <- lapply(1:num_responses[item], function(x) etable)
+
+        for(resp in 1:num_responses[item]) {
+          etable_item[[resp]][which(
+            !(item_data[,item] == resp)), ] <- 0
+        }
+      } else {
+
+        # Obtain item data for each response category.
+        item_data_resp <-
+          lapply(1:num_responses[item], function(x) matrix(1, nrow = samp_size, ncol = 1))
+
+        for(resp in 1:num_responses[item]) {
+          item_data_resp[[resp]][!(item_data[,item] == resp)] <- 0
+        }
+
+      }
+
     }
 
 
@@ -162,6 +184,7 @@ information_criteria <-
                                                     num_responses[item])
         complete_ll_dif_item <- 0
         observed_ll_dif_item <- 0
+
         for(resp in 1:num_responses[item]){
           if(resp < num_responses[item] && all(itemtrace[[resp]] == 0)){
             log_itemtrace_cat <- 0
@@ -174,9 +197,11 @@ information_criteria <-
               log_itemtrace_cat <- log(itemtrace[[resp-1]]-itemtrace[[resp]])
             }
           }
+
+
           log_itemtrace_cat[is.infinite(log_itemtrace_cat)] <- NA
           complete_ll_dif_item <- complete_ll_dif_item +
-            sum(log_itemtrace_cat, na.rm = TRUE)
+            sum(item_data_resp[[resp]]*log_itemtrace_cat, na.rm = TRUE)
           observed_ll_dif_item <- observed_ll_dif_item +
             sum(prox_data*log_itemtrace_cat, na.rm = TRUE)
         }

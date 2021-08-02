@@ -1474,10 +1474,10 @@ Mstep <-
         return(list(p=p,
                     inv_hess_diag=inv_hess_diag,
                     under_identified=under_identified))
-      } else if(method == "UNR"){
+      } else if(method == "UNR") {
         return(list(p=p,
                     under_identified=under_identified))
-      } else {
+      } else if(method == "CD") {
         return(list(p=p_cd_all,
                     under_identified=under_identified))
       }

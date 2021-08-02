@@ -39,7 +39,7 @@ information_criteria <-
            num_quad) {
 
   # Update theta and etable.
-  if(!is.null(eout)) {
+  if(is.null(prox_data)) {
     theta <- eout$theta
     etable <- eout$etable
     theta_mat <- t(matrix(theta,
@@ -47,12 +47,34 @@ information_criteria <-
                           nrow=num_quad))
   }
 
+  # Obtain likelihood value for latent variable model
+  alpha <- mean_predictors %*% p[[num_items+1]]
+  phi <- exp(var_predictors %*% p[[num_items+2]])
+
+  if(is.null(prox_data)) {
+    prior_scores <- t(sapply(1:samp_size,
+                             function(x) {
+                               dnorm(theta,
+                                     mean = alpha[x],
+                                     sd = sqrt(phi[x]))
+                             }))
+    complete_ll_impact <- sum(etable*log(prior_scores), na.rm = TRUE)
+  } else {
+    prior_scores <- dnorm(prox_data,
+                          mean = alpha,
+                          sd = sqrt(phi))
+    complete_ll_impact <- sum(log(prior_scores), na.rm = TRUE)
+  }
+
+  observed_ll_impact <- sum(log(prior_scores), na.rm = TRUE)
+
+  # Obtain likelihood value for item responses
   complete_ll_dif <- 0
   observed_ll_dif <- 0
   for (item in 1:num_items) {
 
     if(item_type[item] == "2pl") {
-      if(!is.null(eout)) {
+      if(is.null(prox_data)) {
         # Obtain E-tables for each response category.
         etable_item <- lapply(1:num_responses[item], function(x) etable)
 
@@ -60,72 +82,7 @@ information_criteria <-
           etable_item[[resp]][which(
             !(item_data[,item] == resp)), ] <- 0
         }
-      } else {
-        # Obtain item data for each response category.
-        item_data_resp <- lapply(1:num_responses[item], function(x) item_data)
 
-        for(resp in 1:num_responses[item]) {
-
-          item_data_resp[[resp]][!(item_data_resp[[resp]] == resp)] <- 0
-          item_data_resp[[resp]][item_data_resp[[resp]] == resp] <- 1
-
-        }
-
-
-      }
-    } else if(item_type[item] == "graded") {
-
-      if(!is.null(eout)) {
-        # Obtain E-tables for each response category.
-        etable_item <- lapply(1:num_responses[item], function(x) etable)
-
-        for(resp in 1:num_responses[item]) {
-          etable_item[[resp]][which(
-            !(item_data[,item] == resp)), ] <- 0
-        }
-      } else {
-
-        # Obtain item data for each response category.
-        item_data_resp <-
-          lapply(1:num_responses[item], function(x) matrix(1, nrow = samp_size, ncol = 1))
-
-        for(resp in 1:num_responses[item]) {
-          item_data_resp[[resp]][!(item_data[,item] == resp)] <- 0
-        }
-
-      }
-
-    }
-
-
-    #compute negative log-likelihood values
-    if(item_type[item] == "cfa") {
-
-      if(!is.null(eout)) {
-        itemtrace <- gaussian_traceline_pts(p[[item]],
-                                            theta,
-                                            item_data[,item],
-                                            pred_data,
-                                            samp_size)
-        complete_ll_dif_item <- sum(etable*log(itemtrace[[1]]),
-                                       na.rm = TRUE)
-        observed_ll_dif_item <- sum(log(itemtrace[[1]]),
-                                       na.rm = TRUE)
-      } else{
-        itemtrace <- gaussian_traceline_pts_proxy(p[[item]],
-                                                  prox_data,
-                                                  item_data[,item],
-                                                  pred_data,
-                                                  samp_size)
-        complete_ll_dif_item <- sum(log(itemtrace[[1]]),
-                                    na.rm = TRUE)
-        observed_ll_dif_item <- sum(prox_data*log(itemtrace[[1]]),
-                                    na.rm = TRUE)
-      }
-
-    } else if (item_type[item] == "2pl") {
-
-      if(!is.null(eout)) {
         itemtrace <- bernoulli_traceline_pts(p[[item]],
                                              theta,
                                              pred_data,
@@ -137,25 +94,47 @@ information_criteria <-
                                     na.rm = TRUE) + sum(theta_mat*log(itemtrace), na.rm = TRUE)
 
       } else {
+        # Obtain item data for each response category.
+        item_data_resp <- lapply(1:num_responses[item], function(x) item_data)
+
+        for(resp in 1:num_responses[item]) {
+
+          item_data_resp[[resp]][!(item_data_resp[[resp]] == resp)] <- 0
+          item_data_resp[[resp]][item_data_resp[[resp]] == resp] <- 1
+
+        }
+
         itemtrace <- bernoulli_traceline_pts_proxy(p[[item]],
                                                    prox_data,
                                                    pred_data)
-        complete_ll_dif_item <- sum(item_data_resp[[1]][, item]*log(1-itemtrace), na.rm = TRUE) +
+        complete_ll_dif_item <-
+          sum(item_data_resp[[1]][, item]*log(1-itemtrace), na.rm = TRUE) +
           sum(item_data_resp[[2]][, item]*log(itemtrace), na.rm = TRUE)
-        observed_ll_dif_item <- sum(prox_data*log(1-itemtrace),
-                                    na.rm = TRUE) + sum(prox_data*log(itemtrace), na.rm = TRUE)
+        observed_ll_dif_item <-
+          sum(item_data_resp[[1]][, item]*log(1-itemtrace), na.rm = TRUE) +
+          sum(item_data_resp[[2]][, item]*log(itemtrace), na.rm = TRUE)
+
+
       }
 
 
-    } else if (item_type[item] == "graded") {
+    } else if(item_type[item] == "graded") {
 
-      if(!is.null(eout)) {
+      if(is.null(prox_data)) {
+        # Obtain E-tables for each response category.
+        etable_item <- lapply(1:num_responses[item], function(x) etable)
+
+        for(resp in 1:num_responses[item]) {
+          etable_item[[resp]][which(
+            !(item_data[,item] == resp)), ] <- 0
+        }
+
         itemtrace <- cumulative_traceline_pts(p[[item]],
-                                               theta,
-                                               pred_data,
-                                               samp_size,
-                                               num_responses[item],
-                                               num_quad)
+                                              theta,
+                                              pred_data,
+                                              samp_size,
+                                              num_responses[item],
+                                              num_quad)
         complete_ll_dif_item <- 0
         observed_ll_dif_item <- 0
         for(resp in 1:num_responses[item]){
@@ -174,9 +153,19 @@ information_criteria <-
           complete_ll_dif_item <- complete_ll_dif_item +
             sum(etable_item[[resp]]*log_itemtrace_cat, na.rm = TRUE)
           observed_ll_dif_item <- observed_ll_dif_item +
-            sum(log_itemtrace_cat, na.rm = TRUE)
+            sum(item_data_resp[[resp]]*log_itemtrace_cat, na.rm = TRUE)
         }
+
       } else {
+
+        # Obtain item data for each response category.
+        item_data_resp <-
+          lapply(1:num_responses[item], function(x) matrix(1, nrow = samp_size, ncol = 1))
+
+        for(resp in 1:num_responses[item]) {
+          item_data_resp[[resp]][!(item_data[,item] == resp)] <- 0
+        }
+
         itemtrace <- cumulative_traceline_pts_proxy(p[[item]],
                                                     prox_data,
                                                     pred_data,
@@ -203,35 +192,46 @@ information_criteria <-
           complete_ll_dif_item <- complete_ll_dif_item +
             sum(item_data_resp[[resp]]*log_itemtrace_cat, na.rm = TRUE)
           observed_ll_dif_item <- observed_ll_dif_item +
-            sum(prox_data*log_itemtrace_cat, na.rm = TRUE)
+            sum(item_data_resp[[resp]]*log_itemtrace_cat, na.rm = TRUE)
         }
+
       }
+
+
+
+    } else if(item_type[item] == "cfa") {
+
+      if(is.null(prox_data)) {
+        itemtrace <- gaussian_traceline_pts(p[[item]],
+                                            theta,
+                                            item_data[,item],
+                                            pred_data,
+                                            samp_size)
+        complete_ll_dif_item <- sum(etable*log(itemtrace[[1]]),
+                                    na.rm = TRUE)
+        observed_ll_dif_item <- sum(theta_mat*log(itemtrace[[1]]),
+                                    na.rm = TRUE)
+      } else{
+        itemtrace <- gaussian_traceline_pts_proxy(p[[item]],
+                                                  prox_data,
+                                                  item_data[,item],
+                                                  pred_data,
+                                                  samp_size)
+        complete_ll_dif_item <- sum(log(itemtrace[[1]]),
+                                    na.rm = TRUE)
+        observed_ll_dif_item <- sum(log(itemtrace[[1]]),
+                                    na.rm = TRUE)
+      }
+
     }
+
+
 
     complete_ll_dif <- complete_ll_dif + complete_ll_dif_item
     observed_ll_dif <- observed_ll_dif + observed_ll_dif_item
   }
 
-  # Obtain likelihood value for latent variable model
-  alpha <- mean_predictors %*% p[[num_items+1]]
-  phi <- exp(var_predictors %*% p[[num_items+2]])
 
-  if(!is.null(eout)) {
-    prior_scores <- t(sapply(1:samp_size,
-                             function(x) {
-                               dnorm(theta,
-                                     mean = alpha[x],
-                                     sd = sqrt(phi[x]))
-                             }))
-    complete_ll_impact <- sum(etable*log(prior_scores), na.rm = TRUE)
-  } else {
-    prior_scores <- dnorm(prox_data,
-                          mean = alpha,
-                          sd = sqrt(phi))
-    complete_ll_impact <- sum(log(prior_scores), na.rm = TRUE)
-  }
-
-  observed_ll_impact <- sum(log(prior_scores), na.rm = TRUE)
 
   # Remove DIF parameters that equal zero from information crit calculation.
   p2 <- unlist(p)

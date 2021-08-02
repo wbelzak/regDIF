@@ -203,6 +203,19 @@ em_estimation <- function(p,
 
   if(exit_code == 4) return(NULL)
 
+  # eout <- if(!is.null(prox_data)) Estep_proxy(p,
+  #                                            item_data,
+  #                                            pred_data,
+  #                                            item_type,
+  #                                            mean_predictors,
+  #                                            var_predictors,
+  #                                            prox_data,
+  #                                            samp_size,
+  #                                            num_items,
+  #                                            num_responses,
+  #                                            get_eap = FALSE,
+  #                                            NA_cases = NA_cases)
+
   # Get information criteria.
   infocrit <- information_criteria(eout,
                                    p,

@@ -12,6 +12,7 @@
 #' @param samp_size Sample size in dataset.
 #' @param num_items Number of items in dataset.
 #' @param num_responses Number of responses for each item.
+#' @param adaptive_quad Logical indicating whether to use adaptive quadrature.
 #' @param num_quad Number of quadrature points used for approximating the
 #' latent variable.
 #' @param get_eap Logical indicating whether to compute EAP scores.
@@ -132,6 +133,130 @@ Estep <-
     # theta values.
     return(list(etable=etable,eap_scores=eap_scores,eap_sd=eap_sd,
                 theta=theta,observed_ll=observed_ll))
+
+
+  }
+
+#' Expectation step with proxy data.
+#'
+#' @param p List of parameters.
+#' @param item_data Matrix or dataframe of item responses.
+#' @param pred_data Matrix or dataframe of DIF and/or impact predictors.
+#' @param item_type Vector of character values indicating the item type.
+#' @param mean_predictors Possibly different matrix of predictors for the mean
+#' impact equation.
+#' @param var_predictors Possibly different matrix of predictors for the
+#' variance impact equation.
+#' @param prox_data Vector of observed proxy scores.
+#' @param samp_size Sample size in dataset.
+#' @param num_items Number of items in dataset.
+#' @param num_responses Number of responses for each item.
+#' @param get_eap Logical indicating whether to compute EAP scores.
+#' @param NA_cases Logical vector indicating missing observations.
+#'
+#' @return a \code{"list"} of posterior values from the expectation step
+#'
+#' @keywords internal
+#'
+Estep_proxy <-
+  function(p,
+           item_data,
+           pred_data,
+           item_type,
+           mean_predictors,
+           var_predictors,
+           prox_data,
+           samp_size,
+           num_items,
+           num_responses,
+           get_eap,
+           NA_cases) {
+
+    # Make space for the trace lines and the E-tables.
+    observed_ll <- 0
+    itemtrace <- rep(list(NA),num_items)
+    etable <- matrix(0, nrow = samp_size, ncol = 1)
+    eap_scores <- if(get_eap) matrix(NA, nrow = length(NA_cases), ncol = 1)
+    eap_sd <- if(get_eap) matrix(NA, nrow = length(NA_cases), ncol = 1)
+
+    # Impact.
+    alpha <- mean_predictors %*% p[[num_items+1]]
+    phi <- exp(var_predictors %*% p[[num_items+2]])
+
+
+    # Compute the trace lines.
+    for (item in 1:num_items) {
+      if(item_type[item] == "cfa") {
+        itemtrace[[item]] <- gaussian_traceline_pts_proxy(p[[item]],
+                                                          prox_data,
+                                                          item_data[,item],
+                                                          pred_data,
+                                                          samp_size)
+      } else if (item_type[item] == "2pl") {
+        itemtrace[[item]] <- bernoulli_traceline_pts_proxy(p[[item]],
+                                                           prox_data,
+                                                           pred_data)
+      } else {
+        itemtrace[[item]] <- cumulative_traceline_pts_proxy(p[[item]],
+                                                      prox_data,
+                                                      pred_data,
+                                                      samp_size,
+                                                      num_responses[item])
+      }
+    }
+
+    # Obtain E-table.
+    for(i in 1:samp_size) {
+
+      # Get weights for computing adaptive or fixed-point quadrature.
+      posterior <- dnorm(prox_data[i],
+                         mean = alpha[i],
+                         sd = sqrt(phi[i]))
+
+      # For each individual i, loop over items (j) and compute posterior
+      # probability of response pattern.
+      for(j in 1:num_items) {
+
+        x <- item_data[i,j]
+        if(is.na(x)) next
+
+        if(item_type[j] == "cfa") { # Continuous responses.
+          posterior <- posterior*itemtrace[[j]][i,]
+        } else if(item_type[j] == "2pl") { # Binary responses.
+          if(x == 1) {
+            posterior <- posterior*(1-itemtrace[[j]][i,])
+          } else {
+            posterior <- posterior*itemtrace[[j]][i,]
+          }
+        } else if(item_type[j] == "graded") { # Ordered categorical responses.
+          if(x == 1) {
+            posterior <- posterior*(1-itemtrace[[j]][[1]][i,])
+          } else if(x == num_responses[j]) {
+            posterior <- posterior*itemtrace[[j]][[num_responses[j]-1]][i,]
+          } else {
+            posterior <- posterior*(itemtrace[[j]][[x-1]][i,]-
+                                      itemtrace[[j]][[x]][i,])
+          }
+        }
+
+      }
+
+      # Normalize posterior.
+      observed_ll <- observed_ll + log(posterior)
+      etable[i,] <- posterior
+
+      # EAPs.
+      if(get_eap) {
+        eap_scores[which(!NA_cases)[i]] <- posterior*prox_data[i]
+        eap_sd[which(!NA_cases)[i]] <-
+          sqrt(posterior*(prox_data[i]-eap_scores[which(!NA_cases)[i]])**2)
+      }
+
+    }
+
+    # E-table matrix to be used in Q function and (possibly adaptive)
+    # theta values.
+    return(list(etable=etable,eap_scores=eap_scores,eap_sd=eap_sd,observed_ll=observed_ll))
 
 
   }

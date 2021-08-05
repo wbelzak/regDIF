@@ -293,6 +293,9 @@ Mstep <-
 
             # s0 update.
             p[[item]][[3+num_predictors*2]] <- z[3+num_predictors*2]
+            if(p[[item]][[3+num_predictors*2]] < 0) {
+              p[[item]][[3+num_predictors*2]] <- z[3+num_predictors*2] <- 1
+            }
 
             # Don't update DIF estimates if anchor item.
             if(any(item == anchor)) next

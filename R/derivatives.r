@@ -1613,3 +1613,463 @@ d_sigma_gaussian_proxy <-
 
   }
 
+#' Partial derivatives for continuous items.
+#'
+#' @param p_item Vector of item parameters.
+#' @param etable E-table.
+#' @param theta Matrix of adaptive theta values.
+#' @param responses_item Vector of item responses.
+#' @param pred_data Matrix or dataframe of DIF and/or impact predictors.
+#' @param samp_size Sample size in dataset.
+#' @param num_items Number of items in dataset.
+#' @param num_quad Number of quadrature points used for approximating the
+#' latent variable.
+#' @param num_predictors Number of predictors in dataset.
+#'
+#' @return a \code{"list"} of first and second partial derivatives for mean value of Gaussian item
+#' likelihood (to use with coordinate descent and univariate Newton-Raphson)
+#'
+#' @keywords internal
+#'
+d_gaussian_itemblock <-
+  function(p_item,
+           etable,
+           theta,
+           responses_item,
+           pred_data,
+           samp_size,
+           num_items,
+           num_quad,
+           num_predictors) {
+
+    # Make space for first and second derivatives.
+    d1 <- matrix(0,nrow=length(p_item),ncol=1)
+    d2 <- matrix(0,nrow=length(p_item),ncol=length(p_item))
+
+
+    # Get latent mean and variance vectors.
+    mu <- sapply(theta,
+                 function(x) {
+                   (p_item[1] +
+                      pred_data %*%
+                      p_item[3:(2+num_predictors)]) +
+                     (p_item[2] +
+                        pred_data %*%
+                        p_item[(3+num_predictors):(2+num_predictors*2)])*x
+                 })
+    sigma <- sqrt(p_item[(3+num_predictors*2)]*exp(
+      pred_data %*% p_item[(4+num_predictors*2):(3+num_predictors*3)]
+    ))
+
+    # First derivative for linear predictor w.r.t. theta.
+    eta_d_mu_base <- matrix(1, nrow = samp_size, ncol = num_quad)
+    eta_d_mu_a0 <- t(matrix(theta,
+                            ncol=samp_size,
+                            nrow=num_quad))
+    eta_d_sigma0_base <-
+      as.vector(exp(pred_data %*% p_item[(4+num_predictors*2):(3+num_predictors*3)]) / (2*sigma))
+    eta_d_sigma1_base <- as.vector(sigma / 2)
+
+    # Calculate first and second base derivatives.
+    d1_base_mu <-
+      sapply(1:num_quad,
+             function(x) {
+               1/sigma**2*(responses_item - mu[,x])
+               })*etable
+    d2_base_mu <- sapply(1:num_quad,
+                         function(x) {
+                           - 1 / sigma**2 * etable[,x]
+                         })
+    d1_base_sigma <- sapply(1:num_quad,
+                            function(x) {
+                              ((responses_item-mu[,x])**2 /
+                                 sigma**3 -
+                                 1/sigma)
+                            })*etable
+    d2_base_sigma0 <- sapply(1:num_quad,
+                             function(x) {
+                               eta_d_sigma0_base*(1 / sigma**2 -
+                                                    3*(responses_item - mu[,x])**2 /
+                                                    sigma**4) +
+                                 (-1 / (2*sigma**2))*((responses_item - mu[,x])**2 /
+                                                        sigma**3 - 1/sigma)
+                             })*etable
+    d2_base_sigma1 <- sapply(1:num_quad,
+                             function(x) {
+                               -2*eta_d_sigma1_base*(sigma**(-3)*(responses_item -
+                                                                    mu[,x])**2)
+                             })*etable
+
+    # First and second derivative for c0.
+    d1[1,1] <- sum(d1_base_mu, na.rm = TRUE) #d1
+    d2[1,1] <- sum(d2_base_mu, na.rm = TRUE) #d2
+
+    # First and second derivative for a0.
+    d1[2,1] <- sum(eta_d_mu_a0*d1_base_mu, na.rm = TRUE) #d1
+    d2[2,2] <- sum(eta_d_mu_a0**2*d2_base_mu, na.rm = TRUE) #d2
+
+    # First and second derivative for s0.
+    d1[(3+num_predictors*2),1] <- sum(eta_d_sigma0_base*d1_base_sigma, na.rm = TRUE) #d1
+    d2[(3+num_predictors*2),(3+num_predictors*2)] <-
+      sum(eta_d_sigma0_base*d2_base_sigma0, na.rm = TRUE) #d2
+
+    # Cross derivative for c0 and a0.
+    d2[2,1] <- sum(eta_d_mu_a0*d2_base_mu, na.rm = TRUE) #d2
+
+    # Cross derivative for c0 and s0.
+    d2[(3+num_predictors*2),1] <- sum(-eta_d_sigma0_base*d1_base_mu*eta_d_sigma1_base**(-1),
+                                      na.rm = TRUE) #d2
+
+    # Cross derivative for a0 and s0.
+    d2[(3+num_predictors*2),2] <-
+      sum(-eta_d_sigma0_base*eta_d_mu_a0*d1_base_mu*eta_d_sigma1_base**(-1),
+          na.rm = TRUE) #d2
+
+    # Cycle through predictors (outer cycle).
+    for(cov in 1:num_predictors) {
+
+      # First derivative for linear predictor w.r.t. covariate.
+      cov_matrix <- pred_data[,cov]
+
+      # First and second derivatives for c1.
+      d1[2+cov,1] <-
+        sum(cov_matrix*d1_base_mu,
+            na.rm = TRUE) #d1
+      d2[2+cov,2+cov] <-
+        sum(cov_matrix**2*d2_base_mu,
+            na.rm = TRUE) #d2
+
+      # First and second derivatives for a1.
+      d1[2+num_predictors+cov,1] <-
+        sum(cov_matrix*eta_d_mu_a0*d1_base_mu,
+            na.rm = TRUE) #d1
+      d2[2+num_predictors+cov,2+num_predictors+cov] <-
+        sum((cov_matrix*eta_d_mu_a0)**2*d2_base_mu,
+            na.rm = TRUE) #d2
+
+      # First and second derivatives for s1.
+      d1[(3+num_predictors*2+cov),1] <-
+        sum(cov_matrix*eta_d_sigma1_base*d1_base_sigma,
+            na.rm = TRUE) #d1
+      d2[(3+num_predictors*2+cov),(3+num_predictors*2+cov)] <-
+        sum(cov_matrix**2/2*d2_base_sigma1,
+            na.rm = TRUE) #d2
+
+      # # Cross derivatives for c0 and c1.
+      d2[2+cov,1] <- sum(cov_matrix*d2_base_mu, na.rm = TRUE) #d2
+
+      # # Cross derivatives for c0 and a1, as well as a0 and c1.
+      d2[2+num_predictors+cov,1] <- d2[2+cov,2] <-
+        sum(cov_matrix*eta_d_mu_a0*d2_base_mu,
+            na.rm = TRUE) #d2
+
+      # # Cross derivatives for a0 and a1.
+      d2[2+num_predictors+cov,2] <-
+        sum(cov_matrix*eta_d_mu_a0**2*d2_base_mu,
+            na.rm = TRUE) #d2
+
+      # # Cross derivatives for c0 and s1
+      d2[(3+num_predictors*2+cov),1] <- sum(-cov_matrix*d1_base_mu,
+                                             na.rm = TRUE) #d2
+
+      # # Cross derivatives for a0 and s1
+      d2[(3+num_predictors*2+cov),2] <- sum(-cov_matrix*eta_d_mu_a0*d1_base_mu,
+                                            na.rm = TRUE) #d2
+
+      # # Cross derivatives for s0 and c1
+      d2[(3+num_predictors*2),2+cov] <-
+        sum(-cov_matrix*eta_d_sigma0_base*d1_base_mu*eta_d_sigma1_base**(-1),
+            na.rm = TRUE) #d2
+
+      # # Cross derivatives for s0 and a1
+      d2[(3+num_predictors*2),2+num_predictors+cov] <-
+        sum(-cov_matrix*eta_d_mu_a0*eta_d_sigma0_base*d1_base_mu*eta_d_sigma1_base**(-1),
+            na.rm = TRUE) #d2
+
+      # # Cross derivatives for s0 and s1
+      d2[(3+num_predictors*2+cov),(3+num_predictors*2)] <-
+        sum(cov_matrix*eta_d_sigma0_base*d2_base_sigma1*(1/eta_d_sigma1_base/2),
+            na.rm = TRUE) #d2
+
+      # # Cycle through predictors (inner cycle).
+      for(cov2 in 1:num_predictors) {
+
+
+        if(cov == cov2) {
+
+          # Cross derivatives with same predictor for c1 and a1.
+          d2[2+num_predictors+cov,2+cov2] <-
+            sum(cov_matrix**2*eta_d_mu_a0*d2_base_mu,
+                na.rm = TRUE) #d2
+
+          # Cross derivatives with same predictor for c1 and s1.
+          d2[(3+num_predictors*2+cov),2+cov2] <- sum(-cov_matrix**2*d1_base_mu,
+                                                     na.rm = TRUE) #d2
+
+          # Cross derivatives with same predictor for a1 and s1.
+          d2[(3+num_predictors*2+cov),2+num_predictors+cov2] <-
+            sum(-cov_matrix**2*eta_d_mu_a0*d1_base_mu,
+                na.rm = TRUE) #d2
+
+        } else {
+
+          # First derivatives for linear predictor w.r.t. second covariate.
+          cov2_matrix <- pred_data[,cov2]
+
+          # Cross derivatives with different predictor for c1 and a1.
+          d2[2+num_predictors+cov,2+cov2] <-
+            sum(cov_matrix*cov2_matrix*eta_d_mu_a0*d2_base_mu,
+                na.rm = TRUE) #d2
+
+          # Cross derivatives with different predictor for c1 and s1.
+          d2[(3+num_predictors*2+cov),2+cov2] <-
+            sum(-cov_matrix*cov2_matrix*d1_base_mu,
+                na.rm = TRUE) #d2
+
+          # Cross derivatives with different predictor for a1 and s1.
+          d2[(3+num_predictors*2+cov),2+num_predictors+cov2] <-
+            sum(-cov_matrix*cov2_matrix*eta_d_mu_a0*d1_base_mu,
+                na.rm = TRUE) #d2
+
+          if(cov2 > 1 && cov < cov2) {
+
+            # Cross derivatives with different predictor for c1 and c1.
+            d2[2+cov2,2+cov] <-
+              sum(cov_matrix*cov2_matrix*d2_base_mu, #d2
+                  na.rm = TRUE)
+
+            # Cross derivatives with different predictor for a1 and a1.
+            d2[2+num_predictors+cov2,2+num_predictors+cov] <-
+              sum(cov_matrix*cov2_matrix*eta_d_mu_a0**2*d2_base_mu, #a1a1
+                  na.rm = TRUE)
+
+            # Cross derivatives with different predictor for s1 and s1.
+            d2[(3+num_predictors*2+cov2),(3+num_predictors*2+cov)] <-
+              sum(cov_matrix*cov2_matrix/2*d2_base_sigma1,
+                  na.rm = TRUE) #d2
+          }
+        }
+
+      }
+
+    }
+
+
+    dlist <- list(d1,d2)
+
+  }
+
+#' Partial derivatives for continuous items using proxy data.
+#'
+#' @param p_item Vector of item parameters.
+#' @param prox_data Vector of observed proxy scores.
+#' @param responses_item Vector of item responses.
+#' @param pred_data Matrix or dataframe of DIF and/or impact predictors.
+#' @param samp_size Sample size in dataset.
+#' @param num_items Number of items in dataset.
+#' @param num_quad Number of quadrature points used for approximating the
+#' latent variable.
+#' @param num_predictors Number of predictors in dataset.
+#'
+#' @return a \code{"list"} of first and second partial derivatives for mean value of Gaussian item
+#' likelihood (to use with coordinate descent and univariate Newton-Raphson)
+#'
+#' @keywords internal
+#'
+d_gaussian_itemblock_proxy <-
+  function(p_item,
+           prox_data,
+           responses_item,
+           pred_data,
+           samp_size,
+           num_items,
+           num_quad,
+           num_predictors) {
+
+
+    # Make space for first and second derivatives.
+    d1 <- matrix(0,nrow=length(p_item),ncol=1)
+    d2 <- matrix(0,nrow=length(p_item),ncol=length(p_item))
+
+
+    # Get latent mean and variance vectors.
+    mu <- (p_item[1] + pred_data %*% p_item[3:(2+num_predictors)]) +
+      (p_item[2] + pred_data %*% p_item[(3+num_predictors):(2+num_predictors*2)])*prox_data
+    sigma <- sqrt(p_item[(3+num_predictors*2)]*exp(
+      pred_data %*% p_item[(4+num_predictors*2):(3+num_predictors*3)]
+    ))
+
+    # First derivative for linear predictor w.r.t. theta.
+    eta_d_mu_base <- matrix(1, nrow = samp_size, ncol = 1)
+    eta_d_mu_a0 <- prox_data
+    eta_d_sigma0_base <-
+      exp(pred_data %*% p_item[(4+num_predictors*2):(3+num_predictors*3)]) / (2*sigma)
+    eta_d_sigma1_base <- sigma / 2
+
+    # Calculate first and second base derivatives.
+    d1_base_mu <- 1/sigma**2*(responses_item - mu)
+    d2_base_mu <- - 1 / sigma**2
+    d1_base_sigma <- ((responses_item-mu)**2 / sigma**3 - 1/sigma)
+    d2_base_sigma0 <-
+      eta_d_sigma0_base*(1 / sigma**2 - 3*(responses_item - mu)**2 / sigma**4) +
+      (-1 / (2*sigma**2))*((responses_item - mu)**2 / sigma**3 - 1/sigma)
+    d2_base_sigma1 <- -2*eta_d_sigma1_base*(sigma**(-3)*(responses_item - mu)**2)
+
+    # First and second derivative for c0.
+    d1[1,1] <- sum(d1_base_mu, na.rm = TRUE) #d1
+    d2[1,1] <- sum(d2_base_mu, na.rm = TRUE) #d2
+
+    # First and second derivative for a0.
+    d1[2,1] <- sum(eta_d_mu_a0*d1_base_mu, na.rm = TRUE) #d1
+    d2[2,2] <- sum(eta_d_mu_a0**2*d2_base_mu, na.rm = TRUE) #d2
+
+    # First and second derivative for s0.
+    d1[(3+num_predictors*2),1] <- sum(eta_d_sigma0_base*d1_base_sigma, na.rm = TRUE) #d1
+    d2[(3+num_predictors*2),(3+num_predictors*2)] <-
+      sum(eta_d_sigma0_base*d2_base_sigma0, na.rm = TRUE) #d2
+
+    # Cross derivative for c0 and a0.
+    d2[2,1] <- sum(eta_d_mu_a0*d2_base_mu, na.rm = TRUE) #d2
+
+    # Cross derivative for c0 and s0.
+    d2[(3+num_predictors*2),1] <- sum(-eta_d_sigma0_base*d1_base_mu*eta_d_sigma1_base**(-1),
+                                      na.rm = TRUE) #d2
+
+    # Cross derivative for a0 and s0.
+    d2[(3+num_predictors*2),2] <-
+      sum(-eta_d_sigma0_base*eta_d_mu_a0*d1_base_mu*eta_d_sigma1_base**(-1),
+          na.rm = TRUE) #d2
+
+    # Cycle through predictors (outer cycle).
+    for(cov in 1:num_predictors) {
+
+      # First derivative for linear predictor w.r.t. covariate.
+      cov_matrix <- pred_data[,cov]
+
+      # First and second derivatives for c1.
+      d1[2+cov,1] <-
+        sum(cov_matrix*d1_base_mu,
+            na.rm = TRUE) #d1
+      d2[2+cov,2+cov] <-
+        sum(cov_matrix**2*d2_base_mu,
+            na.rm = TRUE) #d2
+
+      # First and second derivatives for a1.
+      d1[2+num_predictors+cov,1] <-
+        sum(cov_matrix*eta_d_mu_a0*d1_base_mu,
+            na.rm = TRUE) #d1
+      d2[2+num_predictors+cov,2+num_predictors+cov] <-
+        sum((cov_matrix*eta_d_mu_a0)**2*d2_base_mu,
+            na.rm = TRUE) #d2
+
+      # First and second derivatives for s1.
+      d1[(3+num_predictors*2+cov),1] <-
+        sum(cov_matrix*eta_d_sigma1_base*d1_base_sigma,
+            na.rm = TRUE) #d1
+      d2[(3+num_predictors*2+cov),(3+num_predictors*2+cov)] <-
+        sum(cov_matrix**2/2*d2_base_sigma1,
+            na.rm = TRUE) #d2
+
+      # # Cross derivatives for c0 and c1.
+      d2[2+cov,1] <- sum(cov_matrix*d2_base_mu, na.rm = TRUE) #d2
+
+      # # Cross derivatives for c0 and a1, as well as a0 and c1.
+      d2[2+num_predictors+cov,1] <- d2[2+cov,2] <-
+        sum(cov_matrix*eta_d_mu_a0*d2_base_mu,
+            na.rm = TRUE) #d2
+
+      # # Cross derivatives for a0 and a1.
+      d2[2+num_predictors+cov,2] <-
+        sum(cov_matrix*eta_d_mu_a0**2*d2_base_mu,
+            na.rm = TRUE) #d2
+
+      # # Cross derivatives for c0 and s1
+      d2[(3+num_predictors*2+cov),1] <- sum(-cov_matrix*d1_base_mu,
+                                            na.rm = TRUE) #d2
+
+      # # Cross derivatives for a0 and s1
+      d2[(3+num_predictors*2+cov),2] <- sum(-cov_matrix*eta_d_mu_a0*d1_base_mu,
+                                            na.rm = TRUE) #d2
+
+      # # Cross derivatives for s0 and c1
+      d2[(3+num_predictors*2),2+cov] <-
+        sum(-cov_matrix*eta_d_sigma0_base*d1_base_mu*eta_d_sigma1_base**(-1),
+            na.rm = TRUE) #d2
+
+      # # Cross derivatives for s0 and a1
+      d2[(3+num_predictors*2),2+num_predictors+cov] <-
+        sum(-cov_matrix*eta_d_mu_a0*eta_d_sigma0_base*d1_base_mu*eta_d_sigma1_base**(-1),
+            na.rm = TRUE) #d2
+
+      # # Cross derivatives for s0 and s1
+      d2[(3+num_predictors*2+cov),(3+num_predictors*2)] <-
+        sum(cov_matrix*eta_d_sigma0_base*d2_base_sigma1*(1/eta_d_sigma1_base/2),
+            na.rm = TRUE) #d2
+
+      # # Cycle through predictors (inner cycle).
+      for(cov2 in 1:num_predictors) {
+
+
+        if(cov == cov2) {
+
+          # Cross derivatives with same predictor for c1 and a1.
+          d2[2+num_predictors+cov,2+cov2] <-
+            sum(cov_matrix**2*eta_d_mu_a0*d2_base_mu,
+                na.rm = TRUE) #d2
+
+          # Cross derivatives with same predictor for c1 and s1.
+          d2[(3+num_predictors*2+cov),2+cov2] <- sum(-cov_matrix**2*d1_base_mu,
+                                                     na.rm = TRUE) #d2
+
+          # Cross derivatives with same predictor for a1 and s1.
+          d2[(3+num_predictors*2+cov),2+num_predictors+cov2] <-
+            sum(-cov_matrix**2*eta_d_mu_a0*d1_base_mu,
+                na.rm = TRUE) #d2
+
+        } else {
+
+          # First derivatives for linear predictor w.r.t. second covariate.
+          cov2_matrix <- pred_data[,cov2]
+
+          # Cross derivatives with different predictor for c1 and a1.
+          d2[2+num_predictors+cov,2+cov2] <-
+            sum(cov_matrix*cov2_matrix*eta_d_mu_a0*d2_base_mu,
+                na.rm = TRUE) #d2
+
+          # Cross derivatives with different predictor for c1 and s1.
+          d2[(3+num_predictors*2+cov),2+cov2] <-
+            sum(-cov_matrix*cov2_matrix*d1_base_mu,
+                na.rm = TRUE) #d2
+
+          # Cross derivatives with different predictor for a1 and s1.
+          d2[(3+num_predictors*2+cov),2+num_predictors+cov2] <-
+            sum(-cov_matrix*cov2_matrix*eta_d_mu_a0*d1_base_mu,
+                na.rm = TRUE) #d2
+
+          if(cov2 > 1 && cov < cov2) {
+
+            # Cross derivatives with different predictor for c1 and c1.
+            d2[2+cov2,2+cov] <-
+              sum(cov_matrix*cov2_matrix*d2_base_mu, #d2
+                  na.rm = TRUE)
+
+            # Cross derivatives with different predictor for a1 and a1.
+            d2[2+num_predictors+cov2,2+num_predictors+cov] <-
+              sum(cov_matrix*cov2_matrix*eta_d_mu_a0**2*d2_base_mu, #a1a1
+                  na.rm = TRUE)
+
+            # Cross derivatives with different predictor for s1 and s1.
+            d2[(3+num_predictors*2+cov2),(3+num_predictors*2+cov)] <-
+              sum(cov_matrix*cov2_matrix/2*d2_base_sigma1,
+                  na.rm = TRUE) #d2
+          }
+        }
+
+      }
+
+    }
+
+
+    dlist <- list(d1,d2)
+
+  }

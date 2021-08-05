@@ -65,7 +65,7 @@ preprocess <-
                         adapt.quad = FALSE,
                         num.quad = 21,
                         int.limits = if(any(item.type == "cfa")) {c(-3,3)} else {c(-6,6)},
-                        optim.method = if(is.null(item.type) || all(item.type == "2pl")) {"MNR"} else {"UNR"},
+                        optim.method = "MNR",
                         start.values = list())
   if(length(control) > 0) final_control[names(control)] <- control
 
@@ -192,9 +192,9 @@ preprocess <-
             function(x) length(unique(na.omit(x))))
   }
 
-  if(any(num_responses != 2)) {
+  if(any(item_type == 'graded')) {
     if(is.null(control$optim.method)) {
-      warning(paste0("These item response types are not yet supported with ",
+      warning(paste0("Graded item response types are not yet supported with ",
                      "Multivariate Newton-Raphson (MNR). Using Univariate Newton-Raphson ",
                      "(UNR) instead."), call. = FALSE, immediate. = TRUE)
       final_control$optim.method <- "UNR"

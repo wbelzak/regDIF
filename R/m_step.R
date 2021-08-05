@@ -255,8 +255,166 @@ Mstep <-
 
         for (item in 1:num_items) {
 
-          # Bernoulli responses.
-          if(item_type[item] == "2pl") {
+          # Gaussian responses
+          if (item_type[item] == "cfa") {
+
+
+            if(is.null(prox_data)) {
+              anl_deriv_item <- d_gaussian_itemblock(p[[item]],
+                                                     etable,
+                                                     theta,
+                                                     item_data[,item],
+                                                     pred_data,
+                                                     samp_size,
+                                                     num_items,
+                                                     num_quad,
+                                                     num_predictors)
+            } else {
+              anl_deriv_item <- d_gaussian_itemblock_proxy(p[[item]],
+                                                           prox_data,
+                                                           item_data[,item],
+                                                           pred_data,
+                                                           samp_size,
+                                                           num_items,
+                                                           num_quad,
+                                                           num_predictors)
+            }
+
+
+            inv_hess_item <- solve(anl_deriv_item[[2]])
+            inv_hess_diag[[item]] <- -diag(inv_hess_item)
+            z <- p[[item]] - inv_hess_item %*% anl_deriv_item[[1]]
+
+            # c0 update.
+            p[[item]][[1]] <- z[1]
+
+            # a0 update.
+            if(item_type[item] != "rasch") p[[item]][[2]] <- z[2]
+
+            # s0 update.
+            p[[item]][[3+num_predictors*2]] <- z[3+num_predictors*2]
+
+            # Don't update DIF estimates if anchor item.
+            if(any(item == anchor)) next
+
+            p2 <- unlist(p)
+
+            for(cov in 1:num_predictors) {
+
+              # If penalty type is a group function.
+              if(pen_type == "grp.lasso" ||
+                 pen_type == "grp.mcp") {
+
+                # End routine if only one anchor item is left on each covariate
+                # for each item parameter.
+                if(is.null(anchor) &&
+                   sum(p2[c(grep(paste0("c1(.*?)cov",cov),names(p2)),
+                            grep(paste0("a1(.*?)cov",cov),names(p2)))] != 0) >
+                   (num_items*2 - 1) &&
+                   (length(final_control$start.values) == 0 || pen > 1) &&
+                   num_tau >= 10){
+                  under_identified <- TRUE
+                  break
+                }
+
+                if(max_tau) {
+                  id_max_z <- c(id_max_z,
+                                z[2+cov],
+                                z[2+num_predictors+cov])
+                }
+
+
+                # group update.
+                grp.update <-
+                  if(pen_type == "grp.lasso") {
+                    grp_soft_threshold(z[c(2+cov,
+                                           2+num_predictors+cov)],
+                                       tau_current)
+                  } else if(pen_type == "grp.mcp") {
+                    grp_firm_threshold(z[c(2+cov,
+                                           2+num_predictors+cov)],
+                                       tau_current,
+                                       gamma)
+                  }
+
+                # c1 updates.
+                p[[item]][[2+cov]] <- grp.update[[1]]
+                # a1 updates.
+                p[[item]][[2+num_predictors+cov]] <- grp.update[[2]]
+
+                # s1 updates.
+                p[[item]][[2+num_predictors*2+cov]] <- z[2+num_predictors*2+cov]
+
+                next
+
+              } # End group penalty conditional.
+
+              # End routine if only one anchor item is left on each covariate
+              # for each item parameter.
+              if(is.null(anchor) &&
+                 sum(p2[grep(paste0("c1(.*?)cov",cov),names(p2))] != 0) >
+                 (num_items - 1) &&
+                 alpha == 1 &&
+                 (length(final_control$start.values) == 0 || pen > 1) &&
+                 num_tau >= 10){
+                under_identified <- TRUE
+                break
+              }
+
+              if(max_tau) {
+                id_max_z <- c(id_max_z,
+                              z[2+cov],
+                              z[2+num_predictors+cov])
+              }
+
+              # c1 updates.
+              p[[item]][[2+cov]] <-
+                if(pen_type == "lasso") {
+                  soft_threshold(z[2+cov],
+                                 alpha,
+                                 tau_current)
+                } else if(pen_type == "mcp") {
+                  firm_threshold(z[2+cov],
+                                 alpha,
+                                 tau_current,
+                                 gamma)
+                }
+
+              # s1 updates.
+              p[[item]][[2+num_predictors*2+cov]] <- z[2+num_predictors*2+cov]
+
+
+              # a1 updates.
+              if(item_type[item] == "rasch") next
+
+              # End routine if only one anchor item is left on each covariate
+              # for each item parameter.
+              if(is.null(anchor) &&
+                 sum(p2[grep(paste0("a1(.*?)cov",cov),names(p2))] != 0) >
+                 (num_items - 1) &&
+                 alpha == 1 &&
+                 (length(final_control$start.values) == 0 || pen > 1) &&
+                 num_tau >= 10){
+                under_identified <- TRUE
+                break
+              }
+
+              p[[item]][[2+num_predictors+cov]] <-
+                ifelse(pen_type == "lasso",
+                       soft_threshold(z[2+num_predictors+cov],
+                                      alpha,
+                                      tau_current),
+                       firm_threshold(z[2+num_predictors+cov],
+                                      alpha,
+                                      tau_current,
+                                      gamma))
+
+            } # End looping across covariates.
+
+            if(under_identified) break
+
+
+          } else if(item_type[item] == "2pl") {
 
             if(is.null(prox_data)) {
               anl_deriv_item <- d_bernoulli_itemblock(p[[item]],

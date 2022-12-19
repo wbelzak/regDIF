@@ -8,6 +8,7 @@
 #'        prox.data = NULL,
 #'        item.type = NULL,
 #'        pen.type = NULL,
+#'        pen.deriv = FALSE,
 #'        tau = NULL,
 #'        num.tau = 100,
 #'        alpha = 1,

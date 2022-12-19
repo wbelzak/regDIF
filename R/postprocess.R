@@ -67,7 +67,7 @@ postprocess <-
   p <- estimates$p
   infocrit <- estimates$infocrit
   estimator_history <- estimates$estimator_history
-  complete_info <- estimates$complete_info
+  # complete_info <- estimates$complete_info
   under_identified <- estimates$under_identified
   eap_scores <- estimates$eap$eap_scores
   eap_sd <- estimates$eap$eap_sd
@@ -238,7 +238,7 @@ postprocess <-
     final$eap$sd[,pen] <- eap_sd
     final$estimator_history[[pen]] <- estimator_history[[pen]]
   }
-  final$complete_ll_info <- complete_info
+  # final$complete_ll_info <- complete_info
   final$log_like[pen] <- infocrit$complete_ll
   final$data <- list(item.data=item.data, pred.data=pred.data, prox.data=prox.data)
   rownames(final$impact) <- lv_names

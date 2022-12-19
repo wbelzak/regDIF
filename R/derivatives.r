@@ -679,6 +679,144 @@ d_bernoulli_itemblock <-
 
   }
 
+#' Partial derivatives for binary items by item-blocks.
+#'
+#' @param p_item Vector of item parameters.
+#' @param etable E-table for item.
+#' @param theta Matrix of adaptive theta values.
+#' @param pred_data Matrix or dataframe of DIF and/or impact predictors.
+#' @param item_data_current Vector of current item responses.
+#' @param samp_size Sample size in dataset.
+#' @param num_items Number of items in dataset.
+#' @param num_predictors Number of predictors in dataset.
+#' @param num_quad Number of quadrature points used for approximating the
+#' latent variable.
+#'
+#' @return a \code{"list"} of first and second partial derivatives for Bernoulli item likelihood (to
+#' use with multivariate Newton-Raphson)
+#'
+#' @keywords internal
+#'
+d_bernoulli_itemblock2 <-
+  function(p_item,
+           etable,
+           theta,
+           pred_data,
+           item_data_current,
+           samp_size,
+           num_items,
+           num_predictors,
+           num_quad) {
+
+    # Make space for first and second derivatives.
+    d1 <- matrix(0,nrow=length(p_item),ncol=1)
+    d2 <- matrix(0,nrow=length(p_item),ncol=length(p_item))
+
+    # Get item response function.
+    traceline <- bernoulli_traceline_pts2(p_item,
+                                         theta,
+                                         pred_data,
+                                         samp_size)
+
+    # Get posterior probabilities for each response.
+    etable1 <- colSums(etable[item_data_current == 1,])
+    etable2 <- colSums(etable[item_data_current == 2,])
+
+    # Calculate first and second base derivatives.
+    d1_base <- traceline*(etable2/traceline -
+                            etable2-etable1)
+    d2_base <- (-traceline + traceline**2)*colSums(etable)
+
+    # First and second derivative for c0.
+    d1[1,1] <- sum(d1_base, na.rm = TRUE) #d1
+    d2[1,1] <- sum(d2_base, na.rm = TRUE) #d2
+
+    # First and second derivative for a0.
+    d1[2,1] <- sum(theta*d1_base, na.rm = TRUE) #d1
+    d2[2,2] <- sum(theta**2*d2_base, na.rm = TRUE) #d2
+
+    # Cross derivative for c0 and a0.
+    d2[2,1] <- sum(theta*d2_base, na.rm = TRUE) #d2
+
+    # Cycle through predictors (outer cycle).
+    for(cov in 1:num_predictors) {
+
+      # First and second derivatives for c1.
+      d1[2+cov,1] <-
+        sum(pred_data[,cov]*d1_base,
+            na.rm = TRUE) #d1
+      d2[2+cov,2+cov] <-
+        sum(cov_matrix**2*d2_base,
+            na.rm = TRUE) #d2
+
+      # First and second derivatives for a1.
+      d1[2+num_predictors+cov,1] <-
+        sum(cov_matrix*eta_d_a0*d1_base,
+            na.rm = TRUE) #d1
+      d2[2+num_predictors+cov,2+num_predictors+cov] <-
+        sum((cov_matrix*eta_d_a0)**2*d2_base,
+            na.rm = TRUE) #d2
+
+      # Cross derivatives for c0 and c1.
+      d2[2+cov,1] <-
+        sum(cov_matrix*d2_base,
+            na.rm = TRUE) #d2
+
+      # Cross derivatives for c0 and a1, as well as a0 and c1.
+      d2[2+num_predictors+cov,1] <- d2[2+cov,2] <-
+        sum(cov_matrix*eta_d_a0*d2_base,
+            na.rm = TRUE) #d2
+
+      # Cross derivatives for a0 and a1.
+      d2[2+num_predictors+cov,2] <-
+        sum(cov_matrix*eta_d_a0**2*d2_base,
+            na.rm = TRUE) #d2
+
+      # Cycle through predictors (inner cycle).
+      for(cov2 in 1:num_predictors) {
+
+
+        if(cov == cov2) {
+
+          # Cross derivatives with same predictor for c1 and a1.
+          d2[2+num_predictors+cov,2+cov2] <-
+            sum(cov_matrix**2*eta_d_a0*d2_base,
+                na.rm = TRUE) #d2
+
+        } else {
+
+          # First derivatives for linear predictor w.r.t. second covariate.
+          cov2_matrix <- matrix(pred_data[,cov2],
+                                ncol = num_quad,
+                                nrow = samp_size)
+
+          # Cross derivatives with different predictor for c1 and a1.
+          d2[2+num_predictors+cov,2+cov2] <-
+            sum(cov_matrix*cov2_matrix*eta_d_a0*d2_base,
+                na.rm = TRUE) #d2
+
+          if(cov2 > 1 && cov < cov2) {
+
+            # Cross derivatives with different predictor for c1 and c1.
+            d2[2+cov2,2+cov] <-
+              sum(cov_matrix*cov2_matrix*d2_base, #d2
+                  na.rm = TRUE)
+
+            # Cross derivatives with different predictor for a1 and a1.
+            d2[2+num_predictors+cov2,2+num_predictors+cov] <-
+              sum(cov_matrix*cov2_matrix*eta_d_a0**2*d2_base, #a1a1
+                  na.rm = TRUE)
+          }
+        }
+
+      }
+
+    }
+
+    dlist <- list(d1,d2)
+
+  }
+
 #' Partial derivatives for binary items by item-blocks using observed score proxy.
 #'
 #' @param p_item Vector of item parameters.

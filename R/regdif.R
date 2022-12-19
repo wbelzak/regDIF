@@ -50,6 +50,9 @@
 #'    selects intercept and slope DIF effects on each background characteristic
 #'    together.}
 #'    \item{\code{"grp.mcp"} - The group version of the MCP function.}}
+#' @param pen.deriv Logical value indicating whether to use the second
+#' derivative of the penalized parameter during regularization. The default is
+#' FALSE.
 #' @param tau Optional numeric vector of tau values \eqn{\ge} 0. If tau is
 #' supplied, this overrides the automatic construction of tau values.
 #' Must be non-negative and in descending order, from largest
@@ -95,10 +98,10 @@
 #'    \item{int.limits}{Vector of 2 numeric values indicating the integral limits
 #'    for quadrature. Default is c(-6,6).}
 #'    \item{optim.method}{Character value indicating which optimization method
-#'    to use. Default is "MNR", which updates the impact and item parameter
-#'    estimates using Multivariate Newton-Raphson. Another option is "UNR",
-#'    which updates estimates one-at-a-time using univariate Newton-Raphson, or
-#'    a single iteration of coordinate descent. A third option is "CD", or
+#'    to use. Default is "UNR", which updates estimates one-at-a-time using univariate
+#'    Newton-Raphson, or a single iteration of coordinate descent. Another option
+#'    is "MNR", which updates the impact and item parameter
+#'    estimates using Multivariate Newton-Raphson. A third option is "CD", or
 #'    coordinate descent with complete iterations through all parameters
 #'    until convergence. "MNR" will be faster in most cases,
 #'    although "UNR" may achieve faster results when the number of
@@ -135,6 +138,7 @@ regDIF <- function(item.data,
                    prox.data = NULL,
                    item.type = NULL,
                    pen.type = NULL,
+                   pen.deriv = FALSE,
                    tau = NULL,
                    num.tau = 100,
                    alpha = 1,
@@ -159,6 +163,7 @@ regDIF <- function(item.data,
 
     # Run Reg-DIF for each value of tau.
     for(pen in 1:data_scrub$num_tau){
+      # for(pen in 1:10){
 
       # Obtain regDIF estimates.
       estimates <- em_estimation(data_scrub$p,
@@ -176,6 +181,7 @@ regDIF <- function(item.data,
                                  alpha,
                                  gamma,
                                  pen,
+                                 pen.deriv,
                                  anchor,
                                  data_scrub$final_control,
                                  data_scrub$samp_size,
@@ -209,9 +215,19 @@ regDIF <- function(item.data,
       # Update vector of tau values based on identification of minimum tau value
       # which removes all DIF from the model.
       if(data_scrub$id_tau & !is.null(estimates)) {
-        data_scrub$tau_vec <- seq((estimates$max_tau)**(1/3),0,
-                                  length.out = data_scrub$num_tau)**3
-        data_scrub$id_tau <- FALSE
+
+        # if(data_scrub$optim_method == "MNR") {
+        #   # max_diag_hess <- max(do.call("rbind",estimates$complete_info[1:data_scrub$num_items]))
+        #   data_scrub$tau_vec <- seq((estimates$max_tau)**(1/3),0,
+        #                             length.out = data_scrub$num_tau)**3
+        # } else {
+        #   data_scrub$tau_vec <- seq((estimates$max_tau)**(1/3),0,
+        #                             length.out = data_scrub$num_tau)**3
+        # }
+
+      data_scrub$tau_vec <- seq((estimates$max_tau)**(1/3),0,
+                                length.out = data_scrub$num_tau)**3
+      data_scrub$id_tau <- FALSE
       }
 
 

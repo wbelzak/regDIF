@@ -18,13 +18,43 @@ bernoulli_traceline_pts <-
     traceline <-
       vapply(theta,
              function(x) {
-   1 / (1 + exp(
-     -((p_item[1] + pred_data %*% p_item[3:(2+ncol(pred_data))]) +
-       (p_item[2] + pred_data %*% p_item[(3+ncol(pred_data)):length(p_item)])*x)
-     ))
+               1 / (1 + exp(
+                 -((p_item[1] + pred_data %*% p_item[3:(2+ncol(pred_data))]) +
+                   (p_item[2] + pred_data %*% p_item[(3+ncol(pred_data)):length(p_item)])*x)
+                 ))
                }, numeric(samp_size))
 
     return(traceline)
+
+  }
+
+#' Binary item tracelines.
+#'
+#' @param p_item Vector of item parameters.
+#' @param theta Vector of theta values.
+#' @param pred_data Matrix or dataframe of DIF and/or impact predictors.
+#' @param samp_size Sample size in dataset.
+#'
+#' @return a \code{"matrix"} of probability values for Bernoulli item likelihood
+#'
+#' @keywords internal
+#'
+bernoulli_traceline_pts2 <-
+  function(p_item,
+           theta,
+           pred_data,
+           samp_size) {
+
+    traceline <-
+      vapply(theta,
+             function(x) {
+               1 / (1 + exp(-(
+                 (p_item[1] + pred_data %*% p_item[3:(2+ncol(pred_data))]) +
+                 (p_item[2] + pred_data %*% p_item[(3+ncol(pred_data)):length(p_item)])*x
+                 )))
+             }, numeric(samp_size))
+
+    return(colMeans(traceline))
 
   }
 

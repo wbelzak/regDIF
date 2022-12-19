@@ -25,6 +25,9 @@
 #' @param gamma Numeric value indicating the gamma parameter in the MCP
 #' function.
 #' @param pen Index for the tau vector.
+#' @param pen.deriv Logical value indicating whether to use the second
+#' derivative of the penalized parameter during regularization. The default is
+#' TRUE.
 #' @param anchor Optional numeric value or vector indicating which item
 #' response(s) are anchors (e.g., \code{anchor = 1}).
 #' @param final_control Control parameters.
@@ -62,6 +65,7 @@ em_estimation <- function(p,
                           alpha,
                           gamma,
                           pen,
+                          pen.deriv,
                           anchor,
                           final_control,
                           samp_size,
@@ -106,29 +110,29 @@ em_estimation <- function(p,
 
     mout <- tryCatch(
       {
-        Mstep(p,
-              item_data,
-              pred_data,
-              prox_data,
-              mean_predictors,
-              var_predictors,
-              eout,
-              item_type,
-              pen_type,
-              tau_vec[pen],
-              pen,
-              alpha,
-              gamma,
-              anchor,
-              final_control,
-              samp_size,
-              num_responses,
-              num_items,
-              num_quad,
-              num_predictors,
-              num_tau,
-              max_tau = FALSE,
-              optim_method)
+        Mstep_simple(p,
+                     item_data,
+                     pred_data,
+                     prox_data,
+                     mean_predictors,
+                     var_predictors,
+                     eout,
+                     item_type,
+                     pen_type,
+                     tau_vec[pen],
+                     pen,
+                     pen.deriv,
+                     alpha,
+                     gamma,
+                     anchor,
+                     final_control,
+                     samp_size,
+                     num_responses,
+                     num_items,
+                     num_quad,
+                     num_predictors,
+                     num_tau,
+                     max_tau = FALSE)
       },
       error = function(e) {e; return(NULL)},
       warning = function(w) {} )
@@ -175,18 +179,20 @@ em_estimation <- function(p,
       exit_code <- exit_code + 1
     }
 
-    if(final_control$optim.method == "CD") {
-      cat('\r', '                                         ',
-          sprintf("Models Completed: %d of %d",
-                        pen,
-                        models_to_fit))
-    } else {
+    # if(final_control$optim.method == "CD") {
+    #   cat('\r', '                                         ',
+    #       sprintf("Models Completed: %d of %d  EM Iteration: %d  EM Change: %f",
+    #               pen - 1,
+    #               models_to_fit,
+    #               iter,
+    #               round(eps, nchar(final_control$tol))))
+    # } else {
       cat('\r', sprintf("Models Completed: %d of %d  Iteration: %d  Change: %f",
                         pen - 1,
                         models_to_fit,
                         iter,
                         round(eps, nchar(final_control$tol))))
-    }
+    # }
 
 
 
@@ -254,7 +260,7 @@ em_estimation <- function(p,
   # Option to identify maximum value of tau which removes all DIF from model.
   if(id_tau) {
 
-    max_tau <- Mstep(p,
+    max_tau <- Mstep_simple(p,
                      item_data,
                      pred_data,
                      prox_data,
@@ -265,6 +271,7 @@ em_estimation <- function(p,
                      pen_type,
                      tau_vec[1],
                      pen,
+                     pen.deriv,
                      alpha,
                      gamma,
                      anchor,
@@ -275,8 +282,7 @@ em_estimation <- function(p,
                      num_quad,
                      num_predictors,
                      num_tau,
-                     max_tau = TRUE,
-                     optim_method)
+                     max_tau = TRUE)
 
 
   } else {
@@ -285,9 +291,10 @@ em_estimation <- function(p,
 
   # Return model results.
   return(list(p=p,
-              complete_info=mout$inv_hess_diag,
+              # complete_info=mout$inv_hess_diag,
               infocrit=infocrit,
               max_tau=max_tau,
+              # max_tau=mout$id_max_z,
               estimator_history=estimator_history,
               under_identified=mout$under_identified,
               estimator_limit=estimator_limit,

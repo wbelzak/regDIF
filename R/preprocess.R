@@ -65,7 +65,7 @@ preprocess <-
                         adapt.quad = FALSE,
                         num.quad = 21,
                         int.limits = if(any(item.type == "cfa")) {c(-3,3)} else {c(-6,6)},
-                        optim.method = "MNR",
+                        optim.method = "UNR",
                         start.values = list())
   if(length(control) > 0) final_control[names(control)] <- control
 
@@ -143,13 +143,13 @@ preprocess <-
             call. = FALSE, immediate. = TRUE)
   }
 
-  if(ncol(as.matrix(final_control$impact.mean.data)) != ncol(pred_data)) {
-    mean_predictors <- mean_predictors[,!(names(pred.data) %in% names(pred.data)[pred_data_no_var])]
-  }
-
-  if(ncol(as.matrix(final_control$impact.var.data)) != ncol(pred_data)) {
-    var_predictors <- var_predictors[,!(names(pred.data) %in% names(pred.data)[pred_data_no_var])]
-  }
+  # if(ncol(as.matrix(final_control$impact.mean.data)) != ncol(pred_data)) {
+  #   mean_predictors <- mean_predictors[,!(names(pred.data) %in% names(pred.data)[pred_data_no_var])]
+  # }
+  #
+  # if(ncol(as.matrix(final_control$impact.var.data)) != ncol(pred_data)) {
+  #   var_predictors <- var_predictors[,!(names(pred.data) %in% names(pred.data)[pred_data_no_var])]
+  # }
 
   # Get dimensions of data.
   samp_size <- dim(item_data)[1]

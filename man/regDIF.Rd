@@ -57,6 +57,10 @@ The options include:
    together.}
    \item{\code{"grp.mcp"} - The group version of the MCP function.}}}
 
+\item{pen.deriv}{Logical value indicating whether to use the second
+derivative of the penalized parameter during regularization. The default is
+FALSE.}
+
 \item{tau}{Optional numeric vector of tau values \eqn{\ge} 0. If tau is
 supplied, this overrides the automatic construction of tau values.
 Must be non-negative and in descending order, from largest
@@ -108,10 +112,10 @@ optimization parameters. May be:
    \item{int.limits}{Vector of 2 numeric values indicating the integral limits
    for quadrature. Default is c(-6,6).}
    \item{optim.method}{Character value indicating which optimization method
-   to use. Default is "MNR", which updates the impact and item parameter
-   estimates using Multivariate Newton-Raphson. Another option is "UNR",
-   which updates estimates one-at-a-time using univariate Newton-Raphson, or
-   a single iteration of coordinate descent. A third option is "CD", or
+   to use. Default is "UNR", which updates estimates one-at-a-time using univariate
+   Newton-Raphson, or a single iteration of coordinate descent. Another option
+   is "MNR", which updates the impact and item parameter
+   estimates using Multivariate Newton-Raphson. A third option is "CD", or
    coordinate descent with complete iterations through all parameters
    until convergence. "MNR" will be faster in most cases,
    although "UNR" may achieve faster results when the number of

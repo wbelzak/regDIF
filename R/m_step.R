@@ -16,6 +16,9 @@
 #' @param tau_current A single numeric value of tau that exists within
 #' \code{tau_vec}.
 #' @param pen Current penalty index.
+#' @param pen.deriv Logical value indicating whether to use the second
+#' derivative of the penalized parameter during regularization. The default is
+#' TRUE.
 #' @param alpha Numeric value indicating the alpha parameter in the elastic net
 #' penalty function.
 #' @param gamma Numeric value indicating the gamma parameter in the MCP
@@ -55,6 +58,7 @@ Mstep <-
            pen_type,
            tau_current,
            pen,
+           pen.deriv,
            alpha,
            gamma,
            anchor,
@@ -79,7 +83,15 @@ Mstep <-
 
 
     # Last Mstep.
-    if(max_tau) id_max_z <- 0
+    if(max_tau) {
+      if(method == "MNR" & pen.deriv) {
+        id_max_z <- vector('list',num_items)
+      } else {
+        id_max_z <- 0
+      }
+    }
+
+
 
     # CD Maximization and print settings.
     lastp_cd_all <- p_cd <- p
@@ -118,7 +130,7 @@ Mstep <-
 
 
       inv_hess_impact <- solve(anl_deriv_impact[[2]])
-      inv_hess_impact_diag <- -diag(inv_hess_impact)
+
       m <- c(p[[num_items+1]],p[[num_items+2]]) -
         inv_hess_impact %*% anl_deriv_impact[[1]]
       names(m) <- names(c(p[[num_items+1]],p[[num_items+2]]))
@@ -128,7 +140,7 @@ Mstep <-
       p[[num_items+2]] <- m[(ncol(mean_predictors)+1):length(m)]
 
 
-      inv_hess_diag <- vector('list',num_items+2)
+      # inv_hess <- vector('list',num_items)
 
     } else { # method == "UNR" || method == "CD"
 
@@ -282,7 +294,7 @@ Mstep <-
 
 
             inv_hess_item <- solve(anl_deriv_item[[2]])
-            inv_hess_diag[[item]] <- -diag(inv_hess_item)
+
             z <- p[[item]] - inv_hess_item %*% anl_deriv_item[[1]]
 
             # c0 update.
@@ -299,6 +311,19 @@ Mstep <-
 
             # Don't update DIF estimates if anchor item.
             if(any(item == anchor)) next
+
+            # Get thresholding parameter
+            if(pen.deriv) {
+              inv_hess_item_dif <- inv_hess_item[3:nrow(inv_hess_item),3:ncol(inv_hess_item)]
+              tau_current_vec <- replicate(nrow(inv_hess_item_dif), tau_current)
+              tau_current_hess <- -1*(inv_hess_item_dif %*% tau_current_vec)
+            }
+
+            if(max_tau & pen.deriv) {
+              id_max_z[[item]] <-
+                anl_deriv_item[[2]][3:nrow(inv_hess_item),3:ncol(inv_hess_item)] %*%
+                z[3:nrow(inv_hess_item)]
+            }
 
             p2 <- unlist(p)
 
@@ -320,11 +345,11 @@ Mstep <-
                   break
                 }
 
-                if(max_tau) {
-                  id_max_z <- c(id_max_z,
-                                z[2+cov],
-                                z[2+num_predictors+cov])
-                }
+                # if(max_tau) {
+                #   id_max_z <- c(id_max_z,
+                #                 z[2+cov],
+                #                 z[2+num_predictors+cov])
+                # }
 
 
                 # group update.
@@ -364,24 +389,43 @@ Mstep <-
                 break
               }
 
-              if(max_tau) {
+              if(max_tau & !pen.deriv) {
                 id_max_z <- c(id_max_z,
                               z[2+cov],
                               z[2+num_predictors+cov])
               }
 
-              # c1 updates.
-              p[[item]][[2+cov]] <-
-                if(pen_type == "lasso") {
-                  soft_threshold(z[2+cov],
-                                 alpha,
-                                 tau_current)
-                } else if(pen_type == "mcp") {
-                  firm_threshold(z[2+cov],
-                                 alpha,
-                                 tau_current,
-                                 gamma)
-                }
+              if(pen.deriv) {
+
+                # c1 updates.
+                p[[item]][[2+cov]] <-
+                  if(pen_type == "lasso") {
+                    soft_threshold(z[2+cov],
+                                   alpha,
+                                   tau_current_hess[cov])
+                  } else if(pen_type == "mcp") {
+                    firm_threshold(z[2+cov],
+                                   alpha,
+                                   tau_current_hess[cov],
+                                   gamma)
+                  }
+
+              } else {
+
+                # c1 updates.
+                p[[item]][[2+cov]] <-
+                  if(pen_type == "lasso") {
+                    soft_threshold(z[2+cov],
+                                   alpha,
+                                   tau_current)
+                  } else if(pen_type == "mcp") {
+                    firm_threshold(z[2+cov],
+                                   alpha,
+                                   tau_current,
+                                   gamma)
+                  }
+
+              }
 
               # s1 updates.
               p[[item]][[2+num_predictors*2+cov]] <- z[2+num_predictors*2+cov]
@@ -402,15 +446,33 @@ Mstep <-
                 break
               }
 
-              p[[item]][[2+num_predictors+cov]] <-
-                ifelse(pen_type == "lasso",
-                       soft_threshold(z[2+num_predictors+cov],
-                                      alpha,
-                                      tau_current),
-                       firm_threshold(z[2+num_predictors+cov],
-                                      alpha,
-                                      tau_current,
-                                      gamma))
+              if(pen.deriv) {
+
+                p[[item]][[2+num_predictors+cov]] <-
+                  ifelse(pen_type == "lasso",
+                         soft_threshold(z[2+num_predictors+cov],
+                                        alpha,
+                                        tau_current_hess[num_predictors+cov]),
+                         firm_threshold(z[2+num_predictors+cov],
+                                        alpha,
+                                        tau_current_hess[num_predictors+cov],
+                                        gamma))
+
+              } else {
+
+                p[[item]][[2+num_predictors+cov]] <-
+                  ifelse(pen_type == "lasso",
+                         soft_threshold(z[2+num_predictors+cov],
+                                        alpha,
+                                        tau_current),
+                         firm_threshold(z[2+num_predictors+cov],
+                                        alpha,
+                                        tau_current,
+                                        gamma))
+
+
+              }
+
 
             } # End looping across covariates.
 
@@ -442,7 +504,6 @@ Mstep <-
 
 
             inv_hess_item <- solve(anl_deriv_item[[2]])
-            inv_hess_diag[[item]] <- -diag(inv_hess_item)
             z <- p[[item]] - inv_hess_item %*% anl_deriv_item[[1]]
 
             # c0 update.
@@ -453,6 +514,19 @@ Mstep <-
 
             # Don't update DIF estimates if anchor item.
             if(any(item == anchor)) next
+
+            # Get thresholding parameter
+            if(pen.deriv) {
+              inv_hess_item_dif <- inv_hess_item[3:nrow(inv_hess_item),3:ncol(inv_hess_item)]
+              tau_current_vec <- replicate(nrow(inv_hess_item_dif), tau_current)
+              tau_current_hess <- abs(inv_hess_item_dif %*% tau_current_vec)
+            }
+
+            if(max_tau & pen.deriv) {
+              id_max_z[[item]] <-
+                anl_deriv_item[[2]][3:nrow(inv_hess_item),3:ncol(inv_hess_item)] %*%
+                z[3:nrow(inv_hess_item)]
+            }
 
             p2 <- unlist(p)
 
@@ -474,23 +548,26 @@ Mstep <-
                   break
                 }
 
-                if(max_tau) {
+                if(max_tau & !pen.deriv) {
                   id_max_z <- c(id_max_z,
                                 z[2+cov],
                                 z[2+num_predictors+cov])
                 }
 
 
+                # TODO
                 # group update.
                 grp.update <-
                   if(pen_type == "grp.lasso") {
                     grp_soft_threshold(z[c(2+cov,
                                            2+num_predictors+cov)],
-                                       tau_current)
+                                       tau_current_hess[c(cov,
+                                                          num_predictors+cov)])
                   } else if(pen_type == "grp.mcp") {
                     grp_firm_threshold(z[c(2+cov,
                                            2+num_predictors+cov)],
-                                       tau_current,
+                                       tau_current_hess[c(cov,
+                                                          num_predictors+cov)],
                                        gamma)
                   }
 
@@ -515,25 +592,44 @@ Mstep <-
                 break
               }
 
-              if(max_tau) {
+              if(max_tau & !pen.deriv) {
                 id_max_z <- c(id_max_z,
                               z[2+cov],
                               z[2+num_predictors+cov])
               }
 
-              # c1 updates.
-              p[[item]][[2+cov]] <-
-                if(pen_type == "lasso") {
-                  soft_threshold(z[2+cov],
-                                 alpha,
-                                 tau_current)
-                } else if(pen_type == "mcp") {
-                  firm_threshold(z[2+cov],
-                                 alpha,
-                                 tau_current,
-                                 gamma)
-                }
+              if(pen.deriv) {
 
+                # c1 updates.
+                p[[item]][[2+cov]] <-
+                  if(pen_type == "lasso") {
+                    soft_threshold(z[2+cov],
+                                   alpha,
+                                   tau_current_hess[cov])
+                  } else if(pen_type == "mcp") {
+                    firm_threshold(z[2+cov],
+                                   alpha,
+                                   tau_current_hess[cov],
+                                   gamma)
+                  }
+
+
+              } else {
+
+                # c1 updates.
+                p[[item]][[2+cov]] <-
+                  if(pen_type == "lasso") {
+                    soft_threshold(z[2+cov],
+                                   alpha,
+                                   tau_current)
+                  } else if(pen_type == "mcp") {
+                    firm_threshold(z[2+cov],
+                                   alpha,
+                                   tau_current,
+                                   gamma)
+                  }
+
+              }
 
               # a1 updates.
               if(item_type[item] == "rasch") next
@@ -550,17 +646,37 @@ Mstep <-
                 break
               }
 
-              p[[item]][[2+num_predictors+cov]] <-
-                ifelse(pen_type == "lasso",
-                       soft_threshold(z[2+num_predictors+cov],
-                                      alpha,
-                                      tau_current),
-                       firm_threshold(z[2+num_predictors+cov],
-                                      alpha,
-                                      tau_current,
-                                      gamma))
+              if(pen.deriv) {
+
+                p[[item]][[2+num_predictors+cov]] <-
+                  ifelse(pen_type == "lasso",
+                         soft_threshold(z[2+num_predictors+cov],
+                                        alpha,
+                                        tau_current_hess[num_predictors+cov]),
+                         firm_threshold(z[2+num_predictors+cov],
+                                        alpha,
+                                        tau_current_hess[num_predictors+cov],
+                                        gamma))
+
+              } else {
+
+                p[[item]][[2+num_predictors+cov]] <-
+                  ifelse(pen_type == "lasso",
+                         soft_threshold(z[2+num_predictors+cov],
+                                        alpha,
+                                        tau_current),
+                         firm_threshold(z[2+num_predictors+cov],
+                                        alpha,
+                                        tau_current,
+                                        gamma))
+
+
+
+              }
 
             } # End looping across covariates.
+
+            # p[[item]][3:length(p[[item]])] <- inv_hess_item_dif %*% p[[item]][3:length(p[[item]])]
 
             if(under_identified) break
 
@@ -724,6 +840,7 @@ Mstep <-
 
             p_cd[[item]][s0_parms][[1]] <- p_cd[[item]][s0_parms][[1]] -
               anl_deriv[[1]]/anl_deriv[[2]]
+
             if(p_cd[[item]][s0_parms][[1]] < 0) p_cd[[item]][s0_parms][[1]] <- 1
 
             if(method == "UNR") {
@@ -853,11 +970,18 @@ Mstep <-
                 }
 
                 z <- p_cd[[item]][c1_parms] - anl_deriv[[1]]/anl_deriv[[2]]
-                if(max_tau) id_max_z <- c(id_max_z,z)
+
+                if(max_tau & pen.deriv) {
+                  id_max_z <- c(id_max_z,z*(-anl_deriv[[2]]))
+                } else if(max_tau & !pen.deriv) {
+                  id_max_z <- c(id_max_z,z)
+                }
+                if(!pen.deriv) anl_deriv[[2]] <- -1
+
                 p_cd[[item]][c1_parms][[1]] <-
                   ifelse(pen_type == "lasso",
-                         soft_threshold(z,alpha,tau_current),
-                         firm_threshold(z,alpha,tau_current,gamma))
+                         soft_threshold(z,alpha,tau_current/-anl_deriv[[2]]),
+                         firm_threshold(z,alpha,tau_current/-anl_deriv[[2]],gamma))
 
                 if(method == "UNR") {
                   p[[item]][c1_parms] <- p_cd[[item]][c1_parms]
@@ -927,15 +1051,23 @@ Mstep <-
                   }
 
                   z <- p_cd[[item]][a1_parms] - anl_deriv[[1]]/anl_deriv[[2]]
-                  if(max_tau) id_max_z <- c(id_max_z,z)
-                  p_cd[[item]][a1_parms][[1]] <- ifelse(pen_type == "lasso",
-                                                     soft_threshold(z,alpha,tau_current),
-                                                     firm_threshold(z,alpha,tau_current,gamma))
+
+                  if(max_tau & pen.deriv) {
+                    id_max_z <- c(id_max_z,z*(-anl_deriv[[2]]))
+                  } else if(max_tau & !pen.deriv) {
+                    id_max_z <- c(id_max_z,z)
+                  }
+                  if(!pen.deriv) anl_deriv[[2]] <- -1
+
+                  p_cd[[item]][a1_parms][[1]] <-
+                    ifelse(pen_type == "lasso",
+                           soft_threshold(z,alpha,tau_current/-anl_deriv[[2]]),
+                           firm_threshold(z,alpha,tau_current/-anl_deriv[[2]],gamma))
 
 
 
                   if(method == "UNR") {
-                    p_cd[[item]][c1_parms] <- p_cd[[item]][a1_parms]
+                    p[[item]][a1_parms] <- p_cd[[item]][a1_parms]
                     break
                   }
 
@@ -1114,11 +1246,26 @@ Mstep <-
                                                  num_items)
                 }
 
-                z <- p_cd[[item]][[2+cov]] - anl_deriv[[1]]/anl_deriv[[2]]
-                if(max_tau) id_max_z <- c(id_max_z,z)
-                p_cd[[item]][[2+cov]] <- ifelse(pen_type == "lasso",
-                                                soft_threshold(z,alpha,tau_current),
-                                                firm_threshold(z,alpha,tau_current,gamma))
+                p_cd[[item]][[2+cov]] <- p_cd[[item]][[2+cov]] - anl_deriv[[1]]/anl_deriv[[2]]
+
+                if(max_tau & pen.deriv) {
+                  id_max_z <- c(id_max_z,p_cd[[item]][[2+cov]]*(-anl_deriv[[2]]))
+                } else if(max_tau & !pen.deriv) {
+                  id_max_z <- c(id_max_z,p_cd[[item]][[2+cov]])
+                }
+
+                if(pen.deriv) {
+                  p_cd[[item]][[2+cov]] <-
+                    ifelse(pen_type == "lasso",
+                           soft_threshold(p_cd[[item]][[2+cov]],alpha,tau_current/-anl_deriv[[2]]),
+                           firm_threshold(p_cd[[item]][[2+cov]],alpha,tau_current/-anl_deriv[[2]],gamma))
+                } else {
+                  p_cd[[item]][[2+cov]] <-
+                    ifelse(pen_type == "lasso",
+                           soft_threshold(p_cd[[item]][[2+cov]],alpha,tau_current),
+                           firm_threshold(p_cd[[item]][[2+cov]],alpha,tau_current,gamma))
+                }
+
 
                 if(method == "UNR") {
                   p[[item]][[2+cov]] <- p_cd[[item]][[2+cov]]
@@ -1185,13 +1332,26 @@ Mstep <-
                                                    num_items)
                   }
 
-                  z <- p_cd[[item]][[2+num_predictors+cov]] -
-                    anl_deriv[[1]]/anl_deriv[[2]]
-                  if(max_tau) id_max_z <- c(id_max_z,z)
                   p_cd[[item]][[2+num_predictors+cov]] <-
-                    ifelse(pen_type == "lasso",
-                           soft_threshold(z,alpha,tau_current),
-                           firm_threshold(z,alpha,tau_current,gamma))
+                    p_cd[[item]][[2+num_predictors+cov]] - anl_deriv[[1]]/anl_deriv[[2]]
+
+                  if(max_tau & pen.deriv) {
+                    id_max_z <- c(id_max_z,p_cd[[item]][[2+cov]]*(-anl_deriv[[2]]))
+                  } else if(max_tau & !pen.deriv) {
+                    id_max_z <- c(id_max_z,p_cd[[item]][[2+cov]])
+                  }
+
+                  if(pen.deriv) {
+                    p_cd[[item]][[2+num_predictors+cov]] <-
+                      ifelse(pen_type == "lasso",
+                             soft_threshold(p_cd[[item]][[2+num_predictors+cov]],alpha,tau_current/-anl_deriv[[2]]),
+                             firm_threshold(p_cd[[item]][[2+num_predictors+cov]],alpha,tau_current/-anl_deriv[[2]],gamma))
+                  } else {
+                    p_cd[[item]][[2+num_predictors+cov]] <-
+                      ifelse(pen_type == "lasso",
+                             soft_threshold(p_cd[[item]][[2+num_predictors+cov]],alpha,tau_current),
+                             firm_threshold(p_cd[[item]][[2+num_predictors+cov]],alpha,tau_current,gamma))
+                  }
 
                   if(method == "UNR") {
                     p[[item]][[2+num_predictors+cov]] <- p_cd[[item]][[2+num_predictors+cov]]
@@ -1468,13 +1628,19 @@ Mstep <-
                                                    num_items)
                 }
 
-                z <- p_cd[[item]][[num_responses[[item]]+cov]] -
-                  anl_deriv[[1]]/anl_deriv[[2]]
-                if(max_tau) id_max_z <- c(id_max_z,z)
+                z <- p_cd[[item]][[num_responses[[item]]+cov]] - anl_deriv[[1]]/anl_deriv[[2]]
+
+                if(max_tau & pen.deriv) {
+                  id_max_z <- c(id_max_z,z*(-anl_deriv[[2]]))
+                } else if(max_tau & !pen.deriv) {
+                  id_max_z <- c(id_max_z,z)
+                }
+                if(!pen.deriv) anl_deriv[[2]] <- -1
+
                 p_cd[[item]][[num_responses[[item]]+cov]] <-
                   ifelse(pen_type == "lasso",
-                         soft_threshold(z,alpha,tau_current),
-                         firm_threshold(z,alpha,tau_current,gamma))
+                         soft_threshold(z,alpha,tau_current/-anl_deriv[[2]]),
+                         firm_threshold(z,alpha,tau_current/-anl_deriv[[2]],gamma))
 
                 if(method == "UNR") {
                   p[[item]][[num_responses[[item]]+cov]] <-
@@ -1550,11 +1716,18 @@ Mstep <-
 
                   z <- p_cd[[item]][[length(p[[item]])-ncol(pred_data)+cov]] -
                     anl_deriv[[1]]/anl_deriv[[2]]
-                  if(max_tau) id_max_z <- c(id_max_z,z)
+
+                  if(max_tau & pen.deriv) {
+                    id_max_z <- c(id_max_z,z*(-anl_deriv[[2]]))
+                  } else if(max_tau & !pen.deriv) {
+                    id_max_z <- c(id_max_z,z)
+                  }
+                  if(!pen.deriv) anl_deriv[[2]] <- -1
+
                   p_cd[[item]][[length(p[[item]])-ncol(pred_data)+cov]] <-
                     ifelse(pen_type == "lasso",
-                           soft_threshold(z,alpha,tau_current),
-                           firm_threshold(z,alpha,tau_current,gamma))
+                           soft_threshold(z,alpha,tau_current/-anl_deriv[[2]]),
+                           firm_threshold(z,alpha,tau_current/-anl_deriv[[2]],gamma))
 
                   if(method == "UNR") {
                     p[[item]][[length(p[[item]])-ncol(pred_data)+cov]] <-
@@ -1592,15 +1765,6 @@ Mstep <-
 
 
 
-    if(method == "MNR") {
-      inv_hess_diag[[num_items+1]] <-
-        inv_hess_impact_diag[1:ncol(mean_predictors)]
-      inv_hess_diag[[num_items+2]] <-
-        inv_hess_impact_diag[-(1:ncol(mean_predictors))]
-    }
-
-
-
     if(method == "MNR" || method == "UNR") break
 
 
@@ -1626,14 +1790,14 @@ Mstep <-
 
     if(max_tau) {
 
-      id_max_z <- max(abs(id_max_z))
+      id_max_z <- max(abs(unlist(id_max_z)))
+
       return(id_max_z)
 
     } else {
 
       if(method == "MNR") {
         return(list(p=p,
-                    inv_hess_diag=inv_hess_diag,
                     under_identified=under_identified))
       } else if(method == "UNR") {
         return(list(p=p,

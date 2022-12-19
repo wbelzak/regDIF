@@ -20,6 +20,7 @@ em_estimation(
   alpha,
   gamma,
   pen,
+  pen.deriv,
   anchor,
   final_control,
   samp_size,
@@ -75,6 +76,10 @@ penalty function.}
 function.}
 
 \item{pen}{Index for the tau vector.}
+
+\item{pen.deriv}{Logical value indicating whether to use the second
+derivative of the penalized parameter during regularization. The default is
+TRUE.}
 
 \item{anchor}{Optional numeric value or vector indicating which item
 response(s) are anchors (e.g., \code{anchor = 1}).}

@@ -40,15 +40,18 @@ fit <- regDIF(item.data, pred.data, tau = 2)
 summary(fit)
 ```
 The `summary()` function shows that no DIF effects remain in the model. Only the latent variable
-parameters and base item parameters, which were not penalized at all, are estimated to be non-zero.
+parameters and base item parameters, which were not penalized at all, are estimated to be non-zero. This is shown by using the `coef` method.
+```{r}
+coef(fit)
+```
 
 Now that the data have been properly specified in `regDIF`, a more thorough investigation of DIF is
 warranted. The `regDIF()` function defaults to estimating 100 values of the tuning parameter,
 starting with a value large enough to penalize all DIF effects to zero. However, for brevity, only
-10 values of tau are specified with the `num.tau` argument.
+10 values of tau are specified with the `num.tau` argument and we reduce the tolerance for convergence using the `control` argument.
 
 ```{r,results='hide'}
-fit2 <- regDIF(item.data, pred.data, num.tau = 10)
+fit2 <- regDIF(item.data, pred.data, num.tau = 10, control = list(tol = 1e-3))
 ```
 ```{r}
 fit2
@@ -94,7 +97,7 @@ item responses are regressed on the proxy scores and background variables. (The 
 scores are simultaneously regressed on the background variables as well.)
 
 ```{r,results='hide'}
-fit3 <- regDIF(item.data, pred.data, prox.data = rowSums(item.data))
+fit3 <- regDIF(item.data, pred.data, prox.data = rowSums(item.data), num.tau = 20)
 ```
 ```{r}
 summary(fit3)
@@ -113,7 +116,7 @@ used to perform DIF selection. For brevity, observed proxy scores are used in al
 below.
 
 ```{r,results='hide'}
-fit_net <- regDIF(item.data, pred.data, prox.data = rowSums(item.data), alpha = .5)
+fit_net <- regDIF(item.data, pred.data, prox.data = rowSums(item.data), num.tau = 20, alpha = .5)
 ```
 ```{r}
 summary(fit_net)
@@ -122,31 +125,12 @@ summary(fit_net)
 The final elastic net results yield the same DIF effects as the LASSO results, although the amount
 of penalization is greater for elastic net (i.e., larger `tau`).
 
-Because there are two tuning parameters -- namely, `tau` and `alpha` -- a grid search may be
-performed to identify the optimal degree of penalization.
-
-```{r,results='hide'}
-alpha_vec <- seq(.1, 1, .1)
-fit_net2 <- replicate(length(alpha_vec), NA, simplify = FALSE)
-
-for(a in seq_along(alpha_vec)) {
-  fit_net2[[a]] <- regDIF(item.data, pred.data, prox.data = rowSums(item.data), alpha = alpha_vec[a])
-}
-```
-```{r}
-which.min(
-  sapply(fit_net2, function(fit) min(fit$bic, na.rm = T))
-)
-```
-
-The minimum BIC across all models corresponds to the LASSO penalty model, i.e., `alpha = 1`.
-
 Other penalty functions include the minimax concave penalty (MCP) and the group extensions of LASSO
 and MCP, which penalize the intercept and slope DIF effects in tandem. The group LASSO function is 
 shown below.
 
 ```{r,results='hide'}
-fit_grp_mcp <- regDIF(item.data, pred.data, prox.data = rowSums(item.data), pen.type = "grp.mcp")
+fit_grp_mcp <- regDIF(item.data, pred.data, prox.data = rowSums(item.data), num.tau = 20, pen.type = "grp.mcp")
 ```
 ```{r}
 summary(fit_grp_mcp)

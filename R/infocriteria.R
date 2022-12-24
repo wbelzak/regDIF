@@ -153,7 +153,7 @@ information_criteria <-
           complete_ll_dif_item <- complete_ll_dif_item +
             sum(etable_item[[resp]]*log_itemtrace_cat, na.rm = TRUE)
           observed_ll_dif_item <- observed_ll_dif_item +
-            sum(item_data_resp[[resp]]*log_itemtrace_cat, na.rm = TRUE)
+            sum(theta_mat*log_itemtrace_cat, na.rm = TRUE)
         }
 
       } else {

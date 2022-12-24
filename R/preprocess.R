@@ -104,7 +104,9 @@ preprocess <-
                    "quadrature is recommended at this time."), call. = FALSE, immediate. = TRUE)
   }
   if(any(NA_cases)) {
-    warning(paste0("Removed observations with missing values (NA)."), call. = FALSE,
+    warning(paste0("Removed the following cases with missing values (NA) - ",
+                   paste0(which(NA_cases), collapse = ", ")),
+            call. = FALSE,
     immediate. = TRUE)
   }
 
@@ -192,14 +194,14 @@ preprocess <-
             function(x) length(unique(na.omit(x))))
   }
 
-  if(any(item_type == 'graded')) {
-    if(is.null(control$optim.method)) {
-      warning(paste0("Graded item response types are not yet supported with ",
-                     "Multivariate Newton-Raphson (MNR). Using Univariate Newton-Raphson ",
-                     "(UNR) instead."), call. = FALSE, immediate. = TRUE)
-      final_control$optim.method <- "UNR"
-    }
-  }
+  # if(any(item_type == 'graded')) {
+  #   if(is.null(control$optim.method)) {
+  #     warning(paste0("Graded item response types are not yet supported with ",
+  #                    "Multivariate Newton-Raphson (MNR). Using Univariate Newton-Raphson ",
+  #                    "(UNR) instead."), call. = FALSE, immediate. = TRUE)
+  #     final_control$optim.method <- "UNR"
+  #   }
+  # }
 
   # Update number of quad pts for ordered categorical or guassian items.
   if(any(num_responses != 2) && final_control$num.quad == 21) {

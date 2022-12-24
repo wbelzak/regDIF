@@ -36,6 +36,7 @@
 #' identified during the regDIF procedure.
 #' @param max_tau Logical indicating whether to output the minimum tau value
 #' needed to remove all DIF from the model.
+#' @param method Character value of the type of estimation method to use
 #'
 #' @return a \code{"list"} of estimates obtained from the maximization step using univariate
 #' Newton-Raphson
@@ -148,7 +149,6 @@ Mstep_simple <-
     }
 
     for (item in 1:num_items) {
-
 
       # Obtain E-tables for each response category.
       if(item_type[item] != "cfa" & is.null(prox_data)) {
@@ -710,10 +710,10 @@ Mstep_simple <-
           }
           p[[item]][[1]] <- p[[item]][[1]] - anl_deriv[[1]]/anl_deriv[[2]]
 
-          if(method == "UNR") {
-            p[[item]][[1]] <- p[[item]][[1]]
-            break
-          }
+          # if(method == "UNR") {
+          #   p[[item]][[1]] <- p[[item]][[1]]
+          #   break
+          # }
 
 
         # Threshold updates.

@@ -75,7 +75,7 @@ plot.regDIF <-
           type = 'l',
           xlim = c(tau[1],max(tau, na.rm = TRUE)))
     nonzero.dif.lines <- dif.lines[!(dif.min.tau == 0)]
-    if(legend.plot) {
+    if(legend.plot & (length(names(nonzero.dif)) != 0)) {
       legend("topleft",
              legend = names(nonzero.dif),
              col = nonzero.dif.lines[1:length(nonzero.dif)],
@@ -84,7 +84,9 @@ plot.regDIF <-
              ),
              lwd = 2,
              cex = 0.75,
-             bty = "n")
+             bty = "n",
+             y.intersp = .1,
+             inset = c(0,-.1))
     }
 
 

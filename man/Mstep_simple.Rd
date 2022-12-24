@@ -28,7 +28,7 @@ Mstep_simple(
   num_predictors,
   num_tau,
   max_tau,
-  method
+  optim_method
 )
 }
 \arguments{
@@ -91,7 +91,7 @@ identified during the regDIF procedure.}
 \item{max_tau}{Logical indicating whether to output the minimum tau value
 needed to remove all DIF from the model.}
 
-\item{method}{Character value of the type of estimation method to use}
+\item{optim_method}{Character value of the type of estimation method to use}
 }
 \value{
 a \code{"list"} of estimates obtained from the maximization step using univariate

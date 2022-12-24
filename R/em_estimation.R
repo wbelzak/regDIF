@@ -133,7 +133,7 @@ em_estimation <- function(p,
                      num_predictors,
                      num_tau,
                      max_tau = FALSE,
-                     method)
+                     optim_method)
       },
       error = function(e) {e; return(NULL)},
       warning = function(w) {} )
@@ -284,7 +284,7 @@ em_estimation <- function(p,
                      num_predictors,
                      num_tau,
                      max_tau = TRUE,
-                     method)
+                     optim_method)
 
 
   } else {

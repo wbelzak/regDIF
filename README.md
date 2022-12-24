@@ -1,12 +1,9 @@
 
 <!-- README.md is generated from README.Rmd. -->
-
 <!-- badges: start -->
 
 [![Travis build
 status](https://travis-ci.org/wbelzak/regDIF.svg?branch=master)](https://travis-ci.org/wbelzak/regDIF)
-[![Codecov test
-coverage](https://codecov.io/gh/wbelzak/regDIF/branch/master/graph/badge.svg)](https://codecov.io/gh/wbelzak/regDIF?branch=master)
 <!-- badges: end -->
 
 # regDIF: Regularized Differential Item Functioning
@@ -19,12 +16,12 @@ expectation-maximization algorithm.
 
 regDIF can:
 
-  - Handle multiple continuous and categorical DIF covariates;
-  - Support binary, ordinal, and continuous item responses;
-  - Use LASSO, ridge, MCP, elastic net, and group penalty functions for
-    regularization;
-  - Allow for proxy data to be used in place of estimating latent
-    variable scores, which leads to much faster estimation speed.
+- Handle multiple continuous and categorical DIF covariates;
+- Support binary, ordinal, and continuous item responses;
+- Use LASSO, ridge, MCP, elastic net, and group penalty functions for
+  regularization;
+- Allow for proxy data to be used in place of estimating latent variable
+  scores, which leads to much faster estimation speed.
 
 ## Installation
 
@@ -82,11 +79,13 @@ summary(fit)
 #> 
 #> Optimal model (out of 10):
 #>          tau          bic 
-#>    0.1934603 4074.7271000 
+#>    0.1753246 4081.6941000 
 #> 
 #> Non-zero DIF effects:
 #>    item4.int.age    item5.int.age item5.int.gender  item5.int.study 
-#>           0.2633          -0.2471          -0.6558           0.3487
+#>           0.2153          -0.0897          -0.5717           0.6018 
+#>  item4.slp.study item5.slp.gender 
+#>          -0.0936          -0.1764
 ```
 
 When estimation speed is slow, proxy data may be used in place of latent
@@ -103,15 +102,13 @@ summary(fit_proxy)
 #> 
 #> Optimal model (out of 100):
 #>          tau          bic 
-#>    0.2307399 3551.0892000 
+#>    0.2766486 3540.8070000 
 #> 
 #> Non-zero DIF effects:
-#> item3.int.gender    item4.int.age    item5.int.age item5.int.gender 
-#>           0.1147           0.3330          -0.1685          -0.5852 
-#>  item5.int.study item6.int.gender item2.slp.gender  item3.slp.study 
-#>           0.5301           0.0285           0.1391          -0.0641 
-#> item5.slp.gender 
-#>          -0.1194
+#> item3.int.gender    item4.int.age item5.int.gender  item5.int.study 
+#>           0.0955           0.2200          -0.5118           0.7040 
+#> item2.slp.gender  item4.slp.study item5.slp.gender 
+#>           0.1102          -0.1413          -0.1384
 ```
 
 Other penalty functions (besides LASSO) may also be used. For instance,
@@ -130,15 +127,13 @@ summary(fit_proxy_net)
 #> 
 #> Optimal model (out of 100):
 #>          tau          bic 
-#>    0.4547117 3564.7108000 
+#>    0.5685967 3563.7495000 
 #> 
 #> Non-zero DIF effects:
 #> item3.int.gender    item4.int.age    item5.int.age item5.int.gender 
-#>           0.0963           0.2681          -0.1953          -0.4569 
-#>  item5.int.study item6.int.gender item2.slp.gender  item3.slp.study 
-#>           0.3638           0.0259           0.1120          -0.0491 
-#> item5.slp.gender 
-#>          -0.0907
+#>           0.0681           0.1672          -0.0939          -0.3463 
+#>  item5.int.study item2.slp.gender  item4.slp.study item5.slp.gender 
+#>           0.4346           0.0778          -0.1172          -0.1379
 ```
 
 ## Questions
